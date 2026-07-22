@@ -55,7 +55,7 @@ NOTE: Unlike groups, a role may not be assigned other roles. It is designed to p
 
 === Permissions
 
-Just like users and groups, a role may be given explicit permissions to content in the CMS via https://developer.enonic.com/docs/content-studio/stable/permissions[Content Studio].
+Just like users and groups, a role may be given explicit permissions to content in the CMS via https://developer.enonic.com/docs/content-studio/stable/workbench/permissions[Content Studio].
 
 [#system-roles]
 === System roles
