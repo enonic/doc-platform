@@ -63,6 +63,6 @@ XP also applies an implicit read filter to every query. Callers never see nodes 
 
 == Managing permissions
 
-* In the CMS, content permissions are managed through https://developer.enonic.com/docs/content-studio/stable/permissions[Content Studio].
+* In the CMS, content permissions are managed through https://developer.enonic.com/docs/content-studio/stable/workbench/permissions[Content Studio].
 * From application code, see the storage permissions reference in the developer documentation.
 * Permission changes on content are recorded in the <<../security/audit-logs#, audit log>> as `system.content.applyPermissions` events.
