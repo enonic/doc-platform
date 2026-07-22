@@ -591,7 +591,7 @@ Unlike groups, a role may not be assigned other roles. It is designed to provide
 <div class="sect2">
 <h3 id="permissions"><a class="link" href="#permissions">Permissions</a></h3>
 <div class="paragraph">
-<p>Just like users and groups, a role may be given explicit permissions to content in the CMS via <a href="https://developer.enonic.com/docs/content-studio/stable/permissions">Content Studio</a>.</p>
+<p>Just like users and groups, a role may be given explicit permissions to content in the CMS via <a href="https://developer.enonic.com/docs/content-studio/stable/workbench/permissions">Content Studio</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -668,7 +668,7 @@ Grants the ability to view and modify source code in the rich text editor.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-02 20:39:19 UTC
+Last updated 2026-07-22 13:02:58 UTC
 </div>
 </div>
 </body>

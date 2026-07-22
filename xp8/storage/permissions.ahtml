@@ -560,7 +560,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>In the CMS, content permissions are managed through <a href="https://developer.enonic.com/docs/content-studio/stable/permissions">Content Studio</a>.</p>
+<p>In the CMS, content permissions are managed through <a href="https://developer.enonic.com/docs/content-studio/stable/workbench/permissions">Content Studio</a>.</p>
 </li>
 <li>
 <p>From application code, see the storage permissions reference in the developer documentation.</p>
@@ -575,7 +575,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-02 20:39:19 UTC
+Last updated 2026-07-22 13:02:58 UTC
 </div>
 </div>
 </body>

@@ -531,7 +531,7 @@ Running this command requires you to have docker installed.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -p 8080:8080 enonic/xp:7.16.6-ubuntu</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -p 8080:8080 enonic/xp:7.16.7-ubuntu</code></pre>
 </div>
 </div>
 </div>
@@ -715,7 +715,7 @@ Running this command requires you to have docker installed.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -v $(pwd)/host_config_dir:/enonic-xp/home/config enonic/xp:7.16.6-ubuntu</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -v $(pwd)/host_config_dir:/enonic-xp/home/config enonic/xp:7.16.7-ubuntu</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -723,7 +723,7 @@ Running this command requires you to have docker installed.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:7.16.6-ubuntu
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:7.16.7-ubuntu
 docker cp tmp:/enonic-xp/home/config config
 docker rm tmp</code></pre>
 </div>
@@ -943,7 +943,7 @@ Running commands this section requires you to have docker and docker-compose ins
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:7.16.6-ubuntu
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:7.16.7-ubuntu
 docker cp tmp:/enonic-xp/home/config config
 docker rm tmp</code></pre>
 </div>
@@ -973,7 +973,7 @@ app.sh add https://repo.enonic.com/public/com/enonic/app/snapshotter/3.0.2/snaps
 <pre class="highlight"><code class="language-yaml" data-lang="yaml">version: '3'
 services:
   xp:
-    image: enonic/xp:7.16.6-ubuntu
+    image: enonic/xp:7.16.7-ubuntu
     restart: always
     environment:
       # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also enable JVM OOME heap dump
@@ -1121,7 +1121,7 @@ demo_snapshots: /var/lib/docker/volumes/demo_snapshots/_data</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-02 20:39:45 UTC
+Last updated 2026-07-22 13:03:26 UTC
 </div>
 </div>
 </body>
