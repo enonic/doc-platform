@@ -1272,7 +1272,7 @@ Support the set of <a href="#query_operators">operators</a>.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-You can boost - thus increasing or decreasing hit-score per field basis. By providing more than one field to the query by appending a weight-factor: ^N
+You can boost the relevance score on a per-field basis by appending a weight-factor <code>^N</code> to a field name (for example <code>_name^3</code>). The weight is a <strong>positive multiplier</strong> on the field&#8217;s score contribution, compared to the default weight of <code>1</code>: a value above <code>1</code> makes the field contribute more. The contribution always stays positive — a match adds to the score, it is never a penalty. Negative weights are not allowed. The weight must be an integer; from version 7.16.8 decimal weights (for example <code>_name^1.5</code>) are also supported, making it possible to scale a field&#8217;s contribution below the default with a weight between <code>0</code> and <code>1</code>.
 </td>
 </tr>
 </table>
@@ -1623,8 +1623,85 @@ Query filtering is a preferable way to filter nodes, however it can be used toge
 <div class="paragraph">
 <p>Any query operator result (expression or compound) can be boosted to change the relevance score of the nodes.</p>
 </div>
-<div class="listingblock">
-<div class="title">Positive boost</div>
+<div class="paragraph">
+<p>A <code>boost</code> is a <strong>positive multiplier</strong> applied to the score contribution of a clause, compared to the default of <code>1</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a value greater than <code>1</code> makes the clause contribute more,</p>
+</li>
+<li>
+<p>a value between <code>0</code> and <code>1</code> makes it contribute less (but still a positive amount).</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+A <code>boost</code> between <code>0</code> and <code>1</code> is <strong>not</strong> a negative boost. "Less" here means less than at <code>boost</code> <code>1</code> — the contribution stays positive, so a match still adds to the score and always ranks a matching document at or above one that does not match. It never penalizes documents that match.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Boosting can be applied in three different places. They all use a positive multiplier, but are configured differently:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 50%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Boost type</th>
+<th class="tableblock halign-left valign-top">How to apply</th>
+<th class="tableblock halign-left valign-top">Decimals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#field_boost">Field boost</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Append <code>^N</code> to a field name in a <code>fields</code> array.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Integer only; decimals supported from version 7.16.8</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#expression_boost">Expression boost</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Set the <code>"boost"</code> property on an expression (<code>term</code>, <code>fulltext</code>, <code>range</code>, …).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#group_boost">Compound (group) boost</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Set the <code>"boost"</code> property on a <code>boolean</code> query.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+</tbody>
+</table>
+<div id="field_boost" class="listingblock">
+<div class="title">Field boost</div>
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "fulltext": {
+    "fields": [
+      "_name^3",
+      "displayName"
+    ],
+    "query": "fish",
+    "operator": "AND"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>_name</code> field contributes three times as much as <code>displayName</code> to the score.</p>
+</div>
+<div id="expression_boost" class="listingblock">
+<div class="title">Expression boost</div>
 <div class="content">
 <pre class="highlight"><code class="language-json" data-lang="json">{
   "boolean": {
@@ -1658,18 +1735,19 @@ Query filtering is a preferable way to filter nodes, however it can be used toge
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Positive boost, increasing the score.</td>
+<td>Boost above <code>1</code>, increasing this clause&#8217;s contribution to the score.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Negative boost, decreasing the score.</td>
+<td>Boost between <code>0</code> and <code>1</code>, reducing this clause&#8217;s contribution. The match still adds to the score — this is not a penalty.</td>
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>To boost the bunch of expressions they could be wrapped by an inner boolean query:</p>
+<div id="group_boost" class="paragraph">
+<p>To boost a bunch of expressions together, wrap them in an inner boolean query:</p>
 </div>
 <div class="listingblock">
+<div class="title">Compound (group) boost</div>
 <div class="content">
 <pre class="highlight"><code class="language-json" data-lang="json">{
   "boolean": {
@@ -1704,14 +1782,14 @@ Query filtering is a preferable way to filter nodes, however it can be used toge
 }</code></pre>
 </div>
 </div>
-<div class="admonitionblock tip">
+<div class="admonitionblock note">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Avoid combining group boosting and single term boosting in the same expression.
+Combining group boosting (a <code>boost</code> on the wrapping <code>boolean</code>) with single-term boosting (a <code>boost</code> on the inner expressions) is allowed — neither is ignored and no error or warning is raised. However, both multipliers are applied and combine into the effective score, which is easy to misjudge. For predictable relevance, prefer boosting at a single level.
 </td>
 </tr>
 </table>
@@ -1906,7 +1984,7 @@ Order defaults to DESC when sorting by <code>_score</code>, and ASC when sorting
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-22 13:03:54 UTC
+Last updated 2026-08-06 09:49:28 UTC
 </div>
 </div>
 </body>
