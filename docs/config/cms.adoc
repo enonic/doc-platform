@@ -56,7 +56,15 @@ media.defaultBaseUrl = https://cdn.example.com
 legacy.mediaApiAutoMount.enabled = false
 ----
 
-Generated media URLs then point at the CDN, and `+<site>/_/media:image/…+` is no longer served — so the CDN must reach the media APIs through XP's own `+/api/media:image/…+` space. Disabling the auto-mount *without* setting a default base URL instead makes generated URLs use that `+/api/+` form directly.
+Generated media URLs then point at the CDN, addressing the API directly beneath the configured base — note that there is *no* `+_+` endpoint segment in this form:
+
+[source]
+----
+https://cdn.example.com/media:image/myproject:master/123456:<hash>/max-300/mycontent.png
+https://cdn.example.com/media:attachment/myproject:master/123456:<hash>/mydocument.pdf
+----
+
+Meanwhile `+<site>/_/media:image/…+` is no longer served, so the CDN has to reach the media APIs through XP's own `+/api/+` space — where the paths match the ones above, `+/api/media:image/…+`. Disabling the auto-mount *without* setting a default base URL makes generated URLs use that `+/api/+` form directly instead.
 
 Two cases deliberately ignore `media.defaultBaseUrl`:
 
