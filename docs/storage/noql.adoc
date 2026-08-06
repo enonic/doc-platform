@@ -244,7 +244,7 @@ fields:: Comma-separated list of <<propertyPath, propertyPaths>> to include in t
 You can boost the relevance score on a per-field basis by appending a weight-factor ``^N`` to a field name (for example ``displayName^5``).
 The weight is a *positive multiplier* on the field's score contribution, compared to the default weight of ``1``: a value above ``1`` makes the field contribute more.
 The contribution always stays positive — a match adds to the score, it is never a penalty. Negative weights are not allowed.
-The weight must be an integer; from version 7.16.8 decimal weights (for example ``displayName^1.5``) are also supported, making it possible to scale a field's contribution below the default with a weight between ``0`` and ``1``.
+The weight must be an integer; from version image:xp-7168.svg[XP 7.16.8,opts=inline] decimal weights (for example ``displayName^1.5``) are also supported, making it possible to scale a field's contribution below the default with a weight between ``0`` and ``1``.
 
 .Boosting example
 [source,sql]
