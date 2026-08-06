@@ -1272,7 +1272,27 @@ Support the set of <a href="#query_operators">operators</a>.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-You can boost the relevance score on a per-field basis by appending a weight-factor <code>^N</code> to a field name (for example <code>_name^3</code>). The weight is a <strong>positive multiplier</strong> on the field&#8217;s score contribution, compared to the default weight of <code>1</code>: a value above <code>1</code> makes the field contribute more. The contribution always stays positive — a match adds to the score, it is never a penalty. Negative weights are not allowed. The weight must be an integer; from version 7.16.8 decimal weights (for example <code>_name^1.5</code>) are also supported, making it possible to scale a field&#8217;s contribution below the default with a weight between <code>0</code> and <code>1</code>.
+You can boost the relevance score on a per-field basis by appending a weight-factor <code>^N</code> to a field name (for example <code>_name^3</code>). The weight is a <strong>positive multiplier</strong> on the field&#8217;s score contribution, compared to the default weight of <code>1</code>: a value above <code>1</code> makes the field contribute more. The contribution always stays positive — a match adds to the score, it is never a penalty. Negative weights are not allowed. The weight must be an integer; from version <span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="64" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="25" height="20" fill="#555"/>
+    <rect x="25" width="39" height="20" fill="#007ec6"/>
+    <rect width="64" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text>
+    <text x="135" y="140" transform="scale(.1)" textLength="150">XP</text>
+    <text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">7.16.8</text>
+    <text x="435" y="140" transform="scale(.1)" textLength="290">7.16.8</text>
+  </g>
+</svg></span> decimal weights (for example <code>_name^1.5</code>) are also supported, making it possible to scale a field&#8217;s contribution below the default with a weight between <code>0</code> and <code>1</code>.
 </td>
 </tr>
 </table>
@@ -1668,7 +1688,27 @@ A <code>boost</code> between <code>0</code> and <code>1</code> is <strong>not</s
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#field_boost">Field boost</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Append <code>^N</code> to a field name in a <code>fields</code> array.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Integer only; decimals supported from version 7.16.8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Integer only; decimals supported from version <span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="64" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="25" height="20" fill="#555"/>
+    <rect x="25" width="39" height="20" fill="#007ec6"/>
+    <rect width="64" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text>
+    <text x="135" y="140" transform="scale(.1)" textLength="150">XP</text>
+    <text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">7.16.8</text>
+    <text x="435" y="140" transform="scale(.1)" textLength="290">7.16.8</text>
+  </g>
+</svg></span></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#expression_boost">Expression boost</a></p></td>
@@ -1984,7 +2024,7 @@ Order defaults to DESC when sorting by <code>_score</code>, and ASC when sorting
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-06 09:49:28 UTC
+Last updated 2026-08-06 09:56:29 UTC
 </div>
 </div>
 </body>
