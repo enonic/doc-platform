@@ -484,7 +484,7 @@ Support the set of <<query_operators,operators>>.
 
 To use one of these characters literally, escape it with a preceding backslash (\).
 
-NOTE: You can boost - thus increasing or decreasing hit-score per field basis. By providing more than one field to the query by appending a weight-factor: ^N
+NOTE: You can boost the relevance score on a per-field basis by appending a weight-factor ``^N`` to a field name (for example ``_name^3``). The weight is a *positive multiplier* on the field's score contribution, compared to the default weight of ``1``: a value above ``1`` makes the field contribute more. The contribution always stays positive — a match adds to the score, it is never a penalty. Negative weights are not allowed. The weight must be an integer; from version 7.16.8 decimal weights (for example ``_name^1.5``) are also supported, making it possible to scale a field's contribution below the default with a weight between ``0`` and ``1``.
 
 ===== fulltext
 [#fulltext]
@@ -763,7 +763,51 @@ NOTE: Query filtering is a preferable way to filter nodes, however it can be use
 
 Any query operator result (expression or compound) can be boosted to change the relevance score of the nodes.
 
-.Positive boost
+A ``boost`` is a *positive multiplier* applied to the score contribution of a clause, compared to the default of ``1``:
+
+* a value greater than ``1`` makes the clause contribute more,
+* a value between ``0`` and ``1`` makes it contribute less (but still a positive amount).
+
+IMPORTANT: A ``boost`` between ``0`` and ``1`` is *not* a negative boost. "Less" here means less than at ``boost`` ``1`` — the contribution stays positive, so a match still adds to the score and always ranks a matching document at or above one that does not match. It never penalizes documents that match.
+
+Boosting can be applied in three different places. They all use a positive multiplier, but are configured differently:
+
+[cols="1,2,1", options="header"]
+|===
+|Boost type |How to apply |Decimals
+
+|<<field_boost, Field boost>>
+|Append ``^N`` to a field name in a ``fields`` array.
+|Integer only; decimals supported from version 7.16.8
+
+|<<expression_boost, Expression boost>>
+|Set the ``"boost"`` property on an expression (``term``, ``fulltext``, ``range``, …).
+|Yes
+
+|<<group_boost, Compound (group) boost>>
+|Set the ``"boost"`` property on a ``boolean`` query.
+|Yes
+|===
+
+[#field_boost]
+.Field boost
+[source,json]
+----
+{
+  "fulltext": {
+    "fields": [
+      "_name^3",
+      "displayName"
+    ],
+    "query": "fish",
+    "operator": "AND"
+  }
+}
+----
+The ``_name`` field contributes three times as much as ``displayName`` to the score.
+
+[#expression_boost]
+.Expression boost
 [source,json]
 ----
 {
@@ -793,11 +837,13 @@ Any query operator result (expression or compound) can be boosted to change the 
   }
 }
 ----
-<1> Positive boost, increasing the score.
-<2> Negative boost, decreasing the score.
+<1> Boost above ``1``, increasing this clause's contribution to the score.
+<2> Boost between ``0`` and ``1``, reducing this clause's contribution. The match still adds to the score — this is not a penalty.
 
-To boost the bunch of expressions they could be wrapped by an inner boolean query:
+[#group_boost]
+To boost a bunch of expressions together, wrap them in an inner boolean query:
 
+.Compound (group) boost
 [source,json]
 ----
 {
@@ -834,7 +880,7 @@ To boost the bunch of expressions they could be wrapped by an inner boolean quer
 
 ----
 
-TIP: Avoid combining group boosting and single term boosting in the same expression.
+NOTE: Combining group boosting (a ``boost`` on the wrapping ``boolean``) with single-term boosting (a ``boost`` on the inner expressions) is allowed — neither is ignored and no error or warning is raised. However, both multipliers are applied and combine into the effective score, which is easy to misjudge. For predictable relevance, prefer boosting at a single level.
 
 [#sort]
 == Sort DSL
