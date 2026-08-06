@@ -38,7 +38,32 @@ legacy.attachmentService.enabled:: Enables/Disables legacy attachment service. D
 legacy.imageService.enabled:: Enables/Disables legacy image service. Default `true` - means endpoint `(`/_/image/`) is enabled.
 legacy.httpService.enabled:: Enables/Disables legacy HTTP service. Default `true` - means endpoint `(`/_/service/`) is enabled.
 legacy.assetService.enabled:: Enables/Disables legacy asset service. Default `true` - means endpoint `(`/_/asset/`) is enabled.
+legacy.mediaApiAutoMount.enabled:: Available from XP 8.1. Enables/Disables implicit mounting of the media APIs on every site. Default `true` - means every site serves `+/_/media:image/+` and `+/_/media:attachment/+` without declaring them in its site descriptor. Set to `false` to require each site to mount them explicitly. See <<media_base_url, Serving media from another host>>.
+media.defaultBaseUrl:: Available from XP 8.1. Base URL for generated media (image, attachment) URLs, so media can be served from a separate host such as a CDN. Only consulted where the mount handling the request does not serve the media APIs itself. Default: empty - media URLs stay anchored to the incoming request. See <<media_base_url, Serving media from another host>>.
 asset.cacheControl:: Asset service is deprecated, use lib-asset instead! Sets default cache-control header when asset is cachable. Default: `public, max-age=31536000, immutable`
+
+[#media_base_url]
+=== Serving media from another host
+
+Every site serves the media APIs under its own `+_+` endpoint, so the portal library generates URLs such as `+https://example.com/mysite/_/media:image/…+`. Generated URLs always follow where a request would actually be dispatched, which has one consequence worth knowing before reaching for `media.defaultBaseUrl`:
+
+*Setting `media.defaultBaseUrl` alone changes nothing for sites.* A mount that serves the media APIs itself always wins. To move site media to another host, also stop the site from serving them — set `legacy.mediaApiAutoMount.enabled = false` and leave `media:image` and `media:attachment` out of the site descriptor:
+
+.Serve all media from a CDN
+[source,properties]
+----
+media.defaultBaseUrl = https://cdn.example.com
+legacy.mediaApiAutoMount.enabled = false
+----
+
+Generated media URLs then point at the CDN, and `+<site>/_/media:image/…+` is no longer served — so the CDN must reach the media APIs through XP's own `+/api/media:image/…+` space. Disabling the auto-mount *without* setting a default base URL instead makes generated URLs use that `+/api/+` form directly.
+
+Two cases deliberately ignore `media.defaultBaseUrl`:
+
+* *Sites rendered inside an admin tool* — Content Studio's preview and edit modes — keep media URLs anchored to the admin tool's own `+_+` endpoint, so they stay inside the authenticated admin session.
+* *Sites that mount the media APIs explicitly*, since they serve the media themselves.
+
+A webapp behaves the same way: its media URLs divert to `media.defaultBaseUrl` only when it does not mount the media APIs.
 
 [#image]
 == Image
