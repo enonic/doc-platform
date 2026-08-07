@@ -157,6 +157,33 @@ mapping.adm.com.enonic.xp.repository.RepositoryId = com.enonic.cms.repository.my
 mapping.adm.com.enonic.xp.branch.Branch = master
 ----
 
+[#api-locations]
+=== API locations
+
+image:xp-8010.svg[XP 8.1.0,opts=inline] APIs may be served from somewhere other than the address a request arrives on: a dedicated API host, a shorter path, or a media host. The context of a virtual host mapping declares where, for requests it matches:
+
+[source,properties]
+----
+mapping.example.host = www.example.com
+mapping.example.source = /
+mapping.example.target = /site/myproject/master/mysite
+mapping.example.context.portal.apiBaseUrl = https://apis.example.com <1>
+mapping.example.context.portal.apiBaseUrl.media\:image = https://images.example.com <2>
+----
+
+<1> Root of the full API set. The API descriptor is appended, so an URL for `com.enonic.app.myapp:myapi` becomes `https://apis.example.com/com.enonic.app.myapp:myapi`.
+<2> Root of a single API, used as it is - nothing is appended. Note the escaped colon: the configuration file is read as a properties file, where an unescaped colon ends the key.
+
+Values are used verbatim and decide the URL form themselves - another host, a path on the same host, or a root-relative path - so an API can be exposed anywhere, including on a host that serves nothing else.
+
+Declarations are consulted in order of how specifically they name an API, so exposing APIs somewhere does not silently move APIs that are configured elsewhere:
+
+. `portal.apiBaseUrl.<application>:<api>` - names that API.
+. <<./cms#media_base_url, media.defaultBaseUrl>> - names the media APIs.
+. `portal.apiBaseUrl` - names any API.
+
+An API mounted on the site, webapp or admin tool that serves the request keeps its URL under that mount's `_` endpoint; the declared locations apply to APIs that are addressed from elsewhere.
+
 == Examples
 
 "Example Inc", the owner of "example.com" just finished building their new site.
