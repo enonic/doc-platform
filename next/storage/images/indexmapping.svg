@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="780px" height="304px" viewBox="0 0 780 304" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Indexmapping</title>
+    <g id="Indexmapping" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <text id="Login-endpoint:-_/id" font-family="GTPressura, GT Pressura" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="588.075" y="64">Login endpoint:</tspan>
+            <tspan x="553.292" y="82">_/idprovider/&lt;name&gt;/login</tspan>
+        </text>
+        <text id="Index-mappings" font-family="GTPressura-Bold, GT Pressura" font-size="14" font-weight="bold" fill="#000000" fill-opacity="0.576188948">
+            <tspan x="560.877" y="24">Index mappings</tspan>
+        </text>
+        <text id="Property:-type+value" font-family="GTPressura-Bold, GT Pressura" font-size="14" font-weight="bold" fill="#000000" fill-opacity="0.576188948">
+            <tspan x="54.95" y="27">Property:  type+value</tspan>
+        </text>
+        <text id="Index-config" font-family="GTPressura-Bold, GT Pressura" font-size="14" font-weight="bold" fill="#000000" fill-opacity="0.576188948">
+            <tspan x="325.719" y="28">Index config</tspan>
+        </text>
+        <path id="Line-Copy-3" d="M510,71 L519,75.5 L510,80 L510,76 L183,76 L183,75 L510,75 L510,71 Z" fill="#9B9B9B" fill-rule="nonzero"></path>
+        <path id="Line-Copy-2" d="M415,165.179588 C447.449308,165.179588 463.605189,167.757599 472.361587,174.665271 C480.410281,181.014655 482.389784,189.88466 482.389784,211.977332 C482.389784,223.759997 486.379141,232.233989 493.497444,237.906465 C498.744118,242.087466 505.335411,244.492119 512.472082,245.529883 L512.542,245.539 L512.754229,241.593308 L521.499277,246.570671 L512.270358,250.580292 L512.488,246.541 L512.344432,246.521845 C505.040803,245.462199 498.282419,242.998227 492.874235,238.68852 C485.515201,232.824209 481.389784,224.061205 481.389784,211.977332 C481.389784,190.185054 479.460236,181.538894 471.742234,175.450384 C463.312944,168.800758 447.541739,166.231085 415.961815,166.180356 L415,166.179588 L414.5,166.179588 L414.5,165.179588 L415,165.179588 Z" fill="#979797" fill-rule="nonzero"></path>
+        <rect id="Rectangle-Copy-3" stroke="#979797" fill="#EDFFE6" x="517.5" y="43.5" width="241" height="77" rx="8"></rect>
+        <text id="myLocation:-“lat,-lo" font-family="GTPressura, GT Pressura" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="540.5" y="67">myLocation: “lat, long”</tspan>
+            <tspan x="540.5" y="85">myLocation._geopoint: lat, long</tspan>
+            <tspan x="540.5" y="103">myLocation._orderBy:  “lat, long”</tspan>
+        </text>
+        <path id="Line-Copy-2" d="M380.716792,136.308499 C462.804445,136.308499 481.077026,139.629121 481.077026,155 C481.077026,162.562338 492.627736,165.145329 509.486379,164.377518 L509.15905,160.410671 L518.49831,164.156099 L509.898412,169.38025 L509.568,165.374 L509.345659,165.384676 C502.480252,165.685169 496.161459,165.406877 491.107349,164.313716 C484.085479,162.794944 480.077026,159.795673 480.077026,155 C480.077026,140.749555 462.294868,137.375551 383.134426,137.309496 L380.716792,137.308499 L183.5,137.308499 L183.5,136.308499 L380.716792,136.308499 Z" fill="#979797" fill-rule="nonzero"></path>
+        <rect id="Rectangle-Copy-3" stroke="#979797" fill="#FFE6E6" x="296.5" y="49.5" width="118" height="143" rx="8"></rect>
+        <rect id="Rectangle-Copy-3" stroke="#979797" fill="#EDFFE6" x="518.5" y="130.5" width="243" height="62" rx="8"></rect>
+        <rect id="Rectangle-Copy-3" stroke="#979797" fill="#CEE3FF" x="17.5" y="48.5" width="203" height="53" rx="8"></rect>
+        <rect id="Rectangle-Copy-3" stroke="#979797" fill="#CEE3FF" x="17.5" y="112.5" width="203" height="53" rx="8"></rect>
+        <text id="myLocaton:-geoPoint(" font-family="GTPressura-Bold, GT Pressura" font-size="14" font-weight="bold" fill="#000000">
+            <tspan x="31.282" y="77">myLocaton:</tspan>
+            <tspan x="99.994" y="77" font-family="GTPressura, GT Pressura" font-weight="normal"> geoPoint(lat, long)</tspan>
+        </text>
+        <text id="myCompany:-“enonic”" font-family="GTPressura-Bold, GT Pressura" font-size="14" font-weight="bold" fill="#000000">
+            <tspan x="31.5" y="143">myCompany:</tspan>
+            <tspan x="107.534" y="143" font-family="GTPressura, GT Pressura" font-weight="normal"> “enonic”</tspan>
+        </text>
+        <text id="myCompany:-“enonic”" font-family="GTPressura, GT Pressura" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="540" y="157">myCompany:  “enonic”</tspan>
+            <tspan x="540" y="175">myCompany._orderBy: “enonic”</tspan>
+        </text>
+        <rect id="Rectangle-Copy-3" stroke="#979797" fill="#EDFFE6" x="520.5" y="202.5" width="241" height="86" rx="8"></rect>
+        <text id="_allText:-“enonic”-_" font-family="GTPressura, GT Pressura" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="544.5" y="229">_allText: “enonic”</tspan>
+            <tspan x="544.5" y="247">_allText._analyzed: “enonic”</tspan>
+            <tspan x="544.5" y="265">_allText._ngram: “e”, “en”, “eno”…</tspan>
+        </text>
+        <text id="enabled-decideByType" font-family="GTPressura, GT Pressura" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="310.5" y="104">enabled</tspan>
+            <tspan x="310.5" y="122">decideByType</tspan>
+            <tspan x="310.5" y="140">includeInAllText</tspan>
+        </text>
+    </g>
+</svg>

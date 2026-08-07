@@ -1,0 +1,166 @@
+{
+  "menuItems": [
+    {
+      "title": "Intro",
+      "document": "index"
+    },
+    {
+      "title": "Admin",
+      "document": "admin",
+      "menuItems": [
+        {
+          "title": "Dashboard",
+          "document": "admin/dashboard"
+        },
+        {
+          "title": "Applications",
+          "document": "admin/applications"
+        },
+        {
+          "title": "Users",
+          "document": "admin/users"
+        }
+      ]
+    },
+    {
+      "title": "Applications",
+      "document": "apps"
+    },
+    {
+      "title": "Security",
+      "document": "security",
+      "menuItems": [
+        {
+          "title": "ID providers",
+          "document": "security/idproviders"
+        },
+        {
+          "title": "Service accounts",
+          "document": "security/service-accounts"
+        },
+        {
+          "title": "Principals",
+          "document": "security/principals"
+        },
+        {
+          "title": "Audit Logs",
+          "document": "security/audit-logs"
+        }
+      ]
+    },
+    {
+      "title": "Storage",
+      "document": "storage",
+      "menuItems": [
+        {
+          "title": "Repositories",
+          "document": "storage/repositories"
+        },
+        {
+          "title": "Permissions",
+          "document": "storage/permissions"
+        },
+        {
+          "title": "Maintenance",
+          "document": "storage/maintenance"
+        }
+      ]
+    },
+    {
+      "title": "APIs & Endpoints",
+      "document": "endpoints",
+      "menuItems": [
+        {
+          "title": "Web",
+          "document": "endpoints/web"
+        },
+        {
+          "title": "Management API",
+          "document": "endpoints/management"
+        },
+        {
+          "title": "Statistics API",
+          "document": "endpoints/statistics"
+        }
+      ]
+    },
+    {
+      "title": "Hosting",
+      "document": "deployment",
+      "menuItems": [
+        {
+          "title": "Distributions",
+          "document": "deployment/distro"
+        },
+        {
+          "title": "Strategies",
+          "document": "deployment/strategies"
+        },
+        {
+          "title": "Backup & restore",
+          "document": "deployment/backup-restore"
+        },
+        {
+          "title": "Clustering",
+          "document": "deployment/clustering"
+        },
+        {
+          "title": "Edge",
+          "document": "deployment/edge"
+        },
+        {
+          "title": "Run as a service",
+          "document": "deployment/service"
+        },
+        {
+          "title": "Docker",
+          "document": "deployment/docker"
+        },
+        {
+          "title": "Kubernetes",
+          "document": "deployment/k8s"
+        }
+      ]
+    },
+    {
+      "title": "Configuration",
+      "document": "config",
+      "menuItems": [
+        {
+          "title": "System",
+          "document": "config/system"
+        },
+        {
+          "title": "Applications",
+          "document": "config/applications"
+        },
+        {
+          "title": "Vhost",
+          "document": "config/vhosts"
+        },
+        {
+          "title": "Admin",
+          "document": "config/admin"
+        },
+        {
+          "title": "CMS",
+          "document": "config/cms"
+        },
+        {
+          "title": "Logging",
+          "document": "config/logging"
+        }
+      ] 
+    },
+    {
+      "title": "Release Notes",
+      "document": "release",
+      "menuItems": [
+        {
+          "title": "Upgrade Notes",
+          "document": "release/upgrade"
+        }
+      ]
+    }
+  ]
+}

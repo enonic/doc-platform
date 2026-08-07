@@ -9,6 +9,10 @@
     {
       "label": "7.x",
       "checkout": "7.x"
+    },
+    {
+      "label": "next",
+      "checkout": "master"
     }
   ]
 }
