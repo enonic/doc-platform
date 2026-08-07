@@ -559,6 +559,12 @@ legacy.mediaApiAutoMount.enabled = false</code></pre>
 <p>URLs then take the form <code>https://cdn.example.com/media:image/…</code> - note there is no <code>_</code> endpoint segment - and <code>&lt;site&gt;/_/media:image/…</code> is no longer served, so the CDN fetches from XP&#8217;s matching <code>/api/media:image/…</code> path. Disabling the auto-mount without a default base URL makes generated URLs use that <code>/api/</code> form directly.</p>
 </div>
 <div class="paragraph">
+<p>Mounts are honored per API, so the two media APIs can be split: a site that lists only <code>media:image</code> in its descriptor keeps image URLs on the site and gets attachment URLs from the default media base URL.</p>
+</div>
+<div class="paragraph">
+<p>A virtual host may also declare where APIs are served, as part of its <a href="./vhosts.ahtml#virtual-host-context">context</a> - see <a href="./vhosts.ahtml#api-locations">API locations</a>. A declaration that names a media API explicitly, such as <code>portal.apiBaseUrl.media\:image</code>, wins over <code>media.defaultBaseUrl</code>, which in turn wins over a declaration covering all APIs.</p>
+</div>
+<div class="paragraph">
 <p>Sites rendered inside an admin tool are the exception: Content Studio&#8217;s preview and edit modes keep media anchored to the admin tool&#8217;s own endpoint, so URLs stay inside the authenticated session.</p>
 </div>
 </div>
@@ -732,7 +738,7 @@ As such, it may lead to slower system response and reduced efficiency. Important
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-07 11:44:44 UTC
+Last updated 2026-08-07 13:44:29 UTC
 </div>
 </div>
 </body>

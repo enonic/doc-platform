@@ -445,7 +445,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#domains">Domains</a></li>
 <li><a href="#request_matching">Request Matching</a></li>
 <li><a href="#capture_groups">Capture Groups</a></li>
-<li><a href="#virtual-host-context">Virtual Host Context</a></li>
+<li><a href="#virtual-host-context">Virtual Host Context</a>
+<ul class="sectlevel2">
+<li><a href="#api-locations">API locations</a></li>
+</ul>
+</li>
 <li><a href="#examples">Examples</a></li>
 <li><a href="#testing_vhosts">Testing vhosts</a></li>
 </ul>
@@ -733,6 +737,55 @@ mapping.adm.com.enonic.xp.repository.RepositoryId = com.enonic.cms.repository.my
 mapping.adm.com.enonic.xp.branch.Branch = master</code></pre>
 </div>
 </div>
+<div class="sect2">
+<h3 id="api-locations"><a class="link" href="#api-locations">API locations</a></h3>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> APIs may be served from somewhere other than the address a request arrives on: a dedicated API host, a shorter path, or a media host. The context of a virtual host mapping declares where, for requests it matches:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">mapping.example.host = www.example.com
+mapping.example.source = /
+mapping.example.target = /site/myproject/master/mysite
+mapping.example.context.portal.apiBaseUrl = https://apis.example.com <i class="conum" data-value="1"></i><b>(1)</b>
+mapping.example.context.portal.apiBaseUrl.media\:image = https://images.example.com <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Root of the full API set. The API descriptor is appended, so an URL for <code>com.enonic.app.myapp:myapi</code> becomes <code><a href="https://apis.example.com/com.enonic.app.myapp:myapi" class="bare">https://apis.example.com/com.enonic.app.myapp:myapi</a></code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Root of a single API, used as it is - nothing is appended. Note the escaped colon: the configuration file is read as a properties file, where an unescaped colon ends the key.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Values are used verbatim and decide the URL form themselves - another host, a path on the same host, or a root-relative path - so an API can be exposed anywhere, including on a host that serves nothing else.</p>
+</div>
+<div class="paragraph">
+<p>Declarations are consulted in order of how specifically they name an API, so exposing APIs somewhere does not silently move APIs that are configured elsewhere:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>portal.apiBaseUrl.&lt;application&gt;:&lt;api&gt;</code> - names that API.</p>
+</li>
+<li>
+<p><a href="./cms.ahtml#media_base_url">media.defaultBaseUrl</a> - names the media APIs.</p>
+</li>
+<li>
+<p><code>portal.apiBaseUrl</code> - names any API.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>An API mounted on the site, webapp or admin tool that serves the request keeps its URL under that mount&#8217;s <code>_</code> endpoint; the declared locations apply to APIs that are addressed from elsewhere.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -839,7 +892,7 @@ Location of hosts file on Mac/Linux_: <code>/etc/hosts</code>, on Windows: <code
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-07 11:44:44 UTC
+Last updated 2026-08-07 13:44:29 UTC
 </div>
 </div>
 </body>
