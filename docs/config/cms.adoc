@@ -56,6 +56,10 @@ legacy.mediaApiAutoMount.enabled = false
 
 URLs then take the form `+https://cdn.example.com/media:image/…+` - note there is no `+_+` endpoint segment - and `+<site>/_/media:image/…+` is no longer served, so the CDN fetches from XP's matching `+/api/media:image/…+` path. Disabling the auto-mount without a default base URL makes generated URLs use that `+/api/+` form directly.
 
+Mounts are honored per API, so the two media APIs can be split: a site that lists only `media:image` in its descriptor keeps image URLs on the site and gets attachment URLs from the default base URL.
+
+A virtual host may also declare where APIs are served, per mapping - see <<./vhosts#api-locations, API locations>>. A declaration that names a media API explicitly, such as `+portal.apiBaseUrl.media\:image+`, wins over `media.defaultBaseUrl`, which in turn wins over a declaration covering all APIs.
+
 Sites rendered inside an admin tool are the exception: Content Studio's preview and edit modes keep media anchored to the admin tool's own endpoint, so URLs stay inside the authenticated session.
 
 [#image]
