@@ -176,8 +176,6 @@ mapping.example.context.portal.apiBaseUrl.media\:image = https://images.example.
 
 Values are used verbatim and decide the URL form themselves - another host, a path on the same host, or a root-relative path - so an API can be exposed anywhere, including on a host that serves nothing else.
 
-NOTE: The mapping context is one way to declare API locations, not the only one. The entries become attributes of the context the request runs in, so an application can declare them for its own code as well, in a task or a controller.
-
 Declarations are consulted in order of how specifically they name an API, so exposing APIs somewhere does not silently move APIs that are configured elsewhere:
 
 . `portal.apiBaseUrl.<application>:<api>` - names that API.
