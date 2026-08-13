@@ -476,7 +476,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-For detailed documentation, see the <a href="https://developer.enonic.com/docs/xp-operator">XP Operator documentation</a>.
+For detailed documentation, see the <a href="https://developer.enonic.com/docs/kubernetes-operator-for-xp/stable">XP Operator documentation</a>.
 </td>
 </tr>
 </table>
@@ -502,7 +502,7 @@ For detailed documentation, see the <a href="https://developer.enonic.com/docs/x
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-12 14:02:59 UTC
+Last updated 2026-08-13 14:07:20 UTC
 </div>
 </div>
 </body>
