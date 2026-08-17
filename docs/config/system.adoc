@@ -776,9 +776,31 @@ clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a jo
 
 `com.enonic.xp.scheduler.cfg`
 
-Configure default custom jobs to be created for scheduling when an XP instance start. Skip creation if a job with the same name exists already. Only recurring (cron) jobs can be created by the config file. There is no guaranteed order for distributed environment, so the first started node will create its version of a job for the whole cluster.
+Configure which nodes may run the scheduler, and the jobs to create for scheduling.
 
-Properties prefixed with `init-job.<my-job-name>` will describe properties of a job with `<my-job-name>` name.
+acceptScheduling:: image:xp-8010.svg[XP 8.1.0,opts=inline] Whether this node accepts running the scheduler. Default: `true`.
++
+One node of a cluster runs the scheduler, and it is chosen among the nodes that accept it - the one that joined the cluster first. A node that does not accept it is left alone by the schedule, but still serves the scheduler API and holds the jobs like any other, so applications querying or creating jobs are unaffected by where the schedule runs. Use it to keep the schedule off nodes you want free for other work, or to pin it to nodes with the resources the jobs need.
++
+The setting is ignored when the installation is not clustered: a single node has nowhere to hand the schedule over to, so it runs the scheduler whatever the file says.
++
+WARNING: If no node in a cluster accepts scheduling, no job runs at all. A cluster left in that state logs `Scheduled jobs are not running: no member accepts scheduling`.
+
+.Sample scheduler node config
+[source,properties]
+----
+acceptScheduling = false
+----
+
+=== Jobs in the config file
+
+Properties prefixed with `init-job.<my-job-name>` describe a job named `<my-job-name>`. Creation is skipped if a job with that name exists already. Only recurring (cron) jobs can be created from the config file; other schedule types are created through the API.
+
+The jobs are created by the node that runs the scheduler, so in a cluster it is *that node's* config file the jobs come from - which is another reason to be deliberate about `acceptScheduling`. Since scheduling moves to the next node in join order when that node leaves, keep the file consistent across the nodes that accept scheduling unless you mean for the jobs to differ.
+
+image:xp-8010.svg[XP 8.1.0,opts=inline] A job added to the file is created within a second, without restarting anything and without disturbing jobs already running. Two things this does not do. A job *deleted* after it was created is not put back by the node that created it, so removing a job through the API is not undone a second later. And editing an entry never updates a job that already exists - the config file creates jobs, it does not maintain them; change an existing job through the API instead.
+
+NOTE: What a node has created is its own memory, and it starts empty when the node restarts or when scheduling moves to another node. A job deleted through the API while still listed in the config file is created again at that point, as it always was.
 
 .Params
 [cols="1,1,3", options="header"]
