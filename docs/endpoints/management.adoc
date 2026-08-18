@@ -1310,6 +1310,8 @@ List scheduled jobs.
 .Url
 GET scheduler/list
 
+The fields of `calendar` depend on its `type`: `cronValue` and `timeZone` for `CRON`, `value` and image:xp-8010.svg[XP 8.1.0,opts=inline] `deleteAfterRun` for `ONE_TIME`, and image:xp-8010.svg[XP 8.1.0,opts=inline] `duration` - an ISO-8601 duration - for `FIXED_RATE`. Fields that do not apply to the type, and those the job has not set, are left out of the response rather than reported as `null`.
+
 .Response
 [source,json]
 ----
@@ -1345,21 +1347,32 @@ GET scheduler/list
   },
   {
     "calendar": {
+      "deleteAfterRun": false,
       "type": "ONE_TIME",
       "value": "2016-11-02T10:36:00Z"
     },
     "config": [],
     "createdTime": "2010-01-01T00:00:00Z",
     "creator": "user:system:creator",
-    "description": null,
     "descriptor": "com.enonic.app.features:landing",
     "enabled": false,
-    "lastRun": null,
-    "lastTaskId": null,
     "modifiedTime": "2011-02-01T00:00:00Z",
     "modifier": "user:system:creator",
-    "name": "test2",
-    "user": null
+    "name": "test2"
+  },
+  {
+    "calendar": {
+      "duration": "PT5M",
+      "type": "FIXED_RATE"
+    },
+    "config": [],
+    "createdTime": "2010-01-01T00:00:00Z",
+    "creator": "user:system:creator",
+    "descriptor": "com.enonic.app.features:landing",
+    "enabled": false,
+    "modifiedTime": "2011-02-01T00:00:00Z",
+    "modifier": "user:system:creator",
+    "name": "test3"
   }
 ]
 ----

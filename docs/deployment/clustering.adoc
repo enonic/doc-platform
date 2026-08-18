@@ -226,3 +226,5 @@ Yet often great amount of work is put on them with inlined or named tasks run by
 If heavy tasks must execute on master nodes (i.e. they have `isMaster` check), try to lower allocated heap from 75% to 50% of available RAM and allocate more total RAM for the master servers.
 
 TIP: It is possible to free master nodes from running named tasks by setting `distributable.acceptInbound = false` in <<../deployment/config.adoc#_task, Task>> config.
+
+TIP: image:xp-8010.svg[XP 8.1.0,opts=inline] Master nodes can also be excluded from running the scheduler, by setting `acceptScheduling = false` in <<../config/system.adoc#scheduler, Scheduler>> config. This is a separate choice from `distributable.acceptInbound` above: that one governs where the tasks run, this one where the schedule that submits them runs. Both are worth setting on a dedicated master node, so that neither the jobs nor the tasks they start can put a master node's quorum duty at risk.

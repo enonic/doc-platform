@@ -776,9 +776,36 @@ clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a jo
 
 `com.enonic.xp.scheduler.cfg`
 
-Configure default custom jobs to be created for scheduling when an XP instance start. Skip creation if a job with the same name exists already. Only recurring (cron) jobs can be created by the config file. There is no guaranteed order for distributed environment, so the first started node will create its version of a job for the whole cluster.
+Configure which nodes may run the scheduler, and the jobs to create for scheduling.
 
-Properties prefixed with `init-job.<my-job-name>` will describe properties of a job with `<my-job-name>` name.
+acceptScheduling:: image:xp-8010.svg[XP 8.1.0,opts=inline] Whether this node may run the scheduler. Default: `true`.
++
+Exactly one node of a cluster runs the scheduler, picked among those that allow it, and the duty moves to another such node when that one leaves the cluster. Setting this to `false` excludes the node from that choice; nothing else about it changes - it serves the scheduler API and holds the jobs like every other node, so applications creating or querying jobs behave the same wherever they run.
++
+The typical use is a *dedicated master node*. Master nodes are on duty to keep the cluster together - Elasticsearch master election and cluster state, Hazelcast membership - and should be freed from application workload, so that a busy or paused JVM cannot cost the cluster its quorum. Excluding them from scheduling keeps the jobs, and the tasks the scheduler submits, on the data and front-end nodes.
++
+Has no effect on a non-clustered installation: its single node always runs the scheduler.
++
+WARNING: If no node in a cluster allows scheduling, no scheduled job runs at all - including the system jobs. The condition is reported in the log as `Scheduled jobs are not running: no member accepts scheduling`.
+
+.Freeing a master node from scheduling
+[source,properties]
+----
+acceptScheduling = false
+----
+
+=== Jobs in the config file
+
+Properties prefixed with `init-job.<my-job-name>` describe a job named `<my-job-name>`. Creation is skipped if a job with that name exists already. Only recurring (cron) jobs can be created from the config file; other schedule types are created through the API.
+
+In a cluster the jobs come from the config file of the node that runs the scheduler. Keep the file consistent across the nodes that allow scheduling.
+
+image:xp-8010.svg[XP 8.1.0,opts=inline] What to expect of an edit:
+
+* Adding an entry creates the job within seconds. Nothing restarts, and jobs already running are undisturbed.
+* Editing an entry does not change a job that exists. The config file creates jobs, it does not maintain them - modify an existing job through the API, or delete it and let the file create it anew.
+* Deleting a job through the API is not undone while the same node keeps the duty. The job may be created again once that node restarts or scheduling moves elsewhere, so remove the entry from the file as well.
+* An entry that cannot be read - an invalid descriptor, cron expression or JSON config - is reported in the log and ignored. The other jobs in the file are created as usual.
 
 .Params
 [cols="1,1,3", options="header"]
