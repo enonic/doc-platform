@@ -798,7 +798,7 @@ acceptScheduling = false
 
 Properties prefixed with `init-job.<my-job-name>` describe a job named `<my-job-name>`. Creation is skipped if a job with that name exists already. Only recurring (cron) jobs can be created from the config file; other schedule types are created through the API.
 
-In a cluster the jobs come from the config file of the node that runs the scheduler. Keep the file consistent across the nodes that allow scheduling, unless the jobs are meant to differ depending on which one has the duty.
+In a cluster the jobs come from the config file of the node that runs the scheduler. Keep the file consistent across the nodes that allow scheduling.
 
 image:xp-8010.svg[XP 8.1.0,opts=inline] What to expect of an edit:
 
