@@ -2474,6 +2474,9 @@ Make sure you have a backup of the installation available before running a clean
 <div class="title">Url</div>
 <p>GET scheduler/list</p>
 </div>
+<div class="paragraph">
+<p>The fields of <code>calendar</code> depend on its <code>type</code>: <code>cronValue</code> and <code>timeZone</code> for <code>CRON</code>, <code>value</code> and <span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> <code>deleteAfterRun</code> for <code>ONE_TIME</code>, and <span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> <code>duration</code> - an ISO-8601 duration - for <code>FIXED_RATE</code>. Fields that do not apply to the type, and those the job has not set, are left out of the response rather than reported as <code>null</code>.</p>
+</div>
 <div class="listingblock">
 <div class="title">Response</div>
 <div class="content">
@@ -2509,21 +2512,32 @@ Make sure you have a backup of the installation available before running a clean
   },
   {
     "calendar": {
+      "deleteAfterRun": false,
       "type": "ONE_TIME",
       "value": "2016-11-02T10:36:00Z"
     },
     "config": [],
     "createdTime": "2010-01-01T00:00:00Z",
     "creator": "user:system:creator",
-    "description": null,
     "descriptor": "com.enonic.app.features:landing",
     "enabled": false,
-    "lastRun": null,
-    "lastTaskId": null,
     "modifiedTime": "2011-02-01T00:00:00Z",
     "modifier": "user:system:creator",
-    "name": "test2",
-    "user": null
+    "name": "test2"
+  },
+  {
+    "calendar": {
+      "duration": "PT5M",
+      "type": "FIXED_RATE"
+    },
+    "config": [],
+    "createdTime": "2010-01-01T00:00:00Z",
+    "creator": "user:system:creator",
+    "descriptor": "com.enonic.app.features:landing",
+    "enabled": false,
+    "modifiedTime": "2011-02-01T00:00:00Z",
+    "modifier": "user:system:creator",
+    "name": "test3"
   }
 ]</code></pre>
 </div>
@@ -2534,7 +2548,7 @@ Make sure you have a backup of the installation available before running a clean
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-13 14:07:58 UTC
+Last updated 2026-08-18 06:52:48 UTC
 </div>
 </div>
 </body>

@@ -464,7 +464,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#application">Application</a></li>
 <li><a href="#management-app">Application management API</a></li>
 <li><a href="#task">Task</a></li>
-<li><a href="#scheduler">Scheduler</a></li>
+<li><a href="#scheduler">Scheduler</a>
+<ul class="sectlevel2">
+<li><a href="#jobs_in_the_config_file">Jobs in the config file</a></li>
+</ul>
+</li>
 <li><a href="#export">Export</a></li>
 </ul>
 </div>
@@ -1977,10 +1981,69 @@ clustered.timeout = PT10S</code></pre>
 <p><code>com.enonic.xp.scheduler.cfg</code></p>
 </div>
 <div class="paragraph">
-<p>Configure default custom jobs to be created for scheduling when an XP instance start. Skip creation if a job with the same name exists already. Only recurring (cron) jobs can be created by the config file. There is no guaranteed order for distributed environment, so the first started node will create its version of a job for the whole cluster.</p>
+<p>Configure which nodes may run the scheduler, and the jobs to create for scheduling.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">acceptScheduling</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> Whether this node may run the scheduler. Default: <code>true</code>.</p>
+<div class="paragraph">
+<p>Exactly one node of a cluster runs the scheduler, picked among those that allow it, and the duty moves to another such node when that one leaves the cluster. Setting this to <code>false</code> excludes the node from that choice; nothing else about it changes - it serves the scheduler API and holds the jobs like every other node, so applications creating or querying jobs behave the same wherever they run.</p>
 </div>
 <div class="paragraph">
-<p>Properties prefixed with <code>init-job.&lt;my-job-name&gt;</code> will describe properties of a job with <code>&lt;my-job-name&gt;</code> name.</p>
+<p>The typical use is a <strong>dedicated master node</strong>. Master nodes are on duty to keep the cluster together - Elasticsearch master election and cluster state, Hazelcast membership - and should be freed from application workload, so that a busy or paused JVM cannot cost the cluster its quorum. Excluding them from scheduling keeps the jobs, and the tasks the scheduler submits, on the data and front-end nodes.</p>
+</div>
+<div class="paragraph">
+<p>Has no effect on a non-clustered installation: its single node always runs the scheduler.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+If no node in a cluster allows scheduling, no scheduled job runs at all - including the system jobs. The condition is reported in the log as <code>Scheduled jobs are not running: no member accepts scheduling</code>.
+</td>
+</tr>
+</table>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="title">Freeing a master node from scheduling</div>
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">acceptScheduling = false</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="jobs_in_the_config_file"><a class="link" href="#jobs_in_the_config_file">Jobs in the config file</a></h3>
+<div class="paragraph">
+<p>Properties prefixed with <code>init-job.&lt;my-job-name&gt;</code> describe a job named <code>&lt;my-job-name&gt;</code>. Creation is skipped if a job with that name exists already. Only recurring (cron) jobs can be created from the config file; other schedule types are created through the API.</p>
+</div>
+<div class="paragraph">
+<p>In a cluster the jobs come from the config file of the node that runs the scheduler. Keep the file consistent across the nodes that allow scheduling.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> What to expect of an edit:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Adding an entry creates the job within seconds. Nothing restarts, and jobs already running are undisturbed.</p>
+</li>
+<li>
+<p>Editing an entry does not change a job that exists. The config file creates jobs, it does not maintain them - modify an existing job through the API, or delete it and let the file create it anew.</p>
+</li>
+<li>
+<p>Deleting a job through the API is not undone while the same node keeps the duty. The job may be created again once that node restarts or scheduling moves elsewhere, so remove the entry from the file as well.</p>
+</li>
+<li>
+<p>An entry that cannot be read - an invalid descriptor, cron expression or JSON config - is reported in the log and ignored. The other jobs in the file are created as usual.</p>
+</li>
+</ul>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 1. Params</caption>
@@ -2084,6 +2147,7 @@ init-job.my-job2.config={"myparam1":"value1","myset":{"myparam2":"value2"}}</cod
 </div>
 </div>
 </div>
+</div>
 <div class="sect1">
 <h2 id="export"><a class="link" href="#export">Export</a></h2>
 <div class="sectionbody">
@@ -2124,7 +2188,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-13 14:07:58 UTC
+Last updated 2026-08-18 06:52:48 UTC
 </div>
 </div>
 </body>

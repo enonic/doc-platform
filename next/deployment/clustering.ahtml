@@ -914,13 +914,25 @@ It is possible to free master nodes from running named tasks by setting <code>di
 </tr>
 </table>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<span class="image"><span class="alt">XP 8.1.0</span></span> Master nodes can also be excluded from running the scheduler, by setting <code>acceptScheduling = false</code> in <a href="../config/system.ahtml#scheduler">Scheduler</a> config. This is a separate choice from <code>distributable.acceptInbound</code> above: that one governs where the tasks run, this one where the schedule that submits them runs. Both are worth setting on a dedicated master node, so that neither the jobs nor the tasks they start can put a master node&#8217;s quorum duty at risk.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-13 14:07:58 UTC
+Last updated 2026-08-18 06:52:48 UTC
 </div>
 </div>
 </body>
