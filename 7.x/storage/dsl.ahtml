@@ -1533,8 +1533,36 @@ All sub-expressions can contain a single expression or an array.</p>
 </div>
 <div class="sect4">
 <h5 id="should"><a class="link" href="#should">should</a></h5>
-<div class="paragraph">
-<p>One or more expressions must evaluate to true to include a node in the result.</p>
+<div id="should" class="paragraph">
+<p>Expressions in <code>should</code> raise the relevance score of the nodes matching them.
+Whether at least one of them must also match for a node to be included depends on what else the <code>boolean</code> query contains:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>should</code> without <code>must</code> or <code>filter</code></dt>
+<dd>
+<p>At least one expression must evaluate to true for a node to be included.
+<code>mustNot</code> does not change this — <code>should</code> still requires one match.</p>
+</dd>
+<dt class="hdlist1"><code>should</code> together with <code>must</code> or <code>filter</code></dt>
+<dd>
+<p>The expressions become <strong>optional</strong> and only contribute to the score.
+Every node matching <code>must</code> or <code>filter</code> is included, whether or not it matches any <code>should</code> expression.</p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+In the second case <code>should</code> never removes nodes from the result.
+This makes <code>must</code> (or <code>filter</code>) combined with <code>should</code> the way to raise the score of a subset of the results without narrowing them.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="title">'_path' OR 'displayName' must evaluate to true.</div>
@@ -1559,6 +1587,57 @@ All sub-expressions can contain a single expression or an array.</p>
   }
 }</code></pre>
 </div>
+</div>
+<div class="listingblock">
+<div class="title">'must' selects the nodes, 'should' only boosts some of them</div>
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "boolean": {
+    "must": {
+      "fulltext": {
+        "fields": [
+          "displayName"
+        ],
+        "query": "fisk",
+        "operator": "AND"
+      }
+    },
+    "should": [
+      {
+        "term": {
+          "field": "category",
+          "value": "recipe",
+          "boost": 2
+        }
+      },
+      {
+        "term": {
+          "field": "category",
+          "value": "restaurant",
+          "boost": 4
+        }
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Every node matching the <code>fulltext</code> expression is returned.
+Nodes in the <code>recipe</code> and <code>restaurant</code> categories are ranked higher, <code>restaurant</code> more than <code>recipe</code>.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Do not repeat the selecting expression inside <code>should</code> to boost a subset of the results.
+Its score would then be counted twice, which makes the effect of the <a href="#expression_boost">boost</a> values hard to predict.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect4">
@@ -2024,7 +2103,7 @@ Order defaults to DESC when sorting by <code>_score</code>, and ASC when sorting
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-18 06:52:47 UTC
+Last updated 2026-08-20 10:26:00 UTC
 </div>
 </div>
 </body>
