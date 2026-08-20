@@ -671,8 +671,19 @@ All expressions must evaluate to true to include a node in the result.
 ----
 
 ===== should
+[[should]]
 
-One or more expressions must evaluate to true to include a node in the result.
+Expressions in `should` raise the relevance score of the nodes matching them.
+Whether at least one of them must also match for a node to be included depends on what else the `boolean` query contains:
+
+`should` without `must` or `filter`:: At least one expression must evaluate to true for a node to be included.
+`mustNot` does not change this — `should` still requires one match.
+
+`should` together with `must` or `filter`:: The expressions become *optional* and only contribute to the score.
+Every node matching `must` or `filter` is included, whether or not it matches any `should` expression.
+
+IMPORTANT: In the second case `should` never removes nodes from the result.
+This makes `must` (or `filter`) combined with `should` the way to raise the score of a subset of the results without narrowing them.
 
 .'_path' OR 'displayName' must evaluate to true.
 [source,json]
@@ -698,6 +709,45 @@ One or more expressions must evaluate to true to include a node in the result.
 }
 
 ----
+
+.'must' selects the nodes, 'should' only boosts some of them
+[source,json]
+----
+{
+  "boolean": {
+    "must": {
+      "fulltext": {
+        "fields": [
+          "displayName"
+        ],
+        "query": "fisk",
+        "operator": "AND"
+      }
+    },
+    "should": [
+      {
+        "term": {
+          "field": "category",
+          "value": "recipe",
+          "boost": 2
+        }
+      },
+      {
+        "term": {
+          "field": "category",
+          "value": "restaurant",
+          "boost": 4
+        }
+      }
+    ]
+  }
+}
+----
+Every node matching the `fulltext` expression is returned.
+Nodes in the `recipe` and `restaurant` categories are ranked higher, `restaurant` more than `recipe`.
+
+TIP: Do not repeat the selecting expression inside `should` to boost a subset of the results.
+Its score would then be counted twice, which makes the effect of the <<expression_boost, boost>> values hard to predict.
 
 ===== mustNot
 
