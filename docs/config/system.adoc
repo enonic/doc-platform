@@ -48,12 +48,12 @@ xp.stop.gracePeriod:: Time in milliseconds XP waits for all services to stop. De
 felix.fileinstall.poll:: Frequency in ms for how often the configuration folders are scanned for changes
 xp.config.paths:: Config folders to scan in addition to `XP_HOME/config/`. Useful for fine grained control over configuration management. Folders will be scanned in the defined order. The first file found per configuration will be used.
 
-xp.script-engine:: image:xp-8010.svg[XP 8.1.0,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. Any other value stops the installation with `Unsupported script engine`. See <<#script-engine, JavaScript engine>> below.
+xp.script-engine:: image:preview.svg[Preview,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. Any other value stops the installation with `Unsupported script engine`. See <<#script-engine, JavaScript engine>> below.
 
 [#script-engine]
 === JavaScript engine
 
-image:xp-8010.svg[XP 8.1.0,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a *preview*: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline, and it caches compiled code across script contexts. It is not recommended for production yet.
+image:preview.svg[Preview,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline, and it caches compiled code across script contexts. *Not for production.*
 
 `xp.script-engine` sets the installation-wide default. The engine is decided *per application bundle*, from the `+X-Script-Engine+` manifest header the application declares; an application that declares none runs on the installation default. Applications on different engines coexist in the same installation, so a single app can be moved to GraalJS without touching the rest.
 
@@ -514,10 +514,10 @@ log.retainDays:: Number of days to retain the logs. Default: `31`.
 threadPool.maxThreads:: Maximum number of threads. Default: `200`.
 threadPool.minThreads:: Minimum number of threads. Default: `8`.
 threadPool.idleTimeout:: Thread idle timeout (in milliseconds). Default: `60000`.
-threadPool.virtualThreads:: image:xp-8010.svg[XP 8.1.0,opts=inline] *Experimental.* Handle requests on virtual threads. Default: `false`.
+threadPool.virtualThreads:: image:experimental.svg[Experimental,opts=inline] Handle requests on virtual threads. Default: `false`. *Not for production.*
 +
-With this on, blocking request handling parks a virtual thread instead of holding a platform worker, so slow or script-bound requests cannot starve the pool; selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. This is an option for experiments, not a supported mode - leave it off in production.
-threadPool.virtualThreads.maxConcurrent:: image:xp-8010.svg[XP 8.1.0,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
+With this on, blocking request handling parks a virtual thread instead of holding a platform worker, so slow or script-bound requests cannot starve the pool; selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. An option for experiments, not a supported mode.
+threadPool.virtualThreads.maxConcurrent:: image:experimental.svg[Experimental,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
 websocket.idleTimeout:: The time (in milliseconds) that a websocket may be idle before closing. Default: `300000`.
 websocket.defaultOriginCheck:: Enforce the platform's built-in same-origin check on WebSocket handshakes. When `false`, the handshake accepts any `Origin` unless a controller supplies its own `checkOrigin` function. Disable only as a fallback for deployments where the reverse proxy does not propagate the public scheme/host/port to Jetty and the proxy configuration cannot be fixed. Default: `true`.
 
@@ -701,11 +701,9 @@ Configure default properties for vacuum process.
 [source,properties]
 ----
 ageThreshold = P21D
-versionsBatchSize = 10000
 ----
 
 ageThreshold:: Age of data to be vacuumed. The format is based on the ISO-8601 duration format PnDTnHnMn.nS with days considered to be exactly 24 hours. Default: `P21D` (21 days).
-versionsBatchSize:: Number of node versions the vacuum task reads per batch when walking version history. Default: `10000`. Must not exceed the `+index.max_result_window+` setting of the repository index.
 
 [#application]
 == Application
