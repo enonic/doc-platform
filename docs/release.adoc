@@ -21,7 +21,7 @@ Two long-standing rough edges were settled on the way. `main.ts` now runs to com
 
 Three changes make scheduled jobs predictable in a cluster:
 
-* *Where the scheduler ticks is now a deployment decision.* `acceptScheduling` excludes a node from the choice - typically a dedicated master node, which should be free to keep the cluster together rather than run application workload. See <<config/system#scheduler, scheduler configuration>>.
+* *Where the scheduler ticks is now a deployment decision.* `acceptScheduling = false` excludes a node from the choice - typically a dedicated master node, which should be free to keep the cluster together rather than run application workload. See <<config/system#scheduler, scheduler configuration>>.
 * *A job does not overlap itself.* A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. Best effort, not a guarantee - a partitioned cluster can still produce an overlap.
 * *One-time jobs can clean up after themselves.* `deleteAfterRun` on a `+ONE_TIME+` schedule removes the job once it has fired, so a job created to do one thing does not linger.
 
@@ -30,8 +30,6 @@ Jobs can also be declared in the scheduler config file, and the scheduler's list
 === Content Security Policy as an API
 
 A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so a page, its layouts, its parts and any response processor all contribute to the single emitted header, nonce included - and the header is composed when the response is flushed, so late contributions still land. A report-only companion runs alongside it, letting you enforce a settled policy while trialling a stricter one.
-
-Admin extensions get the same reach into the tool pages that host them: an extension may now widen the host page's policy and add page contributions, so a widget that loads an external chart library is no longer blocked by a policy fixed before it was ever fetched.
 
 === Requests that can be steered
 
@@ -44,10 +42,13 @@ Admin extensions get the same reach into the tool pages that host them: an exten
 
 An admin events hub lets an application define its own topics and push to them, so admin tools and extensions receive live updates over a shared connection instead of each opening its own. See the https://developer.enonic.com/docs/code/stable/libraries/lib-admin[admin library].
 
-=== Storage
+=== Ask a query for the fields you need
 
-* *Ask a query for the fields you need.* The `returns` parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.
-* *A read-through blobstore stays within bounds.* `readThrough.cacheCapacity` caps the local cache in front of a remote object store. See <<config/system#file-blobstore, file blobstore configuration>>.
+The `returns` parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.
+
+=== A read-through blobstore stays within bounds
+
+`readThrough.cacheCapacity` caps the local cache in front of a remote object store. See <<config/system#file-blobstore, file blobstore configuration>>.
 
 === Request handling on virtual threads
 
@@ -59,7 +60,7 @@ Still working, slated for removal:
 
 * `executeFunction` - not supported on GraalJS, since a function value cannot leave the context that created it. Submit a named task instead.
 * `Resource.getTimestamp` - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
-* `content.findByParent` and `ApplicationListener` in the Java API.
+* `content.findByParent` replaced with content.query
 
 
 == XP 8
