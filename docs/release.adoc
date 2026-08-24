@@ -52,7 +52,7 @@ The `returns` parameter has each hit carry named index fields, so a listing that
 
 === Request handling on virtual threads
 
-image:experimental.svg[Experimental,opts=inline] `threadPool.virtualThreads` hands blocking request handling to virtual threads, so a slow or script-bound request parks a virtual thread instead of holding a platform worker and cannot starve the pool. Selectors and acceptors stay on platform threads. Treat it as an experiment — *not for production*. See <<config/system#jetty, Jetty configuration>>.
+image:experimental.svg[Experimental,opts=inline] `threadPool.virtualThreads` hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — *not for production*. See <<config/system#jetty, Jetty configuration>>.
 
 === Deprecations
 
