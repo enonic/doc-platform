@@ -48,26 +48,20 @@ xp.stop.gracePeriod:: Time in milliseconds XP waits for all services to stop. De
 felix.fileinstall.poll:: Frequency in ms for how often the configuration folders are scanned for changes
 xp.config.paths:: Config folders to scan in addition to `XP_HOME/config/`. Useful for fine grained control over configuration management. Folders will be scanned in the defined order. The first file found per configuration will be used.
 
-xp.script-engine:: image:preview.svg[Preview,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. Any other value stops the installation with `Unsupported script engine`. See <<#script-engine, JavaScript engine>> below.
+xp.script-engine:: image:preview.svg[Preview,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. See <<#script-engine, JavaScript engine>> below.
 
 [#script-engine]
 === JavaScript engine
 
-image:preview.svg[Preview,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline, and it caches compiled code across script contexts. *Not for production.*
-
-`xp.script-engine` sets the installation-wide default. The engine is decided *per application bundle*, from the `+X-Script-Engine+` manifest header the application declares; an application that declares none runs on the installation default. Applications on different engines coexist in the same installation, so a single app can be moved to GraalJS without touching the rest.
-
-.Run every application on the GraalJS preview
-[source,properties]
-----
-xp.script-engine = GraalJS
-----
+image:preview.svg[Preview,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline. *Not for production.*
 
 For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/fundamentals/runtime[dev kit runtime documentation].
 
 ==== Tuning the GraalJS context pool
 
 GraalJS executes each application in a *script context*. Contexts are pooled per application and created lazily within an installation-wide budget, so these properties normally need no attention — raise them only when the log reports an exhausted budget. They are ignored on Nashorn.
+
+WARNING: These are preview settings. They may change, or disappear, while GraalJS is in preview.
 
 xp.script-engine.graal.max-contexts:: Total number of script contexts the installation may hold across all applications. Default: `1024`.
 xp.script-engine.graal.pool-size:: Context pool capacity per application, clamped to `max-contexts`. Default: the value of `max-contexts`. Above `1`, module-level state is per context - an application that keeps mutable state at module top level sees one copy per context.
@@ -194,9 +188,9 @@ readThrough.enabled:: enables or disables read-through. Default: `false`.
 readThrough.sizeThreshold:: maximum size of an object admitted to the local store. Larger blobs are always served from the read-through provider. Default: `100mb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
 readThrough.cacheCapacity:: image:xp-8010.svg[XP 8.1.0,opts=inline] total size the local store is kept within. Default: `1gb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
 +
-Without a capacity the local store grows to hold everything ever read - which is why `readThrough.cacheCapacity` exists. XP keeps a size-weighted index over the local store and, on every access, decides from it what is admitted and what is evicted; evicting an entry deletes the blob from the local store. Admission is frequency-based, so a bulk scan - a dump, an export, a re-index - cannot flush the working set: its one-time blobs lose the comparison against established ones and are dropped again immediately.
+Without a capacity the local store grows to hold everything ever read - which is why `readThrough.cacheCapacity` exists. XP keeps a size-weighted index over the local store and, on every access, decides from it what is admitted and what is evicted.
 +
-NOTE: On startup the index is seeded from whatever the local store already holds, on a background thread. Until seeding finishes, reads and writes pass straight through without recording accesses and without enforcing the capacity, so the store can briefly exceed it after a restart.
+NOTE: On startup the index is seeded from whatever the local store already holds, on a background thread. Until seeding finishes, reads and writes pass straight through without recording accesses.
 
 [#cluster]
 == Cluster
