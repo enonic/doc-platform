@@ -29,6 +29,9 @@ felix.fileinstall.poll = 1000
 
 # Config loading properties
 xp.config.paths = ${xp.home}/appconfig,/usr/local/xp/${node.role},/etc/xp/config
+
+# JavaScript engine
+xp.script-engine = Nashorn
 ----
 
 xp.name:: Sets the name displayed to users from the admin console main menu, use to clarify what environment the user is working in
@@ -44,6 +47,32 @@ xp.init.maxTries:: Number of attampts system initializers will do to check if in
 xp.stop.gracePeriod:: Time in milliseconds XP waits for all services to stop. Default is `600000` (10 minutes).
 felix.fileinstall.poll:: Frequency in ms for how often the configuration folders are scanned for changes
 xp.config.paths:: Config folders to scan in addition to `XP_HOME/config/`. Useful for fine grained control over configuration management. Folders will be scanned in the defined order. The first file found per configuration will be used.
+
+xp.script-engine:: image:xp-8010.svg[XP 8.1.0,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. Any other value stops the installation with `Unsupported script engine`. See <<#script-engine, JavaScript engine>> below.
+
+[#script-engine]
+=== JavaScript engine
+
+image:xp-8010.svg[XP 8.1.0,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a *preview*: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline, and it caches compiled code across script contexts. It is not recommended for production yet.
+
+`xp.script-engine` sets the installation-wide default. The engine is decided *per application bundle*, from the `+X-Script-Engine+` manifest header the application declares; an application that declares none runs on the installation default. Applications on different engines coexist in the same installation, so a single app can be moved to GraalJS without touching the rest.
+
+.Run every application on the GraalJS preview
+[source,properties]
+----
+xp.script-engine = GraalJS
+----
+
+For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/fundamentals/runtime[dev kit runtime documentation].
+
+==== Tuning the GraalJS context pool
+
+GraalJS executes each application in a *script context*. Contexts are pooled per application and created lazily within an installation-wide budget, so these properties normally need no attention — raise them only when the log reports an exhausted budget. They are ignored on Nashorn.
+
+xp.script-engine.graal.max-contexts:: Total number of script contexts the installation may hold across all applications. Default: `1024`.
+xp.script-engine.graal.pool-size:: Context pool capacity per application, clamped to `max-contexts`. Default: the value of `max-contexts`. Above `1`, module-level state is per context - an application that keeps mutable state at module top level sees one copy per context.
+xp.script-engine.graal.max-retained-contexts:: Cap on contexts held by live WebSocket and SSE connections, one per connection, so connections cannot consume the whole pool. Default: half of `max-contexts`.
+xp.script-engine.graal.max-isolated-contexts:: Cap on contexts created for isolated executions. Default: `1024`.
 
 
 == Security
@@ -153,14 +182,21 @@ baseDir = ${xp.home}/repo/blob
 readThrough.provider = none
 readThrough.enabled = false
 readThrough.sizeThreshold = 100mb
+readThrough.cacheCapacity = 1gb
 ----
 
 baseDir:: specifies root of blobs. Default: `${xp.home}/repo/blob`.
-// readThrough.provider:: TODO TODO is a file-based cache. Used to cache files on local disk to boost performance of the underlying blobstore filesystem
-readThrough.enabled:: enables or disables readthough provider. Default: `false`.
-readThrough.sizeThreshold:: specifies he maximum size of objects to be cache in readthrough provider. Default: 100mb. The size notation accepts a number plus byte-size idenfier (b/kb/mb/gb/tb/pb)
 
-// TODO: Verify existence of readThrough provider and actual values!
+Read-through turns this store into a local cache in front of another blobstore provider - typically a remote object store, where every read that misses locally costs a network round trip. A blob read through the remote provider is written to the local store on the way out, so the next read of it is served from local disk.
+
+readThrough.provider:: name of the blobstore provider to read through to. Default: `none` - no read-through, this store holds the blobs itself.
+readThrough.enabled:: enables or disables read-through. Default: `false`.
+readThrough.sizeThreshold:: maximum size of an object admitted to the local store. Larger blobs are always served from the read-through provider. Default: `100mb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
+readThrough.cacheCapacity:: image:xp-8010.svg[XP 8.1.0,opts=inline] total size the local store is kept within. Default: `1gb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
++
+Without a capacity the local store grows to hold everything ever read - which is why `readThrough.cacheCapacity` exists. XP keeps a size-weighted index over the local store and, on every access, decides from it what is admitted and what is evicted; evicting an entry deletes the blob from the local store. Admission is frequency-based, so a bulk scan - a dump, an export, a re-index - cannot flush the working set: its one-time blobs lose the comparison against established ones and are dropped again immediately.
++
+NOTE: On startup the index is seeded from whatever the local store already holds, on a background thread. Until seeding finishes, reads and writes pass straight through without recording accesses and without enforcing the capacity, so the store can briefly exceed it after a restart.
 
 [#cluster]
 == Cluster
@@ -438,6 +474,8 @@ log.retainDays = 31
 threadPool.maxThreads = 200
 threadPool.minThreads = 8
 threadPool.idleTimeout = 60000
+threadPool.virtualThreads = false
+threadPool.virtualThreads.maxConcurrent = 1024
 
 # Websocket
 websocket.idleTimeout = 300000
@@ -476,6 +514,10 @@ log.retainDays:: Number of days to retain the logs. Default: `31`.
 threadPool.maxThreads:: Maximum number of threads. Default: `200`.
 threadPool.minThreads:: Minimum number of threads. Default: `8`.
 threadPool.idleTimeout:: Thread idle timeout (in milliseconds). Default: `60000`.
+threadPool.virtualThreads:: image:xp-8010.svg[XP 8.1.0,opts=inline] *Experimental.* Handle requests on virtual threads. Default: `false`.
++
+With this on, blocking request handling parks a virtual thread instead of holding a platform worker, so slow or script-bound requests cannot starve the pool; selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. This is an option for experiments, not a supported mode - leave it off in production.
+threadPool.virtualThreads.maxConcurrent:: image:xp-8010.svg[XP 8.1.0,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
 websocket.idleTimeout:: The time (in milliseconds) that a websocket may be idle before closing. Default: `300000`.
 websocket.defaultOriginCheck:: Enforce the platform's built-in same-origin check on WebSocket handshakes. When `false`, the handshake accepts any `Origin` unless a controller supplies its own `checkOrigin` function. Disable only as a fallback for deployments where the reverse proxy does not propagate the public scheme/host/port to Jetty and the proxy configuration cannot be fixed. Default: `true`.
 
@@ -659,9 +701,11 @@ Configure default properties for vacuum process.
 [source,properties]
 ----
 ageThreshold = P21D
+versionsBatchSize = 10000
 ----
 
 ageThreshold:: Age of data to be vacuumed. The format is based on the ISO-8601 duration format PnDTnHnMn.nS with days considered to be exactly 24 hours. Default: `P21D` (21 days).
+versionsBatchSize:: Number of node versions the vacuum task reads per batch when walking version history. Default: `10000`. Must not exceed the `+index.max_result_window+` setting of the repository index.
 
 [#application]
 == Application
@@ -765,10 +809,16 @@ Configure the task behaviour.
 [source,properties]
 ----
 distributable.acceptInbound = false
+distributable.acceptSystem = true
 clustered.timeout = PT10S
 ----
 
 distributable.acceptInbound:: If true, accept inbound distributable tasks. Default: `true`.
+distributable.acceptSystem:: If true, accept inbound distributable tasks belonging to the *system application* - vacuum, audit log cleanup, and the other built-in maintenance tasks, including those the <<#scheduler, scheduler>> submits. Default: `true`.
++
+This narrows `distributable.acceptInbound` rather than widening it: a node that declines inbound tasks runs no system tasks either, whatever this is set to. Setting it to `false` on its own keeps a node available for application tasks while steering the platform's own housekeeping - which reads and writes across whole repositories - onto other nodes. As with <<#scheduler, `acceptScheduling`>>, the typical use is a dedicated master node.
++
+WARNING: If no node in a cluster accepts system tasks, they cannot run at all, and submitting one fails.
 clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a job (task or task-info job) to be submitted to another cluster node. Default: `PT5S` (5 seconds).
 
 [#scheduler]
