@@ -5,6 +5,63 @@ include::.variables.adoc[]
 
 The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <<release/upgrade#, Upgrading to XP 8>>.
 
+== XP 8.1
+
+A feature release focused on the runtime beneath your apps: a preview of the JavaScript engine that replaces Nashorn, a scheduler that keeps its promises about where and when jobs run, and finer control over what a request handler may declare to the browser.
+
+=== GraalJS preview
+
+The engine that will replace Nashorn is here to try. https://github.com/enonic/xp/issues/8714[GraalJS] implements the current ECMAScript standard - no more ES5.1 baseline - and caches compiled code across script contexts, so start-up work stays warm for the requests that follow.
+
+It is a *preview*: Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, with an installation-wide default in the `xp.script-engine` <<config/system#script-engine, system property>> - so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, `executeFunction` - is covered in the https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs[dev kit runtime documentation].
+
+Two long-standing rough edges were settled on the way. https://github.com/enonic/xp/issues/7821[`main.ts` now runs to completion before anything else in the app], on either engine: nothing observes a half-initialized repository, and the `initialized = true` workaround can go. And the https://github.com/enonic/xp/issues/6775[global namespace] was brought closer to what browsers and Node expose, so more npm modules run unmodified.
+
+=== Scheduler you can place and pace
+
+Three changes make scheduled jobs predictable in a cluster:
+
+* *Where the scheduler ticks is now a deployment decision.* https://github.com/enonic/xp/issues/9045[`acceptScheduling`] excludes a node from the choice - typically a dedicated master node, which should be free to keep the cluster together rather than run application workload. See <<config/system#scheduler, scheduler configuration>>.
+* *A job does not overlap itself.* https://github.com/enonic/xp/issues/12272[A run that overruns its interval] delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. Best effort, not a guarantee - a partitioned cluster can still produce an overlap.
+* *One-time jobs can clean up after themselves.* https://github.com/enonic/xp/issues/12274[`deleteAfterRun`] on a `+ONE_TIME+` schedule removes the job once it has fired, so a job created to do one thing does not linger.
+
+Jobs can also be declared in the scheduler config file, and the scheduler's list response now reports each job's run state. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
+
+=== Content Security Policy as an API
+
+https://github.com/enonic/xp/issues/12084[A request-scoped CSP builder] replaces hand-assembled header strings. One policy is shared for the whole request, so a page, its layouts, its parts and any response processor all contribute to the single emitted header, nonce included - and the header is composed when the response is flushed, so late contributions still land. A report-only companion runs alongside it, letting you enforce a settled policy while trialling a stricter one.
+
+https://github.com/enonic/xp/issues/12211[Admin extensions get the same reach into the tool pages that host them]: an extension may now widen the host page's policy and add page contributions, so a widget that loads an external chart library is no longer blocked by a policy fixed before it was ever fetched.
+
+=== Requests that can be steered
+
+* *Re-route to other content.* https://github.com/enonic/xp/issues/10028[A filter reached through a site mapping] can change which content is rendered while the visitor's address stays exactly as it was - no redirect, no second request. A/B variants and personalized landing pages become a few lines in a filter.
+* *Carry your own data down the pipeline.* https://github.com/enonic/xp/issues/6122[Custom context attributes] pass values from a filter or an implementation to the response processors and the code that runs after it, where inventing a request property never worked.
+* *Base URLs that resolve to the right place.* https://github.com/enonic/xp/issues/12234[Media and page URLs] anchor at the site's base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike.
+* *API locations from context attributes.* https://github.com/enonic/xp/issues/12250[A vhost may declare where an API lives], and URL generation follows it - keeping routing decisions with the vhost they belong to. See <<config/vhosts#, virtual host configuration>>.
+
+=== Admin events over one socket
+
+https://github.com/enonic/xp/issues/12253[An admin events hub] lets an application define its own topics and push to them, so admin tools and extensions receive live updates over a shared connection instead of each opening its own. See the https://developer.enonic.com/docs/code/stable/libraries/lib-admin[admin library].
+
+=== Storage
+
+* *Ask a query for the fields you need.* https://github.com/enonic/xp/issues/4772[The `returns` parameter] has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.
+* *A read-through blobstore stays within bounds.* https://github.com/enonic/xp/issues/11049[`readThrough.cacheCapacity`] caps the local cache in front of a remote object store. Admission is frequency-based, so a dump, an export or a re-index cannot flush the working set. See <<config/system#file-blobstore, file blobstore configuration>>.
+
+=== Experimental: request handling on virtual threads
+
+`threadPool.virtualThreads` hands blocking request handling to virtual threads, so a slow or script-bound request parks a virtual thread instead of holding a platform worker and cannot starve the pool. Selectors and acceptors stay on platform threads. This is an option for experiments, not a supported mode - see <<config/system#jetty, Jetty configuration>>.
+
+=== Deprecations
+
+Still working, slated for removal:
+
+* https://github.com/enonic/xp/issues/9033[`executeFunction`] - not supported on GraalJS, since a function value cannot leave the context that created it. Submit a named task instead.
+* https://github.com/enonic/xp/issues/12176[`Resource.getTimestamp`] - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
+* https://github.com/enonic/xp/issues/12065[`content.findByParent`] and https://github.com/enonic/xp/issues/12238[`ApplicationListener`] in the Java API.
+
+
 == XP 8
 
 XP 8 is the largest release in 8 years. The runtime is rebuilt on a modern stack, the Universal API unifies how request handlers are written and called, and a long list of API rough edges has been cleaned up.
