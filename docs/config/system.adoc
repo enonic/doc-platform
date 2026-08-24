@@ -510,7 +510,7 @@ threadPool.minThreads:: Minimum number of threads. Default: `8`.
 threadPool.idleTimeout:: Thread idle timeout (in milliseconds). Default: `60000`.
 threadPool.virtualThreads:: image:experimental.svg[Experimental,opts=inline] Handle requests on virtual threads. Default: `false`. *Not for production.*
 +
-With this on, blocking request handling parks a virtual thread instead of holding a platform worker, so slow or script-bound requests cannot starve the pool; selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. An option for experiments, not a supported mode.
+With this on, blocking request handling parks a virtual thread instead of holding a platform worker, so slow or script-bound requests cannot starve the pool; selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. Treat it as an experiment; the supported mode is to leave it off.
 threadPool.virtualThreads.maxConcurrent:: image:experimental.svg[Experimental,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
 websocket.idleTimeout:: The time (in milliseconds) that a websocket may be idle before closing. Default: `300000`.
 websocket.defaultOriginCheck:: Enforce the platform's built-in same-origin check on WebSocket handshakes. When `false`, the handshake accepts any `Origin` unless a controller supplies its own `checkOrigin` function. Disable only as a fallback for deployments where the reverse proxy does not propagate the public scheme/host/port to Jetty and the proxy configuration cannot be fixed. Default: `true`.
@@ -808,7 +808,7 @@ clustered.timeout = PT10S
 distributable.acceptInbound:: If true, accept inbound distributable tasks. Default: `true`.
 distributable.acceptSystem:: If true, accept inbound distributable tasks belonging to the *system application* - vacuum, audit log cleanup, and the other built-in maintenance tasks, including those the <<#scheduler, scheduler>> submits. Default: `true`.
 +
-This narrows `distributable.acceptInbound` rather than widening it: a node that declines inbound tasks runs no system tasks either, whatever this is set to. Setting it to `false` on its own keeps a node available for application tasks while steering the platform's own housekeeping - which reads and writes across whole repositories - onto other nodes. As with <<#scheduler, `acceptScheduling`>>, the typical use is a dedicated master node.
+This only narrows what `distributable.acceptInbound` already allows: a node that declines inbound tasks runs no system tasks either, whatever this is set to. Setting it to `false` on its own keeps a node available for application tasks while steering the platform's own housekeeping - which reads and writes across whole repositories - onto other nodes. As with <<#scheduler, `acceptScheduling`>>, the typical use is a dedicated master node.
 +
 WARNING: If no node in a cluster accepts system tasks, they cannot run at all, and submitting one fails.
 clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a job (task or task-info job) to be submitted to another cluster node. Default: `PT5S` (5 seconds).
