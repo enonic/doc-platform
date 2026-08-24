@@ -510,7 +510,7 @@ threadPool.minThreads:: Minimum number of threads. Default: `8`.
 threadPool.idleTimeout:: Thread idle timeout (in milliseconds). Default: `60000`.
 threadPool.virtualThreads:: image:experimental.svg[Experimental,opts=inline] Handle requests on virtual threads. Default: `false`. *Not for production.*
 +
-With this on, a request that blocks waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back for the duration of the wait, so waiting requests stop occupying the pool. A request that is busy rather than waiting gains nothing: work that computes holds its carrier thread throughout, so CPU-bound handling still costs a platform thread. Selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. Treat it as an experiment; the supported mode is to leave it off.
+With this on, a request that blocks waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back for the duration of the wait, so waiting requests stop occupying the pool. A CPU-bound request gains nothing: work that computes holds its carrier thread throughout, so it still costs a platform thread for as long as it runs. Selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. Treat it as an experiment; the supported mode is to leave it off.
 threadPool.virtualThreads.maxConcurrent:: image:experimental.svg[Experimental,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
 websocket.idleTimeout:: The time (in milliseconds) that a websocket may be idle before closing. Default: `300000`.
 websocket.defaultOriginCheck:: Enforce the platform's built-in same-origin check on WebSocket handshakes. When `false`, the handshake accepts any `Origin` unless a controller supplies its own `checkOrigin` function. Disable only as a fallback for deployments where the reverse proxy does not propagate the public scheme/host/port to Jetty and the proxy configuration cannot be fixed. Default: `true`.
@@ -808,7 +808,7 @@ clustered.timeout = PT10S
 distributable.acceptInbound:: If true, accept inbound distributable tasks. Default: `true`.
 distributable.acceptSystem:: If true, accept inbound distributable tasks belonging to the *system application* - vacuum, audit log cleanup, and the other built-in maintenance tasks, including those the <<#scheduler, scheduler>> submits. Default: `true`.
 +
-This only narrows what `distributable.acceptInbound` already allows: a node that declines inbound tasks runs no system tasks either, whatever this is set to. Setting it to `false` on its own keeps a node available for application tasks while steering the platform's own housekeeping - which reads and writes across whole repositories - onto other nodes. As with <<#scheduler, `acceptScheduling`>>, the typical use is a dedicated master node.
+This only narrows what `distributable.acceptInbound` already allows: a node that declines inbound tasks runs no system tasks either, whatever this is set to. Setting it to `false` on its own keeps a node available for application tasks while steering the platform's own housekeeping - which reads and writes across whole repositories - onto other nodes. Set it on the master nodes, alongside <<#scheduler, `acceptScheduling`>>, and for the same reason: a master has to stay responsive to hold the quorum, and this is the heaviest work the platform runs. Send it to a data node without HTTP traffic, or to a node dedicated to background work.
 +
 WARNING: If no node in a cluster accepts system tasks, they cannot run at all, and submitting one fails.
 clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a job (task or task-info job) to be submitted to another cluster node. Default: `PT5S` (5 seconds).
@@ -824,13 +824,15 @@ acceptScheduling:: image:xp-8010.svg[XP 8.1.0,opts=inline] Whether this node may
 +
 Exactly one node of a cluster runs the scheduler, picked among those that allow it, and the duty moves to another such node when that one leaves the cluster. Setting this to `false` excludes the node from that choice; nothing else about it changes - it serves the scheduler API and holds the jobs like every other node, so applications creating or querying jobs behave the same wherever they run.
 +
-The typical use is a *dedicated master node*. Master nodes are on duty to keep the cluster together - Elasticsearch master election and cluster state, Hazelcast membership - and should be freed from application workload, so that a busy or paused JVM cannot cost the cluster its quorum. Excluding them from scheduling keeps the jobs, and the tasks the scheduler submits, on the data and front-end nodes.
+The nodes to exclude are the *master nodes*. Their job is to hold the cluster together - Elasticsearch master election and cluster state, Hazelcast membership - and what that asks of them is responsiveness. A master node can run on modest hardware for exactly that reason. Scheduling, and the heavy maintenance the scheduler submits - vacuum, audit-log cleanup, work that walks whole repositories - is what stops a node answering in time, and a master that stops answering costs the cluster its quorum.
++
+Run the schedule where the machine can afford to be busy: a data node that serves no HTTP traffic, or a node dedicated to background work. Excluding the masters is how you steer it there.
 +
 Has no effect on a non-clustered installation: its single node always runs the scheduler.
 +
 WARNING: If no node in a cluster allows scheduling, no scheduled job runs at all - including the system jobs. The condition is reported in the log as `Scheduled jobs are not running: no member accepts scheduling`.
 
-.Freeing a master node from scheduling
+.Keeping scheduling off a master node
 [source,properties]
 ----
 acceptScheduling = false

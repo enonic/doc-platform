@@ -21,7 +21,7 @@ Two long-standing rough edges were settled on the way. `main.ts` now runs to com
 
 Three changes make scheduled jobs predictable in a cluster:
 
-* *Where the scheduler ticks is now a deployment decision.* `acceptScheduling = false` excludes a node from the choice - typically a dedicated master node, which should be free to keep the cluster together rather than run application workload. See <<config/system#scheduler, scheduler configuration>>.
+* *Where the scheduler ticks is now a deployment decision.* `acceptScheduling = false` excludes a node from the choice - typically the master nodes, which have to stay responsive to hold the quorum and can be modest machines precisely because they are not meant to do heavy work. The schedule, and the maintenance it submits, then runs where the machine can afford it: a data node serving no HTTP traffic, or one dedicated to background work. See <<config/system#scheduler, scheduler configuration>>.
 * *A job does not overlap itself.* A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. This is best effort — a partitioned cluster can still produce an overlap.
 * *One-time jobs can clean up after themselves.* `deleteAfterRun` on a `+ONE_TIME+` schedule removes the job once it has fired, so a job created to do one thing does not linger.
 
