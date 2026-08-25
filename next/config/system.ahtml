@@ -1575,22 +1575,22 @@ websocket.defaultOriginCheck = true</code></pre>
 </dd>
 <dt class="hdlist1">threadPool.virtualThreads</dt>
 <dd>
-<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="91" height="20">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="66" height="20">
   <linearGradient id="s" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
   <clipPath id="r">
-    <rect width="91" height="20" rx="3" fill="#fff"/>
+    <rect width="66" height="20" rx="3" fill="#fff"/>
   </clipPath>
   <g clip-path="url(#r)">
-    <rect width="91" height="20" fill="#fe7d37"/>
-    <rect width="91" height="20" fill="url(#s)"/>
+    <rect width="66" height="20" fill="#fe7d37"/>
+    <rect width="66" height="20" fill="url(#s)"/>
   </g>
   <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
      font-size="110">
-    <text x="455" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="710">experimental</text>
-    <text x="455" y="140" transform="scale(.1)" textLength="710">experimental</text>
+    <text x="330" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="461">unstable</text>
+    <text x="330" y="140" transform="scale(.1)" textLength="461">unstable</text>
   </g>
 </svg></span> Handle requests on virtual threads. Default: <code>false</code>. <strong>Not for production.</strong></p>
 <div class="paragraph">
@@ -1599,22 +1599,22 @@ websocket.defaultOriginCheck = true</code></pre>
 </dd>
 <dt class="hdlist1">threadPool.virtualThreads.maxConcurrent</dt>
 <dd>
-<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="91" height="20">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="66" height="20">
   <linearGradient id="s" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
   <clipPath id="r">
-    <rect width="91" height="20" rx="3" fill="#fff"/>
+    <rect width="66" height="20" rx="3" fill="#fff"/>
   </clipPath>
   <g clip-path="url(#r)">
-    <rect width="91" height="20" fill="#fe7d37"/>
-    <rect width="91" height="20" fill="url(#s)"/>
+    <rect width="66" height="20" fill="#fe7d37"/>
+    <rect width="66" height="20" fill="url(#s)"/>
   </g>
   <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
      font-size="110">
-    <text x="455" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="710">experimental</text>
-    <text x="455" y="140" transform="scale(.1)" textLength="710">experimental</text>
+    <text x="330" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="461">unstable</text>
+    <text x="330" y="140" transform="scale(.1)" textLength="461">unstable</text>
   </g>
 </svg></span> Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. <code>0</code> or negative means unbounded. Default: <code>1024</code>. Keep it well above <code>threadPool.maxThreads</code> - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when <code>threadPool.virtualThreads</code> is <code>false</code>.</p>
 </dd>
@@ -2381,7 +2381,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 10:57:19 UTC
+Last updated 2026-08-25 11:05:04 UTC
 </div>
 </div>
 </body>
