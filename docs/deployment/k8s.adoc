@@ -11,7 +11,7 @@ Running Enonic XP on Kubernetes is a great way to achieve scalability, high avai
 
 The recommended way to deploy XP on Kubernetes is to use the XP Operator, which provides a Kubernetes-native way to manage XP instances. 
 
-NOTE: For detailed documentation, see the https://developer.enonic.com/docs/xp-operator[XP Operator documentation].
+NOTE: For detailed documentation, see the https://developer.enonic.com/docs/kubernetes-operator-for-xp/stable[XP Operator documentation].
 
 
 Benefits of using the XP Operator include:

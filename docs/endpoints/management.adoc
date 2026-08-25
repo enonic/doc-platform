@@ -1297,7 +1297,7 @@ GET task/{taskId}
 |===
 
 .Response
-<<../api/lib-task#taskinfo,`TaskInfo`>> object.
+https://developer.enonic.com/docs/code/stable/libraries/lib-task#task-info[`TaskInfo`] object.
 
 == Scheduler
 

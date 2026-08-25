@@ -342,7 +342,7 @@ Download the latest `winsw` executable from the https://github.com/winsw/winsw/r
 
 Create an XML file next to the executable, with the *same base name* — for example `xp-service.xml`.
 
-NOTE: The XML file must have the same name as the executable, so the wrapper can discover it. Refer to the https://github.com/winsw/winsw/blob/master/docs/xml-config-file.md[winsw configuration reference] for all available options.
+NOTE: The XML file must have the same name as the executable, so the wrapper can discover it. Refer to the https://github.com/winsw/winsw/blob/v3/docs/xml-config-file.md[winsw configuration reference] for all available options.
 
 The `%BASE%` variable always points to the config file location:
 
