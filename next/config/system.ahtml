@@ -441,7 +441,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#system_properties">System Properties</a></li>
+<li><a href="#system_properties">System Properties</a>
+<ul class="sectlevel2">
+<li><a href="#script-engine">JavaScript engine</a></li>
+</ul>
+</li>
 <li><a href="#security">Security</a></li>
 <li><a href="#mail">Mail</a></li>
 <li><a href="#repo">Repo</a></li>
@@ -507,7 +511,10 @@ xp.stop.gracePeriod = 600000
 felix.fileinstall.poll = 1000
 
 # Config loading properties
-xp.config.paths = ${xp.home}/appconfig,/usr/local/xp/${node.role},/etc/xp/config</code></pre>
+xp.config.paths = ${xp.home}/appconfig,/usr/local/xp/${node.role},/etc/xp/config
+
+# JavaScript engine
+xp.script-engine = Nashorn</code></pre>
 </div>
 </div>
 <div class="dlist">
@@ -557,7 +564,92 @@ To generate <code>sha512</code> hash suitable for <code>xp.suPassword</code>, yo
 <dd>
 <p>Config folders to scan in addition to <code>XP_HOME/config/</code>. Useful for fine grained control over configuration management. Folders will be scanned in the defined order. The first file found per configuration will be used.</p>
 </dd>
+<dt class="hdlist1">xp.script-engine</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="63" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="63" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="63" height="20" fill="#dfb317"/>
+    <rect width="63" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="315" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="426">preview</text>
+    <text x="315" y="140" transform="scale(.1)" textLength="426">preview</text>
+  </g>
+</svg></span> The JavaScript engine applications run on, <code>Nashorn</code> or <code>GraalJS</code>. Default: <code>Nashorn</code>. See <a href="#script-engine">JavaScript engine</a> below.</p>
+</dd>
 </dl>
+</div>
+<div class="sect2">
+<h3 id="script-engine"><a class="link" href="#script-engine">JavaScript engine</a></h3>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="63" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="63" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="63" height="20" fill="#dfb317"/>
+    <rect width="63" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="315" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="426">preview</text>
+    <text x="315" y="140" transform="scale(.1)" textLength="426">preview</text>
+  </g>
+</svg></span> XP runs server-side JavaScript on one of two engines. <strong>Nashorn</strong> is the default and the supported engine. <strong>GraalJS</strong> ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn&#8217;s ES5.1 baseline. <strong>Not for production.</strong></p>
+</div>
+<div class="paragraph">
+<p>For what changes for application code — module state, disposers, <code>executeFunction</code> — see the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime">dev kit runtime documentation</a>.</p>
+</div>
+<div class="sect3">
+<h4 id="tuning_the_graaljs_context_pool"><a class="link" href="#tuning_the_graaljs_context_pool">Tuning the GraalJS context pool</a></h4>
+<div class="paragraph">
+<p>GraalJS executes each application in a <strong>script context</strong>. Contexts are pooled per application and created lazily within an installation-wide budget, so these properties normally need no attention — raise them only when the log reports an exhausted budget. They are ignored on Nashorn.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+These are preview settings. They may change, or disappear, while GraalJS is in preview.
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">xp.script-engine.graal.max-contexts</dt>
+<dd>
+<p>Total number of script contexts the installation may hold across all applications. Default: <code>1024</code>.</p>
+</dd>
+<dt class="hdlist1">xp.script-engine.graal.pool-size</dt>
+<dd>
+<p>Context pool capacity per application, clamped to <code>max-contexts</code>. Default: the value of <code>max-contexts</code>. Above <code>1</code>, module-level state is per context - an application that keeps mutable state at module top level sees one copy per context.</p>
+</dd>
+<dt class="hdlist1">xp.script-engine.graal.max-retained-contexts</dt>
+<dd>
+<p>Cap on contexts held by live WebSocket and SSE connections, one per connection, so connections cannot consume the whole pool. Default: half of <code>max-contexts</code>.</p>
+</dd>
+<dt class="hdlist1">xp.script-engine.graal.max-isolated-contexts</dt>
+<dd>
+<p>Cap on contexts created for isolated executions. Default: <code>1024</code>.</p>
+</dd>
+</dl>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -785,7 +877,8 @@ cache.FCapacity = 100mb</code></pre>
 <pre class="highlight"><code class="language-properties" data-lang="properties">baseDir = ${xp.home}/repo/blob
 readThrough.provider = none
 readThrough.enabled = false
-readThrough.sizeThreshold = 100mb</code></pre>
+readThrough.sizeThreshold = 100mb
+readThrough.cacheCapacity = 1gb</code></pre>
 </div>
 </div>
 <div class="dlist">
@@ -794,13 +887,43 @@ readThrough.sizeThreshold = 100mb</code></pre>
 <dd>
 <p>specifies root of blobs. Default: <code>${xp.home}/repo/blob</code>.</p>
 </dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Read-through turns this store into a local cache in front of another blobstore provider - typically a remote object store, where every read that misses locally costs a network round trip. A blob read through the remote provider is written to the local store on the way out, so the next read of it is served from local disk.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">readThrough.provider</dt>
+<dd>
+<p>name of the blobstore provider to read through to. Default: <code>none</code> - no read-through, this store holds the blobs itself.</p>
+</dd>
 <dt class="hdlist1">readThrough.enabled</dt>
 <dd>
-<p>enables or disables readthough provider. Default: <code>false</code>.</p>
+<p>enables or disables read-through. Default: <code>false</code>.</p>
 </dd>
 <dt class="hdlist1">readThrough.sizeThreshold</dt>
 <dd>
-<p>specifies he maximum size of objects to be cache in readthrough provider. Default: 100mb. The size notation accepts a number plus byte-size idenfier (b/kb/mb/gb/tb/pb)</p>
+<p>maximum size of an object admitted to the local store. Larger blobs are always served from the read-through provider. Default: <code>100mb</code>. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).</p>
+</dd>
+<dt class="hdlist1">readThrough.cacheCapacity</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> total size the local store is kept within. Default: <code>1gb</code>. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).</p>
+<div class="paragraph">
+<p>Without a capacity the local store grows to hold everything ever read - which is why <code>readThrough.cacheCapacity</code> exists. XP keeps a size-weighted index over the local store and, on every access, decides from it what is admitted and what is evicted.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+On startup the index is seeded from whatever the local store already holds, on a background thread. Until seeding finishes, reads and writes pass straight through without recording accesses.
+</td>
+</tr>
+</table>
+</div>
 </dd>
 </dl>
 </div>
@@ -1316,6 +1439,8 @@ log.retainDays = 31
 threadPool.maxThreads = 200
 threadPool.minThreads = 8
 threadPool.idleTimeout = 60000
+threadPool.virtualThreads = false
+threadPool.virtualThreads.maxConcurrent = 1024
 
 # Websocket
 websocket.idleTimeout = 300000
@@ -1447,6 +1572,51 @@ websocket.defaultOriginCheck = true</code></pre>
 <dt class="hdlist1">threadPool.idleTimeout</dt>
 <dd>
 <p>Thread idle timeout (in milliseconds). Default: <code>60000</code>.</p>
+</dd>
+<dt class="hdlist1">threadPool.virtualThreads</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="91" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="91" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="91" height="20" fill="#fe7d37"/>
+    <rect width="91" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="455" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="710">experimental</text>
+    <text x="455" y="140" transform="scale(.1)" textLength="710">experimental</text>
+  </g>
+</svg></span> Handle requests on virtual threads. Default: <code>false</code>. <strong>Not for production.</strong></p>
+<div class="paragraph">
+<p>With this on, a request that blocks waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back for the duration of the wait, so waiting requests stop occupying the pool. A CPU-bound request gains nothing: work that computes holds its carrier thread throughout, so it still costs a platform thread for as long as it runs. Selectors and acceptors stay on platform threads, and <code>threadPool.maxThreads</code> continues to size them. Treat it as an experiment; the supported mode is to leave it off.</p>
+</div>
+</dd>
+<dt class="hdlist1">threadPool.virtualThreads.maxConcurrent</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="91" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="91" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="91" height="20" fill="#fe7d37"/>
+    <rect width="91" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="455" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="710">experimental</text>
+    <text x="455" y="140" transform="scale(.1)" textLength="710">experimental</text>
+  </g>
+</svg></span> Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. <code>0</code> or negative means unbounded. Default: <code>1024</code>. Keep it well above <code>threadPool.maxThreads</code> - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when <code>threadPool.virtualThreads</code> is <code>false</code>.</p>
 </dd>
 <dt class="hdlist1">websocket.idleTimeout</dt>
 <dd>
@@ -1957,6 +2127,7 @@ installUrl.checksumRequired = true</code></pre>
 <div class="title">Sample task config file</div>
 <div class="content">
 <pre class="highlight"><code class="language-properties" data-lang="properties">distributable.acceptInbound = false
+distributable.acceptSystem = true
 clustered.timeout = PT10S</code></pre>
 </div>
 </div>
@@ -1965,6 +2136,25 @@ clustered.timeout = PT10S</code></pre>
 <dt class="hdlist1">distributable.acceptInbound</dt>
 <dd>
 <p>If true, accept inbound distributable tasks. Default: <code>true</code>.</p>
+</dd>
+<dt class="hdlist1">distributable.acceptSystem</dt>
+<dd>
+<p>If true, accept inbound distributable tasks belonging to the <strong>system application</strong> - vacuum, audit log cleanup, and the other built-in maintenance tasks, including those the <a href="#scheduler">scheduler</a> submits. Default: <code>true</code>.</p>
+<div class="paragraph">
+<p>This only narrows what <code>distributable.acceptInbound</code> already allows: a node that declines inbound tasks runs no system tasks either, whatever this is set to. Setting it to <code>false</code> on its own keeps a node available for application tasks while steering the platform&#8217;s own housekeeping - which reads and writes across whole repositories - onto other nodes. Set it on the master nodes, alongside <a href="#scheduler"><code>acceptScheduling</code></a>, and for the same reason: a master has to stay responsive to hold the quorum, and this is the heaviest work the platform runs. Send it to a data node without HTTP traffic, or to a node dedicated to background work.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+If no node in a cluster accepts system tasks, they cannot run at all, and submitting one fails.
+</td>
+</tr>
+</table>
+</div>
 </dd>
 <dt class="hdlist1">clustered.timeout</dt>
 <dd>
@@ -1992,7 +2182,10 @@ clustered.timeout = PT10S</code></pre>
 <p>Exactly one node of a cluster runs the scheduler, picked among those that allow it, and the duty moves to another such node when that one leaves the cluster. Setting this to <code>false</code> excludes the node from that choice; nothing else about it changes - it serves the scheduler API and holds the jobs like every other node, so applications creating or querying jobs behave the same wherever they run.</p>
 </div>
 <div class="paragraph">
-<p>The typical use is a <strong>dedicated master node</strong>. Master nodes are on duty to keep the cluster together - Elasticsearch master election and cluster state, Hazelcast membership - and should be freed from application workload, so that a busy or paused JVM cannot cost the cluster its quorum. Excluding them from scheduling keeps the jobs, and the tasks the scheduler submits, on the data and front-end nodes.</p>
+<p>The nodes to exclude are the <strong>master nodes</strong>. Their job is to hold the cluster together - Elasticsearch master election and cluster state, Hazelcast membership - and what that asks of them is responsiveness. A master node can run on modest hardware for exactly that reason. Scheduling, and the heavy maintenance the scheduler submits - vacuum, audit-log cleanup, work that walks whole repositories - is what stops a node answering in time, and a master that stops answering costs the cluster its quorum.</p>
+</div>
+<div class="paragraph">
+<p>Run the schedule where the machine can afford to be busy: a data node that serves no HTTP traffic, or a node dedicated to background work. Excluding the masters is how you steer it there.</p>
 </div>
 <div class="paragraph">
 <p>Has no effect on a non-clustered installation: its single node always runs the scheduler.</p>
@@ -2013,7 +2206,7 @@ If no node in a cluster allows scheduling, no scheduled job runs at all - includ
 </dl>
 </div>
 <div class="listingblock">
-<div class="title">Freeing a master node from scheduling</div>
+<div class="title">Keeping scheduling off a master node</div>
 <div class="content">
 <pre class="highlight"><code class="language-properties" data-lang="properties">acceptScheduling = false</code></pre>
 </div>
@@ -2188,7 +2381,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-20 10:26:01 UTC
+Last updated 2026-08-25 08:54:31 UTC
 </div>
 </div>
 </body>

@@ -448,7 +448,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#applications_app">Applications app</a></li>
-<li><a href="#jetty">Jetty</a></li>
 </ul>
 </div>
 </div>
@@ -559,169 +558,10 @@ Default: <code>false</code></p>
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="jetty"><a class="link" href="#jetty">Jetty</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><code>com.enonic.xp.web.jetty.cfg</code></p>
-</div>
-<div class="paragraph">
-<p>Selected options to configure the embedded servlet engine Jetty</p>
-</div>
-<div class="listingblock">
-<div class="title">Sample Jetty configuration</div>
-<div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">host =
-sendServerHeader = false
-
-# Connection
-timeout = 60000
-
-# HTTP settings
-http.enabled = true
-http.port = 8080
-http.requestHeaderSize = 32768
-http.responseHeaderSize = 32768
-
-# Session
-session.timeout = 60
-session.cookieName = JSESSIONID
-
-# Compression
-gzip.enabled = true
-gzip.minSize = 23
-
-# Logging
-log.enabled = false
-log.file = ${xp.home}/logs/jetty-yyyy_mm_dd.request.log
-log.append = true
-log.extended = true
-log.timeZone = GMT
-log.retainDays = 31
-
-# Thread Pool
-threadPool.maxThreads = 200
-threadPool.minThreads = 8
-threadPool.idleTimeout = 60000
-
-# Websocket
-websocket.idleTimeout = 300000</code></pre>
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">host</dt>
-<dd>
-<p>should only be set this if host name (or ip) needs to be fixed.</p>
-</dd>
-<dt class="hdlist1">sendServerHeader</dt>
-<dd>
-<p>True to send server name in header. Default: <code>false</code>.</p>
-</dd>
-<dt class="hdlist1">timeout</dt>
-<dd>
-<p>specifies socket timeout for connections in ms.</p>
-</dd>
-<dt class="hdlist1">http.enabled</dt>
-<dd>
-<p>true enables HTTP connections. Default: <code>true</code>.</p>
-</dd>
-<dt class="hdlist1">http.port</dt>
-<dd>
-<p>specifies http port number to use. Default: <code>8080</code>.</p>
-</dd>
-<dt class="hdlist1">http.requestHeaderSize</dt>
-<dd>
-<p>Maximum request header size. Default: 32K.</p>
-</dd>
-<dt class="hdlist1">http.requestHeaderSize</dt>
-<dd>
-<p>Maximum response header size. Default: 32K.</p>
-</dd>
-<dt class="hdlist1">session.timeout</dt>
-<dd>
-<p>Session timeout (when inactive) in minutes. Default: <code>60</code>.</p>
-</dd>
-<dt class="hdlist1">session.cookieSameSite</dt>
-<dd>
-<p>Specifies SameSite flag for session cookie. Can be <code>Lax</code>, <code>None</code>, <code>Strict</code> or unspecified. Default: <code>Lax</code>.</p>
-</dd>
-<dt class="hdlist1">session.cookieAlwaysSecure</dt>
-<dd>
-<p>If true, forces session cooke Secure flag even for HTTP connections. Default: <code>false</code>.</p>
-</dd>
-<dt class="hdlist1">session.cookiename</dt>
-<dd>
-<p>Cookie name to use for sessions. Default: <code>JSESSIONID</code>.</p>
-</dd>
-<dt class="hdlist1">gzip.enabled</dt>
-<dd>
-<p>Enables GZIP compression for responses. Default: <code>false</code>.</p>
-</dd>
-<dt class="hdlist1">gzip.minsize</dt>
-<dd>
-<p>Minimum number of bytes in response to consider compressing the response. Default: <code>23</code>.</p>
-</dd>
-<dt class="hdlist1">log.enabled</dt>
-<dd>
-<p>Turns on request logging. Default: <code>false</code>.</p>
-</dd>
-<dt class="hdlist1">log.file</dt>
-<dd>
-<p>Request log file location. Default: <code>${xp.home}/logs/jetty-yyyy_mm_dd.request.log</code>.</p>
-</dd>
-<dt class="hdlist1">log.append</dt>
-<dd>
-<p>append to existing file, or create new one when started. Default: <code>true</code>.</p>
-</dd>
-<dt class="hdlist1">log.extended</dt>
-<dd>
-<p>turns on extended logging format. Default: <code>true</code>.</p>
-</dd>
-<dt class="hdlist1">log.timeZone</dt>
-<dd>
-<p>Timezone to display timestamp in. Default: <code>GMT</code>.</p>
-</dd>
-<dt class="hdlist1">log.retainDays</dt>
-<dd>
-<p>Number of days to retain the logs. Default: <code>31</code>.</p>
-</dd>
-<dt class="hdlist1">threadPool.maxThreads</dt>
-<dd>
-<p>Maximum number of threads. Default: <code>200</code>.</p>
-</dd>
-<dt class="hdlist1">threadPool.minThreads</dt>
-<dd>
-<p>Minimum number of threads. Default: <code>8</code>.</p>
-</dd>
-<dt class="hdlist1">threadPool.idleTimeout</dt>
-<dd>
-<p>Thread idle timeout (in milliseconds). Default: <code>60000</code>.</p>
-</dd>
-<dt class="hdlist1">websocket.idleTimeout</dt>
-<dd>
-<p>The time (in milliseconds) that a websocket may be idle before closing. Default: <code>300000</code>.</p>
-</dd>
-</dl>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Setting <code>session.cookieAlwaysSecure</code> to <code>true</code> would make session-involved login on HTTP connections impossible.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-20 10:26:01 UTC
+Last updated 2026-08-25 08:54:31 UTC
 </div>
 </div>
 </body>

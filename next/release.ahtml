@@ -441,6 +441,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
+<li><a href="#xp_8_1">XP 8.1</a>
+<ul class="sectlevel2">
+<li><a href="#graaljs_preview">GraalJS preview</a></li>
+<li><a href="#scheduler_you_can_place_and_pace">Scheduler you can place and pace</a></li>
+<li><a href="#content_security_policy_as_an_api">Content Security Policy as an API</a></li>
+<li><a href="#requests_that_can_be_steered">Requests that can be steered</a></li>
+<li><a href="#admin_events_over_one_socket">Admin events over one socket</a></li>
+<li><a href="#ask_a_query_for_the_fields_you_need">Ask a query for the fields you need</a></li>
+<li><a href="#query_a_subtree">Query a subtree</a></li>
+<li><a href="#exports_read_one_version_of_a_node">Exports read one version of a node</a></li>
+<li><a href="#a_read_through_blobstore_stays_within_bounds">A read-through blobstore stays within bounds</a></li>
+<li><a href="#request_handling_on_virtual_threads">Request handling on virtual threads</a></li>
+<li><a href="#deprecations">Deprecations</a></li>
+</ul>
+</li>
 <li><a href="#xp_8">XP 8</a>
 <ul class="sectlevel2">
 <li><a href="#stack_update">Stack update</a></li>
@@ -469,6 +484,165 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="paragraph">
 <p>The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <a href="release/upgrade.ahtml">Upgrading to XP 8</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="xp_8_1"><a class="link" href="#xp_8_1">XP 8.1</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A feature release focused on the runtime beneath your apps: a preview of the JavaScript engine that replaces Nashorn, a scheduler that keeps its promises about where and when jobs run, and finer control over what a request handler may declare to the browser.</p>
+</div>
+<div class="sect2">
+<h3 id="graaljs_preview"><a class="link" href="#graaljs_preview">GraalJS preview</a></h3>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="63" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="63" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="63" height="20" fill="#dfb317"/>
+    <rect width="63" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="315" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="426">preview</text>
+    <text x="315" y="140" transform="scale(.1)" textLength="426">preview</text>
+  </g>
+</svg></span> The engine that will replace Nashorn is here to try. GraalJS implements the current ECMAScript standard, well past Nashorn&#8217;s ES5.</p>
+</div>
+<div class="paragraph">
+<p><strong>Not for production:</strong> Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, <code>executeFunction</code> - is covered in the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs">dev kit runtime documentation</a>.</p>
+</div>
+<div class="paragraph">
+<p>Two long-standing rough edges were settled on the way. <code>main.ts</code> now runs to completion before anything else in the app on that node, on either engine, which greatly simplifies initialization code. And the global namespace was brought closer to what browsers and Node expose, so more npm modules run unmodified.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="scheduler_you_can_place_and_pace"><a class="link" href="#scheduler_you_can_place_and_pace">Scheduler you can place and pace</a></h3>
+<div class="paragraph">
+<p>Three changes make scheduled jobs predictable in a cluster:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Where the scheduler ticks is now a deployment decision.</strong> <code>acceptScheduling = false</code> excludes a node from the choice - typically the master nodes, which have to stay responsive to hold the quorum and can be modest machines precisely because they are not meant to do heavy work. The schedule, and the maintenance it submits, then runs where the machine can afford it: a data node serving no HTTP traffic, or one dedicated to background work. See <a href="config/system.ahtml#scheduler">scheduler configuration</a>.</p>
+</li>
+<li>
+<p><strong>A job does not overlap itself.</strong> A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. This is best effort — a partitioned cluster can still produce an overlap.</p>
+</li>
+<li>
+<p><strong>One-time jobs can clean up after themselves.</strong> <code>deleteAfterRun</code> on a <code>ONE_TIME</code> schedule removes the job once it has fired, so a job created to do one thing does not linger.</p>
+</li>
+<li>
+<p><strong>A third schedule type.</strong> <code>FIXED_RATE</code> takes an ISO-8601 duration - <code>'PT5M'</code> for every five minutes - for work that belongs at an interval rather than at a time of day.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Jobs can also be declared in the scheduler config file, and the scheduler&#8217;s list response now reports each job&#8217;s run state. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler">scheduler library</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="content_security_policy_as_an_api"><a class="link" href="#content_security_policy_as_an_api">Content Security Policy as an API</a></h3>
+<div class="paragraph">
+<p>A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so a page, its layouts, its parts and any response processor all contribute to the single emitted header, nonce included - and the header is composed when the response is flushed, so late contributions still land. A report-only companion runs alongside it, letting you enforce a settled policy while trialling a stricter one.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="requests_that_can_be_steered"><a class="link" href="#requests_that_can_be_steered">Requests that can be steered</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Re-route to other content.</strong> A filter reached through a site mapping can change which content is rendered while the visitor&#8217;s address stays exactly as it was - no redirect, no second request. A/B variants and personalized landing pages become a few lines in a filter.</p>
+</li>
+<li>
+<p><strong>Carry your own data down the pipeline.</strong> Custom context attributes pass values from a filter or an implementation to the response processors and the code that runs after it, where inventing a request property never worked.</p>
+</li>
+<li>
+<p><strong>Base URLs that resolve to the right place.</strong> Media and page URLs anchor at the site&#8217;s base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media served from a separate host such as a CDN.</p>
+</li>
+<li>
+<p><strong>API locations from context attributes.</strong> A vhost may declare where an API lives, and URL generation follows it - keeping routing decisions with the vhost they belong to. See <a href="config/vhosts.ahtml">virtual host configuration</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="admin_events_over_one_socket"><a class="link" href="#admin_events_over_one_socket">Admin events over one socket</a></h3>
+<div class="paragraph">
+<p>An admin events hub lets an application define its own topics and push to them, so admin tools and extensions receive live updates over a shared connection instead of each opening its own. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-admin">admin library</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ask_a_query_for_the_fields_you_need"><a class="link" href="#ask_a_query_for_the_fields_you_need">Ask a query for the fields you need</a></h3>
+<div class="paragraph">
+<p>The <code>returns</code> parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="query_a_subtree"><a class="link" href="#query_a_subtree">Query a subtree</a></h3>
+<div class="paragraph">
+<p><code>parent</code> restricts a query to the direct children of a node, and <code>descendant</code> widens it to the whole subtree beneath it. Available on the node and content libraries.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="exports_read_one_version_of_a_node"><a class="link" href="#exports_read_one_version_of_a_node">Exports read one version of a node</a></h3>
+<div class="paragraph">
+<p>An export reads each node at the exact version its scan observed, so a subtree that changes while the export runs is written as it was seen rather than as a mixture.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="a_read_through_blobstore_stays_within_bounds"><a class="link" href="#a_read_through_blobstore_stays_within_bounds">A read-through blobstore stays within bounds</a></h3>
+<div class="paragraph">
+<p><code>readThrough.cacheCapacity</code> caps the local cache in front of a remote object store. See <a href="config/system.ahtml#file-blobstore">file blobstore configuration</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="request_handling_on_virtual_threads"><a class="link" href="#request_handling_on_virtual_threads">Request handling on virtual threads</a></h3>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="91" height="20">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="91" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="91" height="20" fill="#fe7d37"/>
+    <rect width="91" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision"
+     font-size="110">
+    <text x="455" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="710">experimental</text>
+    <text x="455" y="140" transform="scale(.1)" textLength="710">experimental</text>
+  </g>
+</svg></span> <code>threadPool.virtualThreads</code> hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — <strong>not for production</strong>. See <a href="config/system.ahtml#jetty">Jetty configuration</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="deprecations"><a class="link" href="#deprecations">Deprecations</a></h3>
+<div class="paragraph">
+<p>Still working, slated for removal:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>executeFunction</code> - not supported on GraalJS. Submit a named task instead.</p>
+</li>
+<li>
+<p><code>Resource.getTimestamp</code> - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.</p>
+</li>
+<li>
+<p><code>content.findByParent</code> replaced with content.query</p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 </div>
@@ -803,7 +977,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-20 10:26:01 UTC
+Last updated 2026-08-25 08:54:31 UTC
 </div>
 </div>
 </body>
