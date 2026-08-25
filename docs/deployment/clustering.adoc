@@ -24,7 +24,7 @@ Back-end node:: Node that stores data, but does not handle incoming traffic
 Front-end node:: Node that handles incoming traffic, but does not store data
 Combined node:: Node that both stores data, and handles incoming traffic
 
-Throughout this guide, we will describe how to setup a <<./strategies#basic_cluster,basic cluster>>, but with little more effort you could create any type of cluster. A __basic cluster__ consists of 3 dedicated XP _master_ nodes and 2 XP _combined_ nodes.
+Throughout this guide, we will describe how to set up a <<./strategies#_basic_cluster,basic cluster>>, but with little more effort you could create any type of cluster. A __basic cluster__ consists of 3 dedicated XP _master_ nodes and 2 XP _combined_ nodes.
 
 image::dedicated-masters-cluster.png[Cluster with dedicated master nodes,452]
 
@@ -52,7 +52,7 @@ A combined node running XP should minimum have 4GB of memory and 2vCPU. A genera
 
 Master nodes can be configured with less memory and capacity as they are generally not processing requests or queries.
 
-Since Elasticsearch is embedded in XP, be sure also to setup virtual memory, file descriptors and swap setting correctly for __elasticsearch__. Read more about that in the https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-configuration.html[elasticsearch documentation].
+Since Elasticsearch is embedded in XP, be sure also to set up virtual memory, file descriptors and swap setting correctly for __elasticsearch__. Read more about that in the https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-configuration.html[elasticsearch documentation].
 
 == XP node setup
 
@@ -225,6 +225,6 @@ Master nodes should be freed form heavy operations as they are on duty to keep c
 Yet often great amount of work is put on them with inlined or named tasks run by applications.
 If heavy tasks must execute on master nodes (i.e. they have `isMaster` check), try to lower allocated heap from 75% to 50% of available RAM and allocate more total RAM for the master servers.
 
-TIP: It is possible to free master nodes from running named tasks by setting `distributable.acceptInbound = false` in <<../deployment/config.adoc#_task, Task>> config.
+TIP: It is possible to free master nodes from running named tasks by setting `distributable.acceptInbound = false` in <<../config/system#_task, Task>> config.
 
-TIP: image:xp-8010.svg[XP 8.1.0,opts=inline] Master nodes can also be excluded from running the scheduler, by setting `acceptScheduling = false` in <<../config/system.adoc#scheduler, Scheduler>> config. This is a separate choice from `distributable.acceptInbound` above: that one governs where the tasks run, this one where the schedule that submits them runs. Both are worth setting on a dedicated master node, so that neither the jobs nor the tasks they start can put a master node's quorum duty at risk.
+TIP: image:xp-8010.svg[XP 8.1.0,opts=inline] Master nodes can also be excluded from running the scheduler, by setting `acceptScheduling = false` in <<../config/system#scheduler, Scheduler>> config. This is a separate choice from `distributable.acceptInbound` above: that one governs where the tasks run, this one where the schedule that submits them runs. Both are worth setting on a dedicated master node, so that neither the jobs nor the tasks they start can put a master node's quorum duty at risk.

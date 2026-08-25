@@ -42,7 +42,7 @@ Every time the Enonic XP image is built it will be based off the latest https://
 
 === Enforced best practices
 
-Entrypoint:: The image uses a custom docker entrypoint that is designed to setup file permissions and step down from root user when running Enonic XP.
+Entrypoint:: The image uses a custom docker entrypoint that is designed to set up file permissions and step down from root user when running Enonic XP.
 
 Builder pattern:: During the build process, all tools used for building the final image are dropped to make the image as light as possible.
 
@@ -122,7 +122,7 @@ After running these commands you will have the standard configuration copied to 
 
 === Using setenv.sh
 
-The image allows you to supply a custom `setenv.sh` script. It is sourced just before Enonic XP is started and can be used to setup the environment and run pre-scripts. To enable this, simply mount a script to `$XP_HOME/setenv.sh` in the container.
+The image allows you to supply a custom `setenv.sh` script. It is sourced just before Enonic XP is started and can be used to set up the environment and run pre-scripts. To enable this, simply mount a script to `$XP_HOME/setenv.sh` in the container.
 
 === Environmental variables
 

@@ -22,4 +22,4 @@ NOTE: The Dashboard reflects what is installed and which roles your user has - w
 
 The Dashboard is fully extensible. Any application may contribute new widgets by providing extensions that implementing the `admin.dashboard` interface, controlling their priority, size, and styling.
 
-For details on building and configuring Dashboard widgets, see https://developer.enonic.com/docs/code/stable/examples[Code examples].
+For details on building and configuring Dashboard widgets, see https://developer.enonic.com/docs/code/stable/web/extensions[Extensions].
