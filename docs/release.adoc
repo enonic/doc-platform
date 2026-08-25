@@ -15,7 +15,7 @@ image:preview.svg[Preview,opts=inline] The engine that will replace Nashorn is h
 
 *Not for production:* Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, `executeFunction` - is covered in the https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs[dev kit runtime documentation].
 
-Two long-standing rough edges were settled on the way. `main.ts` now runs to completion before anything else in the app, on either engine: nothing observes a half-initialized repository, and the `initialized = true` workaround can go. And the global namespace was brought closer to what browsers and Node expose, so more npm modules run unmodified.
+Two long-standing rough edges were settled on the way. `main.ts` now runs to completion before anything else in the app on that node, on either engine, which greatly simplifies initialization code. And the global namespace was brought closer to what browsers and Node expose, so more npm modules run unmodified.
 
 === Scheduler you can place and pace
 
