@@ -502,14 +502,14 @@ The Dashboard reflects what is installed and which roles your user has - widgets
 <p>The Dashboard is fully extensible. Any application may contribute new widgets by providing extensions that implementing the <code>admin.dashboard</code> interface, controlling their priority, size, and styling.</p>
 </div>
 <div class="paragraph">
-<p>For details on building and configuring Dashboard widgets, see <a href="https://developer.enonic.com/docs/code/stable/examples">Code examples</a>.</p>
+<p>For details on building and configuring Dashboard widgets, see <a href="https://developer.enonic.com/docs/code/stable/web/extensions">Extensions</a>.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 08:54:31 UTC
+Last updated 2026-08-25 10:43:48 UTC
 </div>
 </div>
 </body>

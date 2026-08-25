@@ -2455,7 +2455,7 @@ Make sure you have a backup of the installation available before running a clean
 </table>
 <div class="paragraph">
 <div class="title">Response</div>
-<p><a href="../api/lib-task.ahtml#taskinfo"><code>TaskInfo</code></a> object.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/libraries/lib-task#task-info"><code>TaskInfo</code></a> object.</p>
 </div>
 </div>
 </div>
@@ -2548,7 +2548,7 @@ Make sure you have a backup of the installation available before running a clean
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 08:54:31 UTC
+Last updated 2026-08-25 10:43:48 UTC
 </div>
 </div>
 </body>

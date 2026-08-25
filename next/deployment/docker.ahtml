@@ -527,7 +527,7 @@ Running this command requires you to have docker installed.
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -p 8080:8080 \
   -e XP_OPTS="-Dxp.suPassword={sha256}5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" \
-  enonic/xp:8.0.3-ubuntu</code></pre>
+  enonic/xp:8.0.4-ubuntu</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -587,7 +587,7 @@ The above password sha256 is for "password" string is just for demonstration pur
 <dl>
 <dt class="hdlist1">Entrypoint</dt>
 <dd>
-<p>The image uses a custom docker entrypoint that is designed to setup file permissions and step down from root user when running Enonic XP.</p>
+<p>The image uses a custom docker entrypoint that is designed to set up file permissions and step down from root user when running Enonic XP.</p>
 </dd>
 <dt class="hdlist1">Builder pattern</dt>
 <dd>
@@ -719,7 +719,7 @@ The above password sha256 is for "password" string is just for demonstration pur
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -v $(pwd)/host_config_dir:/enonic-xp/home/config enonic/xp:8.0.3-ubuntu</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -v $(pwd)/host_config_dir:/enonic-xp/home/config enonic/xp:8.0.4-ubuntu</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -727,7 +727,7 @@ The above password sha256 is for "password" string is just for demonstration pur
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:8.0.3-ubuntu
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:8.0.4-ubuntu
 docker cp tmp:/enonic-xp/home/config config
 docker rm tmp</code></pre>
 </div>
@@ -739,7 +739,7 @@ docker rm tmp</code></pre>
 <div class="sect2">
 <h3 id="using_setenv_sh"><a class="link" href="#using_setenv_sh">Using setenv.sh</a></h3>
 <div class="paragraph">
-<p>The image allows you to supply a custom <code>setenv.sh</code> script. It is sourced just before Enonic XP is started and can be used to setup the environment and run pre-scripts. To enable this, simply mount a script to <code>$XP_HOME/setenv.sh</code> in the container.</p>
+<p>The image allows you to supply a custom <code>setenv.sh</code> script. It is sourced just before Enonic XP is started and can be used to set up the environment and run pre-scripts. To enable this, simply mount a script to <code>$XP_HOME/setenv.sh</code> in the container.</p>
 </div>
 </div>
 <div class="sect2">
@@ -808,7 +808,7 @@ docker rm tmp</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -p 8080:8080 -p 5005:5005 \
-  enonic/xp:8.0.3-ubuntu server.sh debug</code></pre>
+  enonic/xp:8.0.4-ubuntu server.sh debug</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -827,7 +827,7 @@ docker rm tmp</code></pre>
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">docker run -it --rm -p 8080:8080 \
   -e JAVA_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=n,address=host.docker.internal:5005,suspend=y" \
-  enonic/xp:8.0.3-ubuntu server.sh debug</code></pre>
+  enonic/xp:8.0.4-ubuntu server.sh debug</code></pre>
 </div>
 </div>
 </div>
@@ -961,7 +961,7 @@ Running commands this section requires you to have docker and docker-compose ins
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:8.0.3-ubuntu
+<pre class="highlight"><code class="language-bash" data-lang="bash">docker create --name=tmp enonic/xp:8.0.4-ubuntu
 docker cp tmp:/enonic-xp/home/config config
 docker rm tmp</code></pre>
 </div>
@@ -991,7 +991,7 @@ app.sh add https://repo.enonic.com/public/com/enonic/app/snapshotter/3.0.2/snaps
 <pre class="highlight"><code class="language-yaml" data-lang="yaml">version: '3'
 services:
   xp:
-    image: enonic/xp:8.0.3-ubuntu
+    image: enonic/xp:8.0.4-ubuntu
     restart: always
     environment:
       # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also enable JVM OOME heap dump
@@ -1119,7 +1119,7 @@ demo_snapshots: /var/lib/docker/volumes/demo_snapshots/_data</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 08:54:31 UTC
+Last updated 2026-08-25 10:43:48 UTC
 </div>
 </div>
 </body>

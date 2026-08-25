@@ -530,7 +530,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dl>
 </div>
 <div class="paragraph">
-<p>Throughout this guide, we will describe how to setup a <a href="./strategies.ahtml#basic_cluster">basic cluster</a>, but with little more effort you could create any type of cluster. A <em>basic cluster</em> consists of 3 dedicated XP <em>master</em> nodes and 2 XP <em>combined</em> nodes.</p>
+<p>Throughout this guide, we will describe how to set up a <a href="./strategies.ahtml#<em>basic_cluster">basic cluster</a>, but with little more effort you could create any type of cluster. A <em>basic cluster</em> consists of 3 dedicated XP _master</em> nodes and 2 XP <em>combined</em> nodes.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -590,7 +590,7 @@ Using <em>NFS</em> introduces a single point of failure to the cluster, but has 
 <p>Master nodes can be configured with less memory and capacity as they are generally not processing requests or queries.</p>
 </div>
 <div class="paragraph">
-<p>Since Elasticsearch is embedded in XP, be sure also to setup virtual memory, file descriptors and swap setting correctly for <em>elasticsearch</em>. Read more about that in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-configuration.html">elasticsearch documentation</a>.</p>
+<p>Since Elasticsearch is embedded in XP, be sure also to set up virtual memory, file descriptors and swap setting correctly for <em>elasticsearch</em>. Read more about that in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-configuration.html">elasticsearch documentation</a>.</p>
 </div>
 </div>
 </div>
@@ -909,7 +909,7 @@ If heavy tasks must execute on master nodes (i.e. they have <code>isMaster</code
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-It is possible to free master nodes from running named tasks by setting <code>distributable.acceptInbound = false</code> in <a href="../deployment/config.ahtml#_task">Task</a> config.
+It is possible to free master nodes from running named tasks by setting <code>distributable.acceptInbound = false</code> in <a href="../config/system.ahtml#_task">Task</a> config.
 </td>
 </tr>
 </table>
@@ -932,7 +932,7 @@ It is possible to free master nodes from running named tasks by setting <code>di
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 08:54:31 UTC
+Last updated 2026-08-25 10:43:48 UTC
 </div>
 </div>
 </body>
