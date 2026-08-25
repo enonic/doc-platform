@@ -11,7 +11,7 @@ A feature release focused on the runtime beneath your apps: a preview of the Jav
 
 === GraalJS preview
 
-image:preview.svg[Preview,opts=inline] The engine that will replace Nashorn is here to try. GraalJS implements the current ECMAScript standard - no more ES5.1 baseline.
+image:preview.svg[Preview,opts=inline] The engine that will replace Nashorn is here to try. GraalJS implements the current ECMAScript standard, well past Nashorn's ES5.
 
 *Not for production:* Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, `executeFunction` - is covered in the https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs[dev kit runtime documentation].
 
@@ -24,6 +24,7 @@ Three changes make scheduled jobs predictable in a cluster:
 * *Where the scheduler ticks is now a deployment decision.* `acceptScheduling = false` excludes a node from the choice - typically the master nodes, which have to stay responsive to hold the quorum and can be modest machines precisely because they are not meant to do heavy work. The schedule, and the maintenance it submits, then runs where the machine can afford it: a data node serving no HTTP traffic, or one dedicated to background work. See <<config/system#scheduler, scheduler configuration>>.
 * *A job does not overlap itself.* A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. This is best effort — a partitioned cluster can still produce an overlap.
 * *One-time jobs can clean up after themselves.* `deleteAfterRun` on a `+ONE_TIME+` schedule removes the job once it has fired, so a job created to do one thing does not linger.
+* *A third schedule type.* `+FIXED_RATE+` takes an ISO-8601 duration - `'PT5M'` for every five minutes - for work that belongs at an interval rather than at a time of day.
 
 Jobs can also be declared in the scheduler config file, and the scheduler's list response now reports each job's run state. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
 
@@ -35,7 +36,7 @@ A request-scoped CSP builder replaces hand-assembled header strings. One policy 
 
 * *Re-route to other content.* A filter reached through a site mapping can change which content is rendered while the visitor's address stays exactly as it was - no redirect, no second request. A/B variants and personalized landing pages become a few lines in a filter.
 * *Carry your own data down the pipeline.* Custom context attributes pass values from a filter or an implementation to the response processors and the code that runs after it, where inventing a request property never worked.
-* *Base URLs that resolve to the right place.* Media and page URLs anchor at the site's base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike.
+* *Base URLs that resolve to the right place.* Media and page URLs anchor at the site's base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media served from a separate host such as a CDN.
 * *API locations from context attributes.* A vhost may declare where an API lives, and URL generation follows it - keeping routing decisions with the vhost they belong to. See <<config/vhosts#, virtual host configuration>>.
 
 === Admin events over one socket
@@ -45,6 +46,14 @@ An admin events hub lets an application define its own topics and push to them, 
 === Ask a query for the fields you need
 
 The `returns` parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.
+
+=== Query a subtree
+
+`parent` restricts a query to the direct children of a node, and `descendant` widens it to the whole subtree beneath it. Available on the node and content libraries.
+
+=== Exports read one version of a node
+
+An export reads each node at the exact version its scan observed, so a subtree that changes while the export runs is written as it was seen rather than as a mixture.
 
 === A read-through blobstore stays within bounds
 
