@@ -58,7 +58,7 @@ image:experimental.svg[Experimental,opts=inline] `threadPool.virtualThreads` han
 
 Still working, slated for removal:
 
-* `executeFunction` - not supported on GraalJS, since a function value cannot leave the context that created it. Submit a named task instead.
+* `executeFunction` - not supported on GraalJS. Submit a named task instead.
 * `Resource.getTimestamp` - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
 * `content.findByParent` replaced with content.query
 
