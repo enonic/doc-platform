@@ -508,10 +508,10 @@ log.retainDays:: Number of days to retain the logs. Default: `31`.
 threadPool.maxThreads:: Maximum number of threads. Default: `200`.
 threadPool.minThreads:: Minimum number of threads. Default: `8`.
 threadPool.idleTimeout:: Thread idle timeout (in milliseconds). Default: `60000`.
-threadPool.virtualThreads:: image:experimental.svg[Experimental,opts=inline] Handle requests on virtual threads. Default: `false`. *Not for production.*
+threadPool.virtualThreads:: image:unstable.svg[Unstable,opts=inline] Handle requests on virtual threads. Default: `false`. *Not for production.*
 +
 With this on, a request that blocks waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back for the duration of the wait, so waiting requests stop occupying the pool. A CPU-bound request gains nothing: work that computes holds its carrier thread throughout, so it still costs a platform thread for as long as it runs. Selectors and acceptors stay on platform threads, and `threadPool.maxThreads` continues to size them. Treat it as an experiment; the supported mode is to leave it off.
-threadPool.virtualThreads.maxConcurrent:: image:experimental.svg[Experimental,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
+threadPool.virtualThreads.maxConcurrent:: image:unstable.svg[Unstable,opts=inline] Maximum request-handling tasks allowed to run concurrently on virtual threads, so a load spike cannot exhaust memory. `0` or negative means unbounded. Default: `1024`. Keep it well above `threadPool.maxThreads` - bounding it at the platform-thread count would negate the point of virtual threads. Ignored when `threadPool.virtualThreads` is `false`.
 websocket.idleTimeout:: The time (in milliseconds) that a websocket may be idle before closing. Default: `300000`.
 websocket.defaultOriginCheck:: Enforce the platform's built-in same-origin check on WebSocket handshakes. When `false`, the handshake accepts any `Origin` unless a controller supplies its own `checkOrigin` function. Disable only as a fallback for deployments where the reverse proxy does not propagate the public scheme/host/port to Jetty and the proxy configuration cannot be fixed. Default: `true`.
 
