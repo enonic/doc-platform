@@ -5,6 +5,73 @@ include::.variables.adoc[]
 
 The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <<release/upgrade#, Upgrading to XP 8>>.
 
+== XP 8.1
+
+A feature release focused on the runtime beneath your apps: a preview of the JavaScript engine that replaces Nashorn, a scheduler that keeps its promises about where and when jobs run, and finer control over what a request handler may declare to the browser.
+
+=== GraalJS preview
+
+image:preview.svg[Preview,opts=inline] The engine that will replace Nashorn is here to try. GraalJS implements the current ECMAScript standard, well past Nashorn's ES5.
+
+*Not for production:* Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, `executeFunction` - is covered in the https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs[dev kit runtime documentation].
+
+Two long-standing rough edges were settled on the way. `main.ts` now runs to completion before anything else in the app on that node, on either engine, which greatly simplifies initialization code. And the global namespace was brought closer to what browsers and Node expose, so more npm modules run unmodified.
+
+=== Scheduler you can place and pace
+
+Three changes make scheduled jobs predictable in a cluster:
+
+* *Where the scheduler ticks is now a deployment decision.* `acceptScheduling = false` excludes a node from the choice - typically the master nodes, which have to stay responsive to hold the quorum and can be modest machines precisely because they are not meant to do heavy work. The schedule, and the maintenance it submits, then runs where the machine can afford it: a data node serving no HTTP traffic, or one dedicated to background work. See <<config/system#scheduler, scheduler configuration>>.
+* *A job does not overlap itself.* A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. This is best effort — a partitioned cluster can still produce an overlap.
+* *One-time jobs can clean up after themselves.* `deleteAfterRun` on a `+ONE_TIME+` schedule removes the job once it has fired, so a job created to do one thing does not linger.
+* *A third schedule type.* `+FIXED_RATE+` takes an ISO-8601 duration - `'PT5M'` for every five minutes - for work that belongs at an interval rather than at a time of day.
+
+Jobs can also be declared in the scheduler config file, and the scheduler's list response now reports each job's run state. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
+
+=== Content Security Policy as an API
+
+A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so a page, its layouts, its parts and any response processor all contribute to the single emitted header, nonce included - and the header is composed when the response is flushed, so late contributions still land. A report-only companion runs alongside it, letting you enforce a settled policy while trialling a stricter one.
+
+=== Requests that can be steered
+
+* *Re-route to other content.* A filter reached through a site mapping can change which content is rendered while the visitor's address stays exactly as it was - no redirect, no second request. A/B variants and personalized landing pages become a few lines in a filter.
+* *Carry your own data down the pipeline.* Custom context attributes pass values from a filter or an implementation to the response processors and the code that runs after it, where inventing a request property never worked.
+* *Base URLs that resolve to the right place.* Media and page URLs anchor at the site's base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media served from a separate host such as a CDN.
+* *API locations from context attributes.* A vhost may declare where an API lives, and URL generation follows it - keeping routing decisions with the vhost they belong to. See <<config/vhosts#, virtual host configuration>>.
+
+=== Admin events over one socket
+
+An admin events hub lets an application define its own topics and push to them, so admin tools and extensions receive live updates over a shared connection instead of each opening its own. See the https://developer.enonic.com/docs/code/stable/libraries/lib-admin[admin library].
+
+=== Ask a query for the fields you need
+
+The `returns` parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.
+
+=== Query a subtree
+
+`parent` restricts a query to the direct children of a node, and `descendant` widens it to the whole subtree beneath it. Available on the node and content libraries.
+
+=== Exports read one version of a node
+
+An export reads each node at the exact version its scan observed, so a subtree that changes while the export runs is written as it was seen rather than as a mixture.
+
+=== A read-through blobstore stays within bounds
+
+`readThrough.cacheCapacity` caps the local cache in front of a remote object store. See <<config/system#file-blobstore, file blobstore configuration>>.
+
+=== Request handling on virtual threads
+
+image:experimental.svg[Experimental,opts=inline] `threadPool.virtualThreads` hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — *not for production*. See <<config/system#jetty, Jetty configuration>>.
+
+=== Deprecations
+
+Still working, slated for removal:
+
+* `executeFunction` - not supported on GraalJS. Submit a named task instead.
+* `Resource.getTimestamp` - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
+* `content.findByParent` replaced with content.query
+
+
 == XP 8
 
 XP 8 is the largest release in 8 years. The runtime is rebuilt on a modern stack, the Universal API unifies how request handlers are written and called, and a long list of API rough edges has been cleaned up.
