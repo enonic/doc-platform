@@ -61,7 +61,7 @@ An export reads each node at the exact version its scan observed, so a subtree t
 
 === Request handling on virtual threads
 
-image:experimental.svg[Experimental,opts=inline] `threadPool.virtualThreads` hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — *not for production*. See <<config/system#jetty, Jetty configuration>>.
+image:unstable.svg[Unstable,opts=inline] `threadPool.virtualThreads` hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — *not for production*. See <<config/system#jetty, Jetty configuration>>.
 
 === Deprecations
 
