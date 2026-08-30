@@ -202,9 +202,9 @@ login:: interactive login: the login page and 401 handling. Web endpoint only.
 autologin:: non-interactive login, e.g. token or basic authentication.
 logout:: the logout endpoint.
 
-Any other name in the list addresses an additional flow of the ID provider application itself - for instance, the Standard ID Provider serves basic authentication only where `basic` is listed, and an ID provider may serve its device authorization endpoints only where `device` is listed. See the ID provider's own documentation for the flows it supports.
+Any other name in the list addresses an additional flow of the ID provider application itself - for instance, the Standard ID Provider serves basic authentication under the name `basic`, and an ID provider may serve its device authorization endpoints under a name like `device`. See the ID provider's own documentation for the flows it supports.
 
-Without a flow list, no restriction applies: the ID provider serves whatever flows it supports.
+Without a flow list, no restriction applies: the ID provider serves whatever flows it supports. An explicit list serves only what it names - `enabled=autologin` on the system ID provider keeps service account JWTs working but turns basic authentication off.
 
 [#endpoint]
 == Management and statistics endpoints
