@@ -4,7 +4,7 @@
 
 The Statistics API exposes real-time metrics and monitoring data about the XP instance. It is commonly used for health checks, performance monitoring, and capacity planning.
 
-NOTE: The Statistics API is intended for internal monitoring and is exposed without authentication on port 2609. Do not expose it publicly.
+NOTE: The Statistics API is intended for internal monitoring and is exposed without authentication on port 2609. Do not expose it publicly. image:xp-8020.svg[XP 8.2.0,opts=inline] A <<../config/vhosts#endpoint, vhost mapping>> may target the statistics endpoint, protecting it with non-interactive ID provider authentication and a principal allow list.
 
 == Overview
 

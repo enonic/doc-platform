@@ -8,6 +8,8 @@ The Management API provides programmatic access to administrative and operationa
 
 The management API requires an authenticated user with the Administrator role.
 
+image:xp-8020.svg[XP 8.2.0,opts=inline] A <<../config/vhosts#endpoint, vhost mapping>> may target the management endpoint, bringing other ID providers (with non-interactive authentication) and a principal allow list to it.
+
 === JWT Authentication
 
 All management endpoints can use <<../security/service-accounts#jwt-authentication, Service accounts JWT authentication>>. This is the recommended way to authenticate with the management endpoints.
@@ -17,6 +19,8 @@ All management endpoints can use <<../security/service-accounts#jwt-authenticati
 WARNING: Use of basic authentication is discouraged due to its security weaknesses. Use JWT authentication instead.
 
 All management endpoints allow basic authentication.
+
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Basic authentication is provided by the Standard ID Provider application, for the system ID provider on the management endpoint only. It is enabled by default and can be disabled with `idprovider.system.autologin.basic.enabled = false` in `com.enonic.xp.app.standardidprovider.cfg`.
 Most clients provide an option for authentication, but in case you need to do it manually: basic auth is simply a string of the username and password separated by a colon that is base64 encoded.
 
 Make a source string:
