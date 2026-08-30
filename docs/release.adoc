@@ -5,6 +5,28 @@ include::.variables.adoc[]
 
 The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <<release/upgrade#, Upgrading to XP 8>>.
 
+== XP 8.2
+
+A release about who gets in: virtual hosts reach the management and statistics endpoints, each vhost decides which authentication flows its ID providers serve, and a vhost can hold its own list of who may pass.
+
+=== Vhosts on the management and statistics endpoints
+
+A mapping may name the endpoint it applies to - `endpoint = management` or `endpoint = statistics` - and brings ID provider authentication with it. Together with the allow list below, that makes it practical to expose these endpoints behind a proper host name instead of keeping them reachable only from inside. Requests no mapping matches keep behaving exactly as before, so nothing changes until a mapping says so. See <<config/vhosts#endpoint, virtual host configuration>>.
+
+=== Authentication flows per vhost
+
+What an ID provider serves on a vhost is now configurable: `idProvider.myidp = default&enabled=login,autologin` limits it to the listed flows. XP manages `login`, `autologin` and `logout`; any other name in the list addresses an additional flow of the ID provider application itself - an OIDC provider's device authorization endpoints, say. Without a list, the ID provider serves whatever it supports, as before.
+
+`autoLogin` now runs for every enabled ID provider on the vhost - the default one first - so token authentication works even when the token belongs to a provider that is not the default. See <<config/vhosts#flows, ID provider flows>>.
+
+=== A vhost decides who may pass
+
+`allow = role:system.admin` on a mapping rejects requests that are not authenticated (401) or carry none of the listed principals (403) before they reach anything else. The ID provider answers who you are; the vhost decides whether you may pass. See <<config/vhosts#allow, allow list>>.
+
+=== Basic authentication moves to the Standard ID Provider
+
+Basic authentication on the management endpoint is now an `autoLogin` capability of the Standard ID Provider application, scoped to the system ID provider on that endpoint. It stays enabled by default and can be disabled with a single config line. See <<endpoints/management#authorization, management API authorization>>.
+
 == XP 8.1
 
 A feature release focused on the runtime beneath your apps: a preview of the JavaScript engine that replaces Nashorn, a scheduler that keeps its promises about where and when jobs run, and finer control over what a request handler may declare to the browser.
