@@ -57,7 +57,7 @@ After upgrading to a new feature version of Enonic XP, it's a good idea to check
 
 XP 8.2 requires no upgrade steps. Two behavioral changes are worth knowing about:
 
-* Basic authentication on the management endpoint is provided by the Standard ID Provider application (bundled with XP) instead of the platform itself. It remains enabled by default and can be disabled with `idprovider.system.autologin.basic.enabled = false`. An installation running without the Standard ID Provider application has no basic authentication on the management endpoint - use <<../security/service-accounts#jwt-authentication, service account JWT authentication>>.
+* Basic authentication on the management endpoint is deprecated and left only for backwards compatibility - it is now provided by the Standard ID Provider application (bundled with XP) instead of the platform itself. It remains enabled by default and can be disabled with `idprovider.system.autologin.basic.enabled = false`. An installation running without the Standard ID Provider application has no basic authentication on the management endpoint. Use <<../security/service-accounts#jwt-authentication, service account JWT authentication>>.
 * `autoLogin` runs for every ID provider enabled on a virtual host - the default one first - not only the default one. A request can now be authenticated by a non-default ID provider where it previously stayed anonymous.
 
 == Upgrading to v8.0

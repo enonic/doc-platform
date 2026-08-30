@@ -25,7 +25,7 @@ What an ID provider serves on a vhost is now configurable: `idProvider.myidp = d
 
 === Basic authentication moves to the Standard ID Provider
 
-Basic authentication on the management endpoint is now an `autoLogin` capability of the Standard ID Provider application, scoped to the system ID provider on that endpoint. It stays enabled by default and can be disabled with a single config line. See <<endpoints/management#authorization, management API authorization>>.
+Basic authentication on the management endpoint is deprecated and left only for backwards compatibility - service account JWTs are the way to authenticate. It is now an `autoLogin` capability of the Standard ID Provider application, scoped to the system ID provider on that endpoint, enabled by default and disabled with a single config line. See <<endpoints/management#authorization, management API authorization>>.
 
 == XP 8.1
 
