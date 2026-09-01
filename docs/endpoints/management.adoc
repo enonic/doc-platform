@@ -4,6 +4,11 @@
 
 The Management API provides programmatic access to administrative and operational functions, commonly used by developers and DevOps teams in combination with Enonic CLI.
 
+[NOTE]
+====
+image:xp-8020.svg[XP 8.2.0,opts=inline] The operations below are also available as <<management/resources#,management resources>> - `+/server:snapshot+`, `+/server:dump+`, `+/server:index+`, ... - a resource-and-verb surface that a <<../config/vhosts#management-api-policy,virtual host can expose selectively>>, and the form new operations are added in. The endpoints on this page keep working unchanged.
+====
+
 == Authorization [[authorization]]
 
 The management API requires an authenticated user with the Administrator role.
@@ -1018,6 +1023,8 @@ Commands for configuring and managing repositories.
 [#reindex]
 === Reindex
 
+WARNING: Deprecated. This call blocks until the reindex completes, which can take hours. Use <<#_reindex_task,Reindex Task>> or `server:index` <<management/resources#server-index,`reindex`>>.
+
 Reindex the content in the search indices for the given repository and branches. This is usually required after upgrades and may be useful in many other cases.
 
 .Url
@@ -1097,6 +1104,8 @@ POST repo/index/reindexTask
 NOTE: Task info can be fetched with <<task, task>> request.
 
 === Settings
+
+WARNING: Deprecated as a raw settings passthrough. Replica counts - the setting this is used for - are exposed by `server:index` <<management/resources#server-index,`update`>>; other index settings are internal structure.
 
 Update settings for a specified repository.
 

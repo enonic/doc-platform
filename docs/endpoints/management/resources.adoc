@@ -1,0 +1,484 @@
+= Management resources
+:toc: right
+:imagesdir: ../../images
+
+image:xp-8020.svg[XP 8.2.0,opts=inline] Resource-oriented management APIs on the management endpoint (port 4848), with per-resource, per-verb exposure control from virtual host configuration.
+
+== Overview
+
+Every management operation is exposed as a *resource* with a fixed set of *verbs*, in the vocabulary of `kubectl` and `docker`: `list`, `get`, `create`, `load`, `restore`, `prune`, `watch`. A resource is an API on the management endpoint, addressed by its descriptor key at the root of the port:
+
+  http://localhost:4848/server:snapshot
+
+The <<../management#,legacy REST API>> (`repo/snapshot/list`, `system/dump`, ...) keeps working unchanged. The resources are the same operations behind a surface that a <<../../config/vhosts#management-api-policy,virtual host can narrow>>: which resources it exposes and, within each, which verbs. Nothing here requires changing existing clients; the legacy paths can be <<../../config/vhosts#management-api-policy,switched off per virtual host>> once they are no longer needed.
+
+=== Authorization
+
+Same as the rest of the management endpoint: an authenticated user with the `system.admin` role, by <<../../security/service-accounts#jwt-authentication,service account JWT>> or basic authentication. See <<../management#authorization,Authorization>>.
+
+=== Conventions
+
+* Queries are `GET` and take no body. A collection is read at the resource root (`+GET /server:repo+`), an item by name (`+GET /server:repo/{repo}+`).
+* Commands are `POST` with a JSON body (or `PUT` when they replace the state of an item, `DELETE` when they remove one). A command naming an existing item puts the name in the path: `+POST /server:dump/{name}/load+`.
+* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`:
++
+[source,json]
+----
+{"taskId": "d9f3b1e4-..."}
+----
+* Errors are JSON with the status and a message:
++
+[source,json]
+----
+{"status": 403, "message": "Verb [restore] of API [server:snapshot] is not exposed on this virtual host"}
+----
++
+`404` for an unknown path or item, `405` for a wrong method, `400` for an invalid body, `403` when the virtual host does not expose the verb.
+* Some paths have an *alias*: the name the operation had before. An alias behaves exactly like the path it aliases and maps to the same verb - so a virtual host that exposes `prune` on `server:system` exposes both `+/server:system/prune+` and `+/server:system/vacuum+`, and one that does not exposes neither.
+
+== Resources
+
+[cols="1,1,3", options="header"]
+|===
+|Resource
+|Verbs
+|Purpose
+
+|<<server-app,`server:app`>>
+|`list`, `install`, `pull`, `uninstall`, `start`, `stop`, `watch`
+|Installed applications. `pull` fetches from a URL the server can reach and is a separate verb from `install` (upload), since it is the one operation where the server makes an outbound request.
+
+|<<server-index,`server:index`>>
+|`get`, `update`, `reindex`
+|The search and storage indices of a repository: replica counts, and rebuilding the search index.
+
+|<<server-repo,`server:repo`>>
+|`list`, `get`
+|Repository inventory.
+
+|<<server-export,`server:export`>>
+|`list`, `create`, `load`
+|Node exports under `+$XP_HOME/data/export+`.
+
+|<<server-dump,`server:dump`>>
+|`list`, `create`, `load`, `upgrade`
+|System dumps under `+$XP_HOME/data/dump+`.
+
+|<<server-snapshot,`server:snapshot`>>
+|`list`, `create`, `restore`, `prune`
+|Repository snapshots.
+
+|<<server-system,`server:system`>>
+|`prune`
+|Installation-wide maintenance (vacuum).
+
+|<<server-auditlog,`server:auditlog`>>
+|`prune`
+|Audit log retention.
+
+|<<server-project,`server:project`>>
+|`list`, `sync`
+|Content projects with their sites; syncing inherited content.
+
+|<<server-task,`server:task`>>
+|`list`, `get`
+|The tasks the commands above hand out ids for.
+
+|<<server-vhost,`server:vhost`>>
+|`list`
+|Virtual host mappings, as configured.
+
+|<<server-idprovider,`server:idprovider`>>
+|`list`
+|ID providers, as virtual hosts refer to them.
+|===
+
+Universal APIs of installed applications with `mount: "management"` sit beside these, at `+/<application>:<api>+`, and are subject to the same <<../../config/vhosts#management-api-policy,virtual host policy>> if they choose to honour it - see <<https://developer.enonic.com/docs/xp/stable/code/web/apis#management-endpoint,Universal APIs on the management endpoint>>.
+
+[#server-app]
+== server:app
+
+Installed applications.
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:app+`
+|All installed applications with state and version: `{"applications": [...]}`.
+
+|`install`
+|`+POST /server:app/install+` (multipart, field `file`)
+|Installs the uploaded application bundle. Returns the application.
+
+|`pull`
+|`+POST /server:app/pull+` +
+alias `+/server:app/installUrl+`
+|Fetches and installs an application from `URL`; `sha512` holds the expected digest. The URL must match the allow-list in <<../../config/system#management-app,`com.enonic.xp.server.management.app.cfg`>>, which also decides whether the checksum is mandatory.
+
+|`uninstall`
+|`+POST /server:app/uninstall+`
+|Uninstalls the applications named in `key` (a list).
+
+|`start`, `stop`
+|`+POST /server:app/start+`, `+POST /server:app/stop+`
+|Starts or stops the applications named in `key`.
+
+|`watch`
+|`+GET /server:app/watch+` (SSE) +
+alias `+/server:app/events+`
+|Server-sent events: a `list` event on connect, then `installed`, `state` and `uninstalled` events as applications change.
+|===
+
+.Pull an application
+[source,json]
+----
+POST /server:app/pull
+{
+  "URL": "https://repo.enonic.com/public/com/enonic/app/contentstudio/6.0.0/contentstudio-6.0.0.jar",
+  "sha512": "5b3c..."
+}
+----
+
+[#server-index]
+== server:index
+
+The two Elasticsearch indices of a repository: `search`, which holds the searchable representation and can be rebuilt, and `storage`, which holds versions, branches and commits and is the data itself. The API exposes the one setting an operator tunes on them - replicas - rather than raw index settings.
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`get`
+|`+GET /server:index/{repo}+`
+|Replica settings of both indices.
+
+|`update`
+|`+PUT /server:index/{repo}+`
+|Replaces the replica settings of both indices. Both keys are required. A value is either a number of replicas as a string (`"2"`) or an Elasticsearch auto-expand range (`"0-all"`, `"0-1"`): with a range the cluster adds and removes replicas as data nodes join and leave.
+
+|`reindex`
+|`+POST /server:index/{repo}/reindex+`
+|Rebuilds the search index from storage. `branches` limits the rebuild (default: every branch of the repository); `initialize: true` drops the index first. Returns a task.
+|===
+
+.Replicas
+[source,json]
+----
+GET /server:index/com.enonic.cms.default
+
+{"replicas": {"search": "1", "storage": "0-all"}}
+----
+
+.Reindex the master branch
+[source,json]
+----
+POST /server:index/com.enonic.cms.default/reindex
+{"branches": ["master"], "initialize": false}
+----
+
+NOTE: There is no replacement for `repo/index/updateSettings` as a raw settings passthrough. Settings other than replicas are internal structure; an installation that must change them talks to Elasticsearch directly.
+
+[#server-repo]
+== server:repo
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:repo+`
+|Every repository with its branches: `{"repositories": [{"id": "...", "branches": ["draft", "master"]}]}`.
+
+|`get`
+|`+GET /server:repo/{repo}+`
+|One repository.
+|===
+
+[#server-export]
+== server:export
+
+Exports of a repository path, written to and read from `+$XP_HOME/data/export/<name>+`.
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:export+`
+|The exports on disk: `{"exports": [{"name": "..."}]}`.
+
+|`create`
+|`+POST /server:export+`
+|Exports `sourceRepoPath` (`+<repository>:<branch>:<path>+`) as `exportName`. Optional `batchSize`. Returns a task.
+
+|`load`
+|`+POST /server:export/{name}/load+`
+|Imports the export into `targetRepoPath`. Optional `importWithIds` and `importWithPermissions` (default `true`), `xslSource` and `xslParams` for a transform on the way in. Returns a task.
+|===
+
+.Export and load
+[source,json]
+----
+POST /server:export
+{"sourceRepoPath": "com.enonic.cms.default:draft:/content/mysite", "exportName": "mysite"}
+
+POST /server:export/mysite/load
+{"targetRepoPath": "com.enonic.cms.staging:draft:/content", "importWithIds": true}
+----
+
+[#server-dump]
+== server:dump
+
+System dumps under `+$XP_HOME/data/dump/<name>+`.
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:dump+`
+|The dumps on disk with timestamp, version and size.
+
+|`create`
+|`+POST /server:dump+`
+|Dumps all repositories (or `repositories`) as `name`. `includeVersions`, `maxAge`, `maxVersions` as for the legacy API. Returns a task.
+
+|`load`
+|`+POST /server:dump/{name}/load+`
+|Loads the dump, replacing the current data. Optional body: `upgrade`, `repositories`. Returns a task.
+
+|`upgrade`
+|`+POST /server:dump/{name}/upgrade+`
+|Upgrades the dump on disk to the current model version. Returns a task.
+|===
+
+[#server-snapshot]
+== server:snapshot
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:snapshot+`
+|Every snapshot in the snapshot repository.
+
+|`create`
+|`+POST /server:snapshot+`
+|Snapshots all repositories, or `repositoryId`. Optional `snapshotName`. Returns a task.
+
+|`restore`
+|`+POST /server:snapshot/{name}/restore+` +
+`+POST /server:snapshot/restore+` with `{"latest": true}`
+|Restores a snapshot, replacing the current data. Optional `repository`, `force`. Returns a task.
+
+|`prune`
+|`+DELETE /server:snapshot/{name}+` +
+`+DELETE /server:snapshot?before=<ISO date-time>+`
+|Deletes one snapshot, or every snapshot taken before an instant.
+|===
+
+[#server-system]
+== server:system
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`prune`
+|`+POST /server:system/prune+` +
+alias `+/server:system/vacuum+`
+|Removes unused blobs and old versions. Optional `ageThreshold` (ISO duration, e.g. `PT48H`) and `tasks` (the vacuum tasks to run). Returns a task.
+|===
+
+[#server-auditlog]
+== server:auditlog
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`prune`
+|`+POST /server:auditlog/prune+` +
+alias `+/server:auditlog/cleanup+`
+|Deletes audit log records older than `ageThreshold` (ISO duration, required). Returns a task.
+|===
+
+[#server-project]
+== server:project
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:project+`
+|Every content project with its `draft` and `master` branches and the sites on each.
+
+|`sync`
+|`+POST /server:project/sync+`
+|Syncs inherited content from parent projects into child projects, parents first. Optional `projects` limits the sync to the named projects; without it every project is synced. Returns a task.
+|===
+
+.Sync two projects
+[source,json]
+----
+POST /server:project/sync
+{"projects": ["intranet", "intranet-no"]}
+----
+
+[#server-task]
+== server:task
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:task+` +
+`+GET /server:task?running=true+`
+|All tasks on this node, or only the running ones.
+
+|`get`
+|`+GET /server:task/{id}+`
+|State, progress and description of one task - the id every `202` response returns.
+|===
+
+[#server-vhost]
+== server:vhost
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:vhost+`
+|Whether virtual hosts are enabled and every mapping in matching order: name, host, source, target, endpoint, order, default id provider and the id providers with their enabled flows.
+|===
+
+The projection is fixed. A mapping's `context` - which carries the <<../../config/vhosts#management-api-policy,policies restricting this very API>> and whatever else an installation puts there - and its `allow` list are never included.
+
+[source,json]
+----
+{
+  "enabled": true,
+  "vhosts": [
+    {
+      "name": "stats",
+      "host": "stats.enonic.com",
+      "source": "/",
+      "target": "/",
+      "endpoint": "statistics",
+      "order": 10,
+      "defaultIdProviderKey": "myidprovider",
+      "idProviders": [{"key": "myidprovider", "flows": ["autologin"]}]
+    }
+  ]
+}
+----
+
+[#server-idprovider]
+== server:idprovider
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:idprovider+`
+|Every id provider: `key`, `displayName`, `description` and the `applicationKey` of the application implementing it. The provider configuration is never included - for OIDC and similar providers it holds client secrets.
+|===
+
+[#legacy]
+== Legacy REST API
+
+The <<../management#,legacy endpoints>> stay available and unchanged. This is how they map:
+
+[cols="2,2,2", options="header"]
+|===
+|Legacy
+|Resource
+|Note
+
+|`POST app/install`, `app/installUrl`, `app/start`, `app/stop`, `app/uninstall`, `GET app/events`
+|`server:app`
+|`installUrl` and `events` remain as aliases of `pull` and `watch`.
+
+|`POST repo/index/reindexTask`
+|`server:index` `reindex`
+|
+
+|`POST repo/index/reindex`
+|-
+|*Deprecated.* Blocked the connection for the duration of the reindex. Use the task form.
+
+|`POST repo/index/updateSettings`
+|`server:index` `update`
+|*Deprecated* as a raw settings passthrough; only replicas are exposed.
+
+|`GET repo/list`
+|`server:repo` `list`
+|
+
+|`POST repo/export`, `repo/import`
+|`server:export` `create`, `load`
+|Listing exports is new.
+
+|`GET system/dump`, `POST system/dump`, `system/load`, `system/upgrade`
+|`server:dump`
+|
+
+|`POST repo/snapshot`, `repo/snapshot/restore`, `repo/snapshot/delete`, `GET repo/snapshot/list`
+|`server:snapshot`
+|
+
+|`POST system/vacuum`
+|`server:system` `prune`
+|`vacuum` remains as an alias.
+
+|`POST auditlog/cleanup`
+|`server:auditlog` `prune`
+|`cleanup` remains as an alias.
+
+|`GET content/projects/list`, `POST content/syncAll`
+|`server:project`
+|`sync` accepts a list of projects.
+
+|`GET task/{taskId}`
+|`server:task` `get`
+|Listing tasks is new.
+
+|`GET idproviders/list`
+|`server:idprovider` `list`
+|
+
+|`GET scheduler/list`, `GET webapps/list`
+|-
+|Not migrated; remain on the legacy API.
+|===

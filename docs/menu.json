@@ -79,6 +79,10 @@
           "document": "endpoints/management"
         },
         {
+          "title": "Management resources",
+          "document": "endpoints/management/resources"
+        },
+        {
           "title": "Statistics API",
           "document": "endpoints/statistics"
         }
@@ -150,7 +154,7 @@
           "title": "Logging",
           "document": "config/logging"
         }
-      ] 
+      ]
     },
     {
       "title": "Release Notes",

@@ -759,7 +759,7 @@ virtual.schema.override = false
 
 `com.enonic.xp.server.management.app.cfg`
 
-Configure the security policy for the management Applications API on Port 4848 (`/api/server:app/*`). Currently controls the `/installUrl` endpoint, which installs an application from a remote URL.
+Configure the security policy for the management Applications API on Port 4848 (`+/server:app/*+`, see <<../endpoints/management/resources#server-app,server:app>>). Controls the `pull` verb (`+/server:app/pull+`, alias `+/server:app/installUrl+`), which installs an application from a remote URL. To withhold `pull` from a virtual host altogether, leave it out of the vhost's <<vhosts#management-api-policy,`verbs`>> for `server:app`.
 
 .Default configuration
 [source,properties]

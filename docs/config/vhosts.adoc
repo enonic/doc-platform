@@ -5,7 +5,7 @@
 
 Expose Universal APIs, Admin, Sites or Webapps on custom domains and paths.
 
-NOTE: Vhosts only apply to XP's web endpoint (defaults to port 8080). They do not affect the management and monitoring endpoints.
+NOTE: A mapping applies to XP's web endpoint (port 8080) unless its `endpoint` says otherwise - see <<#endpoints,Management and statistics endpoints>>.
 
 
 == Configuration file
@@ -36,6 +36,9 @@ host:: specifies the hostname (aka domain) the vhost will handle
 source:: refers to basepath used in request, sample above handles company.com/app
 target:: is the internal route in XP to the specific endpoint/service
 idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`.
+endpoint:: image:xp-8020.svg[XP 8.2.0,opts=inline] the endpoint the mapping applies to: `web` (default), `management` or `statistics`. See <<#endpoints,Management and statistics endpoints>>.
+allow:: image:xp-8020.svg[XP 8.2.0,opts=inline] comma separated principals (`role:system.admin`, `user:system:ops`, ...) that may pass through the mapping. Empty means no restriction.
+order:: mappings with a lower value are matched first. See <<#_request_matching,Request Matching>>.
 
 NOTE: Each mapping must define a unique name to separate the mappings when multiple mappings exist in the same file. In the example above `myapp` is used.
 
@@ -157,6 +160,34 @@ mapping.adm.com.enonic.xp.repository.RepositoryId = com.enonic.cms.repository.my
 mapping.adm.com.enonic.xp.branch.Branch = master
 ----
 
+[#management-api-policy]
+=== Management API policy
+
+image:xp-8020.svg[XP 8.2.0,opts=inline] On a `management` mapping, the `api.` context namespace narrows what the <<../endpoints/management/resources#,management resources>> expose through it. Each resource reads its own settings from the context of the request being served and enforces them itself - there is no central gateway - so the meaning of a setting is the resource's to define. The one setting every resource understands is `verbs`: the comma separated operations the mapping exposes.
+
+[source,properties]
+----
+mapping.backup.host = backup.example.com
+mapping.backup.source = /
+mapping.backup.target = /
+mapping.backup.endpoint = management
+mapping.backup.allow = user:system:backup-agent
+mapping.backup.context.api.rest.enabled = false                    <1>
+mapping.backup.context.api.server\:snapshot.verbs = list, create   <2>
+mapping.backup.context.api.server\:dump.verbs = list, create
+mapping.backup.context.api.server\:task.verbs = *                  <3>
+----
+
+<1> Switches the <<../endpoints/management#,legacy REST endpoints>> (`repo/snapshot/list`, `system/dump`, ...) off for this mapping, leaving only the `+/<application>:<api>+` resources. Default: enabled.
+<2> `server:snapshot` answers `list` and `create` on this mapping and refuses `restore` and `prune` with `403`. Note the escaped colon: the file is read as a Java properties file, where an unescaped colon ends the key.
+<3> `*` exposes every verb. A resource without a `verbs` setting is unrestricted, so the resources not mentioned here - `server:app`, `server:index`, `server:system`, ... - remain fully available on this mapping; list them with an empty value to lock them (`+mapping.backup.context.api.server\:app.verbs = -+`).
+
+A path alias (`+/server:system/vacuum+` for `+/server:system/prune+`, `+/server:app/installUrl+` for `+/server:app/pull+`) maps to the verb it aliases before the check, so an alias never reaches an operation its verb would not.
+
+Keys under `api.` are validated when the file is loaded: a key that does not read as `api.rest.enabled` or `+api.<application>:<api>.<setting>+` - most often a colon that was not escaped - is a configuration error, since silently ignoring it would leave the resource it meant to restrict unrestricted.
+
+Resources may define further settings in the same namespace, and a Universal API of an installed application mounted on the management endpoint can read its own `+api.<application>:<api>.<setting>+` attributes from the context with `contextLib` to honour the same scheme - see <<https://developer.enonic.com/docs/xp/stable/code/web/apis#management-endpoint,Universal APIs on the management endpoint>>.
+
 [#api-locations]
 === API locations
 
@@ -183,6 +214,24 @@ Declarations are consulted in order of how specifically they name an API, so exp
 . `portal.apiBaseUrl` - names any API.
 
 An API mounted on the site, webapp or admin tool that serves the request keeps its URL under that mount's `_` endpoint; the declared locations apply to APIs that are addressed from elsewhere.
+
+[#endpoints]
+== Management and statistics endpoints
+
+image:xp-8020.svg[XP 8.2.0,opts=inline] A mapping applies to the web endpoint unless `endpoint` names the `management` (port 4848) or `statistics` (port 2609) endpoint. Host and source matching, `target` rewriting, id providers and `context` work the same on every endpoint; `allow` restricts who may pass through.
+
+.The management endpoint behind a host name, for administrators only
+[source,properties]
+----
+mapping.mgmt.host = mgmt.example.com
+mapping.mgmt.source = /
+mapping.mgmt.target = /
+mapping.mgmt.endpoint = management
+mapping.mgmt.idProvider.myidprovider = default&enabled=autologin
+mapping.mgmt.allow = role:system.admin
+----
+
+Once vhosts are enabled, a request on the management or statistics endpoint that no mapping matches is served as before; only the web endpoint refuses unmapped requests. What a management mapping exposes is narrowed further with the <<#management-api-policy,management API policy>> in its context.
 
 == Examples
 
