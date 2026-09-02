@@ -946,6 +946,8 @@ GET content/projects/list
 
 === SyncAll
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:project-sync` cluster task rather than a local task named `sync-all-projects`.
+
 Calls forced content sync for all available projects.
 
 .Url
@@ -1067,6 +1069,8 @@ POST repo/index/reindex
 ----
 
 === Reindex Task
+
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:reindex` cluster task, on whichever node picks it up, rather than on the node that received the request.
 
 Calls <<reindex,reindex>> endpoint as a task.
 
