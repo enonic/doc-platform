@@ -163,7 +163,7 @@ mapping.adm.com.enonic.xp.branch.Branch = master
 [#management-api-policy]
 === Management API policy
 
-image:xp-8020.svg[XP 8.2.0,opts=inline] On a `management` mapping, the `api.` context namespace narrows what the <<../endpoints/management/resources#,management resources>> expose through it. Each resource reads its own settings from the context of the request being served and enforces them itself - there is no central gateway - so the meaning of a setting is the resource's to define. The one setting every resource understands is `verbs`: the comma separated operations the mapping exposes.
+image:xp-8020.svg[XP 8.2.0,opts=inline] On a `management` mapping, the `api.` context namespace selects what the <<../endpoints/management/resources#,management resources>> expose through it. Each resource reads its own settings from the request context and enforces them; a setting's meaning is defined by the resource. Every resource understands `verbs`: the comma separated operations the mapping exposes.
 
 [source,properties]
 ----
@@ -180,13 +180,13 @@ mapping.backup.context.api.server\:task.verbs = *                  <3>
 
 <1> Switches the <<../endpoints/management#,legacy REST endpoints>> (`repo/snapshot/list`, `system/dump`, ...) off for this mapping, leaving only the `+/<application>:<api>+` resources. Default: enabled.
 <2> `server:snapshot` answers `list` and `create` on this mapping and refuses `restore` and `prune` with `403`. Note the escaped colon: the file is read as a Java properties file, where an unescaped colon ends the key.
-<3> `*` exposes every verb. A resource without a `verbs` setting is unrestricted, so the resources not mentioned here - `server:app`, `server:index`, `server:system`, ... - remain fully available on this mapping; list them with an empty value to lock them (`+mapping.backup.context.api.server\:app.verbs = -+`).
+<3> `*` exposes every verb. A resource without a `verbs` setting is unrestricted: `server:app`, `server:index`, `server:system`, ... remain fully available on this mapping. `+mapping.backup.context.api.server\:app.verbs = -+` exposes no verb of a resource.
 
-A path alias (`+/server:system/vacuum+` for `+/server:system/prune+`, `+/server:app/installUrl+` for `+/server:app/pull+`) maps to the verb it aliases before the check, so an alias never reaches an operation its verb would not.
+A path alias (`+/server:system/vacuum+` for `+/server:system/prune+`, `+/server:app/installUrl+` for `+/server:app/pull+`) belongs to the verb it aliases and is exposed exactly when that verb is.
 
-Keys under `api.` are validated when the file is loaded: a key that does not read as `api.rest.enabled` or `+api.<application>:<api>.<setting>+` - most often a colon that was not escaped - is a configuration error, since silently ignoring it would leave the resource it meant to restrict unrestricted.
+Keys under `api.` are validated when the file is loaded. A key that is neither `api.rest.enabled` nor `+api.<application>:<api>.<setting>+` (typically a colon that was not escaped) is a configuration error and the file is rejected.
 
-Resources may define further settings in the same namespace, and a Universal API of an installed application mounted on the management endpoint can read its own `+api.<application>:<api>.<setting>+` attributes from the context with `contextLib` to honour the same scheme - see <<https://developer.enonic.com/docs/xp/stable/code/web/apis#management-endpoint,Universal APIs on the management endpoint>>.
+Resources may define further settings in the same namespace. A Universal API of an installed application mounted on the management endpoint reads its own `+api.<application>:<api>.<setting>+` attributes from the context with `contextLib` - see <<https://developer.enonic.com/docs/xp/stable/code/web/apis#management-endpoint,Universal APIs on the management endpoint>>.
 
 [#api-locations]
 === API locations
@@ -231,7 +231,7 @@ mapping.mgmt.idProvider.myidprovider = default&enabled=autologin
 mapping.mgmt.allow = role:system.admin
 ----
 
-Once vhosts are enabled, a request on the management or statistics endpoint that no mapping matches is served as before; only the web endpoint refuses unmapped requests. What a management mapping exposes is narrowed further with the <<#management-api-policy,management API policy>> in its context.
+Once vhosts are enabled, a request on the management or statistics endpoint that no mapping matches is served as before; only the web endpoint refuses unmapped requests. A management mapping selects what it exposes with the <<#management-api-policy,management API policy>> in its context.
 
 == Examples
 

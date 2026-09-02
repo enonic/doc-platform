@@ -6,7 +6,7 @@ The Management API provides programmatic access to administrative and operationa
 
 [NOTE]
 ====
-image:xp-8020.svg[XP 8.2.0,opts=inline] The operations below are also available as <<management/resources#,management resources>> - `+/server:snapshot+`, `+/server:dump+`, `+/server:index+`, ... - a resource-and-verb surface that a <<../config/vhosts#management-api-policy,virtual host can expose selectively>>, and the form new operations are added in. The endpoints on this page keep working unchanged.
+image:xp-8020.svg[XP 8.2.0,opts=inline] The operations below are also available as <<management/resources#,management resources>> (`+/server:snapshot+`, `+/server:dump+`, `+/server:index+`, ...), which a <<../config/vhosts#management-api-policy,virtual host exposes selectively>>. The endpoints on this page are unchanged.
 ====
 
 == Authorization [[authorization]]
@@ -240,7 +240,7 @@ List of command for manipulating all repositories
 
 === Create
 
-NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:dump` cluster task, on whichever node picks it up; in a cluster `+$XP_HOME/data+` must be on a shared file system.
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:dump` cluster task, on any node of the cluster; in a cluster `+$XP_HOME/data+` must be on a shared file system.
 
 Export data from every repository. The result will be stored in the `$XP_HOME/data/dump` directory.
 
@@ -456,7 +456,7 @@ Export and import data from a given repository, branch and content path.
 
 === Create
 
-NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:export` cluster task, on whichever node picks it up; in a cluster `+$XP_HOME/data+` must be on a shared file system.
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:export` cluster task, on any node of the cluster; in a cluster `+$XP_HOME/data+` must be on a shared file system.
 
 Extract data from a given repository, branch and content path. The result will be stored in the `$XP_HOME/data/export` directory as a ZIP archive named `{exportName}.zip`.
 This is useful to move a part of a site from one installation to another.
@@ -956,7 +956,7 @@ GET content/projects/list
 
 === SyncAll
 
-NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:project-sync` cluster task rather than a local task named `sync-all-projects`.
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:project-sync` cluster task (previously a local task named `sync-all-projects`).
 
 Calls forced content sync for all available projects.
 
@@ -1035,7 +1035,7 @@ Commands for configuring and managing repositories.
 [#reindex]
 === Reindex
 
-WARNING: Deprecated. This call blocks until the reindex completes, which can take hours. Use <<#_reindex_task,Reindex Task>> or `server:index` <<management/resources#server-index,`reindex`>>.
+WARNING: Deprecated. Synchronous; use <<#_reindex_task,Reindex Task>> or `server:index` <<management/resources#server-index,`reindex`>>.
 
 Reindex the content in the search indices for the given repository and branches. This is usually required after upgrades and may be useful in many other cases.
 
@@ -1080,7 +1080,7 @@ POST repo/index/reindex
 
 === Reindex Task
 
-NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:reindex` cluster task, on whichever node picks it up, rather than on the node that received the request.
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:reindex` cluster task, on any node of the cluster.
 
 Calls <<reindex,reindex>> endpoint as a task.
 
@@ -1119,7 +1119,7 @@ NOTE: Task info can be fetched with <<task, task>> request.
 
 === Settings
 
-WARNING: Deprecated as a raw settings passthrough. Replica counts - the setting this is used for - are exposed by `server:index` <<management/resources#server-index,`update`>>; other index settings are internal structure.
+WARNING: Deprecated. Replica settings are exposed by `server:index` <<management/resources#server-index,`update`>>; other index settings are not exposed.
 
 Update settings for a specified repository.
 

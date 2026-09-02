@@ -6,11 +6,11 @@ image:xp-8020.svg[XP 8.2.0,opts=inline] Resource-oriented management APIs on the
 
 == Overview
 
-Every management operation is exposed as a *resource* with a fixed set of *verbs*, in the vocabulary of `kubectl` and `docker`: `list`, `get`, `create`, `load`, `restore`, `prune`, `watch`. A resource is an API on the management endpoint, addressed by its descriptor key at the root of the port:
+Every management operation is exposed as a *resource* with a fixed set of *verbs*: `list`, `get`, `create`, `load`, `restore`, `prune`, `watch`. A resource is an API on the management endpoint, addressed by its descriptor key at the root of the port:
 
   http://localhost:4848/server:snapshot
 
-The <<../management#,legacy REST API>> (`repo/snapshot/list`, `system/dump`, ...) keeps working unchanged. The resources are the same operations behind a surface that a <<../../config/vhosts#management-api-policy,virtual host can narrow>>: which resources it exposes and, within each, which verbs. Nothing here requires changing existing clients; the legacy paths can be <<../../config/vhosts#management-api-policy,switched off per virtual host>> once they are no longer needed.
+The <<../management#,legacy REST API>> (`repo/snapshot/list`, `system/dump`, ...) is unchanged. A <<../../config/vhosts#management-api-policy,virtual host>> selects which resources and verbs it exposes, and can switch the legacy paths off.
 
 === Authorization
 
@@ -20,7 +20,7 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 
 * Queries are `GET` and take no body. A collection is read at the resource root (`+GET /server:repo+`), an item by name (`+GET /server:repo/{repo}+`).
 * Commands are `POST` with a JSON body (or `PUT` when they replace the state of an item, `DELETE` when they remove one). A command naming an existing item puts the name in the path: `+POST /server:dump/{name}/load+`.
-* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`. Every such command is a cluster task of the system application (`com.enonic.xp.app.system:dump`, `:export`, `:reindex`, ...) and runs on whichever node picks it up - so in a cluster, `+$XP_HOME/data+` (dumps, exports) and the snapshot location must be on a file system shared by all nodes, as they already must be for snapshots:
+* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`. Every such command is a cluster task of the system application (`com.enonic.xp.app.system:dump`, `:export`, `:reindex`, ...) and runs on any node of the cluster. In a cluster, `+$XP_HOME/data+` and the snapshot location must be on a file system shared by all nodes:
 +
 [source,json]
 ----
@@ -34,7 +34,7 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 ----
 +
 `404` for an unknown path or item, `405` for a wrong method, `400` for an invalid body, `403` when the virtual host does not expose the verb.
-* Some paths have an *alias*: the name the operation had before. An alias behaves exactly like the path it aliases and maps to the same verb - so a virtual host that exposes `prune` on `server:system` exposes both `+/server:system/prune+` and `+/server:system/vacuum+`, and one that does not exposes neither.
+* Some paths have an *alias*, the name the operation had before. An alias behaves exactly like the path it aliases and belongs to the same verb: a virtual host that exposes `prune` on `server:system` exposes both `+/server:system/prune+` and `+/server:system/vacuum+`, and one that does not exposes neither.
 
 == Resources
 
@@ -46,7 +46,7 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 
 |<<server-app,`server:app`>>
 |`list`, `install`, `pull`, `uninstall`, `start`, `stop`, `watch`
-|Installed applications. `pull` fetches from a URL the server can reach and is a separate verb from `install` (upload), since it is the one operation where the server makes an outbound request.
+|Installed applications. `install` takes an uploaded bundle; `pull` fetches the bundle from a URL.
 
 |<<server-index,`server:index`>>
 |`get`, `update`, `reindex`
@@ -117,7 +117,7 @@ Installed applications.
 |`pull`
 |`+POST /server:app/pull+` +
 alias `+/server:app/installUrl+`
-|Fetches and installs an application from `URL`; `sha512` holds the expected digest. The URL must match the allow-list in <<../../config/system#management-app,`com.enonic.xp.server.management.app.cfg`>>, which also decides whether the checksum is mandatory.
+|Fetches and installs an application from `URL`; `sha512` holds the expected digest. The URL must match the allow-list in <<../../config/system#management-app,`com.enonic.xp.server.management.app.cfg`>>, which also sets whether `sha512` is required.
 
 |`uninstall`
 |`+POST /server:app/uninstall+`
@@ -146,7 +146,7 @@ POST /server:app/pull
 [#server-index]
 == server:index
 
-The two Elasticsearch indices of a repository: `search`, which holds the searchable representation and can be rebuilt, and `storage`, which holds versions, branches and commits and is the data itself. The API exposes the one setting an operator tunes on them - replicas - rather than raw index settings.
+The two Elasticsearch indices of a repository: `search`, holding the searchable representation, and `storage`, holding versions, branches and commits. The API exposes their replica settings.
 
 [cols="1,2,4", options="header"]
 |===
@@ -160,7 +160,7 @@ The two Elasticsearch indices of a repository: `search`, which holds the searcha
 
 |`update`
 |`+PUT /server:index/{repo}+`
-|Replaces the replica settings of both indices. Both keys are required. A value is either a number of replicas as a string (`"2"`) or an Elasticsearch auto-expand range (`"0-all"`, `"0-1"`): with a range the cluster adds and removes replicas as data nodes join and leave.
+|Replaces the replica settings of both indices. Both keys are required. A value is either a number of replicas as a string (`"2"`) or an Elasticsearch auto-expand range (`"0-all"`, `"0-1"`); any other value is rejected with `400`.
 
 |`reindex`
 |`+POST /server:index/{repo}/reindex+`
@@ -182,7 +182,7 @@ POST /server:index/com.enonic.cms.default/reindex
 {"branches": ["master"], "initialize": false}
 ----
 
-NOTE: There is no replacement for `repo/index/updateSettings` as a raw settings passthrough. Settings other than replicas are internal structure; an installation that must change them talks to Elasticsearch directly.
+NOTE: Index settings other than replicas are not exposed.
 
 [#server-repo]
 == server:repo
@@ -223,7 +223,7 @@ Exports of a repository path, written to and read from `+$XP_HOME/data/export/<n
 
 |`load`
 |`+POST /server:export/{name}/load+`
-|Imports the export into `targetRepoPath`. Optional `importWithIds` and `importWithPermissions` (default `true`). No XSLT transformation - a stylesheet read from the exports directory has no provenance; transform through `lib-export` with an application resource instead. The legacy `xslSource` and `xslParams` keys are accepted and ignored. Returns a task.
+|Imports the export into `targetRepoPath`. Optional `importWithIds` and `importWithPermissions` (default `true`). No XSLT transformation is applied; the legacy `xslSource` and `xslParams` keys are accepted and ignored. Returns a task.
 |===
 
 .Export and load
@@ -380,7 +380,7 @@ POST /server:project/sync
 |Whether virtual hosts are enabled and every mapping in matching order: name, host, source, target, endpoint, order, default id provider and the id providers with their enabled flows.
 |===
 
-The projection is fixed. A mapping's `context` - which carries the <<../../config/vhosts#management-api-policy,policies restricting this very API>> and whatever else an installation puts there - and its `allow` list are never included.
+The projection is fixed: a mapping's `context` and `allow` are never included.
 
 [source,json]
 ----
@@ -412,13 +412,13 @@ The projection is fixed. A mapping's `context` - which carries the <<../../confi
 
 |`list`
 |`+GET /server:idprovider+`
-|Every id provider: `key`, `displayName`, `description` and the `applicationKey` of the application implementing it. The provider configuration is never included - for OIDC and similar providers it holds client secrets.
+|Every id provider: `key`, `displayName`, `description` and the `applicationKey` of the application implementing it. The provider configuration is never included.
 |===
 
 [#legacy]
 == Legacy REST API
 
-The <<../management#,legacy endpoints>> stay available and unchanged. This is how they map:
+The <<../management#,legacy endpoints>> are unchanged. They map to the resources as follows:
 
 [cols="2,2,2", options="header"]
 |===
@@ -436,11 +436,11 @@ The <<../management#,legacy endpoints>> stay available and unchanged. This is ho
 
 |`POST repo/index/reindex`
 |-
-|*Deprecated.* Blocked the connection for the duration of the reindex. Use the task form.
+|*Deprecated.* Synchronous; use `server:index` `reindex`.
 
 |`POST repo/index/updateSettings`
 |`server:index` `update`
-|*Deprecated* as a raw settings passthrough; only replicas are exposed.
+|*Deprecated.* Only replicas are exposed through `server:index` `update`.
 
 |`GET repo/list`
 |`server:repo` `list`
