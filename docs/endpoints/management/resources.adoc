@@ -223,7 +223,7 @@ Exports of a repository path, written to and read from `+$XP_HOME/data/export/<n
 
 |`load`
 |`+POST /server:export/{name}/load+`
-|Imports the export into `targetRepoPath`. Optional `importWithIds` and `importWithPermissions` (default `true`), `xslSource` and `xslParams` for a transform on the way in. Returns a task.
+|Imports the export into `targetRepoPath`. Optional `importWithIds` and `importWithPermissions` (default `true`). No XSLT transformation - a stylesheet read from the exports directory has no provenance; transform through `lib-export` with an application resource instead. The legacy `xslSource` and `xslParams` keys are accepted and ignored. Returns a task.
 |===
 
 .Export and load
