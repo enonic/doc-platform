@@ -20,7 +20,7 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 
 * Queries are `GET` and take no body. A collection is read at the resource root (`+GET /server:repo+`), an item by name (`+GET /server:repo/{repo}+`).
 * Commands are `POST` with a JSON body (or `PUT` when they replace the state of an item, `DELETE` when they remove one). A command naming an existing item puts the name in the path: `+POST /server:dump/{name}/load+`.
-* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`. Tasks that only touch repository data (`reindex`, `sync`, snapshots, `prune`) are cluster tasks of the system application and run on whichever node picks them up; tasks that read or write this node's file system (dumps, exports) run on the node that received the request:
+* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`. Every such command is a cluster task of the system application (`com.enonic.xp.app.system:dump`, `:export`, `:reindex`, ...) and runs on whichever node picks it up - so in a cluster, `+$XP_HOME/data+` (dumps, exports) and the snapshot location must be on a file system shared by all nodes, as they already must be for snapshots:
 +
 [source,json]
 ----

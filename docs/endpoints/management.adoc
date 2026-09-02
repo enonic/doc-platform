@@ -240,6 +240,8 @@ List of command for manipulating all repositories
 
 === Create
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:dump` cluster task, on whichever node picks it up; in a cluster `+$XP_HOME/data+` must be on a shared file system.
+
 Export data from every repository. The result will be stored in the `$XP_HOME/data/dump` directory.
 
 .Url
@@ -320,6 +322,8 @@ NOTE: Task info can be fetched with <<task, task>> request.
 
 === Upgrade
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:upgrade` cluster task.
+
 Upgrade a data dump from a previous version to the current version. The output of the upgrade will be placed alongside the dump that is being upgraded and will have the name `<dump-name>_upgraded_<new-version>`.
 
 NOTE: The current version XP installation must be running with the upgraded app deployed.
@@ -361,6 +365,8 @@ NOTE: Task info can be fetched with <<task, task>> request.
 ----
 
 === Load
+
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:load` cluster task.
 
 Load data from a named system dump into Enonic XP. The dump read has to be stored in the `$XP_HOME/data/dump` directory.
 
@@ -450,6 +456,8 @@ Export and import data from a given repository, branch and content path.
 
 === Create
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:export` cluster task, on whichever node picks it up; in a cluster `+$XP_HOME/data+` must be on a shared file system.
+
 Extract data from a given repository, branch and content path. The result will be stored in the `$XP_HOME/data/export` directory as a ZIP archive named `{exportName}.zip`.
 This is useful to move a part of a site from one installation to another.
 
@@ -503,6 +511,8 @@ NOTE: Task info can be fetched with <<task, task>> request.
 ----
 
 === Import
+
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:import` cluster task.
 
 Import data from a named export into Enonic XP at the desired content path.
 The export read has to be stored in the `$XP_HOME/data/export` directory.
