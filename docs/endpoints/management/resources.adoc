@@ -20,7 +20,7 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 
 * Queries are `GET` and take no body. A collection is read at the resource root (`+GET /server:repo+`), an item by name (`+GET /server:repo/{repo}+`).
 * Commands are `POST` with a JSON body (or `PUT` when they replace the state of an item, `DELETE` when they remove one). A command naming an existing item puts the name in the path: `+POST /server:dump/{name}/load+`.
-* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`. Every such command is a cluster task of the system application (`com.enonic.xp.app.system:dump`, `:export`, `:reindex`, ...) and runs on any node of the cluster. In a cluster, `+$XP_HOME/data+` and the snapshot location must be on a file system shared by all nodes:
+* Long-running commands return `202 Accepted` with the id of a task to poll through `server:task`. Except for `server:content` `sync`, every such command is a cluster task of the system application (`com.enonic.xp.app.system:dump`, `:export`, `:reindex`, ...) and runs on any node of the cluster. In a cluster, `+$XP_HOME/data+` and the snapshot location must be on a file system shared by all nodes:
 +
 [source,json]
 ----
@@ -77,8 +77,12 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 |Audit log retention.
 
 |<<server-project,`server:project`>>
-|`list`, `sync`
-|Content projects with their sites; syncing inherited content.
+|`list`
+|Content projects with their sites.
+
+|<<server-content,`server:content`>>
+|`sync`
+|Syncing inherited content from parent projects into child projects.
 
 |<<server-task,`server:task`>>
 |`list`, `get`, `watch`
@@ -342,16 +346,26 @@ alias `+/server:auditlog/cleanup+`
 |`list`
 |`+GET /server:project+`
 |Every content project with its `draft` and `master` branches and the sites on each.
+|===
+
+[#server-content]
+== server:content
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
 
 |`sync`
-|`+POST /server:project/sync+`
-|Syncs inherited content from parent projects into child projects, parents first. Optional `projects` limits the sync to the named projects; without it every project is synced. Returns a task.
+|`+POST /server:content/sync+`
+|Syncs inherited content from parent projects into child projects, parents first. Optional `projects` limits the sync to the named projects; without it every project is synced. Runs as a local task on the node that received the request. Returns a task.
 |===
 
 .Sync two projects
 [source,json]
 ----
-POST /server:project/sync
+POST /server:content/sync
 {"projects": ["intranet", "intranet-no"]}
 ----
 
@@ -546,8 +560,12 @@ The <<../management#,legacy endpoints>> are unchanged. They map to the resources
 |`server:auditlog` `prune`
 |`cleanup` remains as an alias.
 
-|`GET content/projects/list`, `POST content/syncAll`
-|`server:project`
+|`GET content/projects/list`
+|`server:project` `list`
+|
+
+|`POST content/syncAll`
+|`server:content` `sync`
 |`sync` accepts a list of projects.
 
 |`GET task/{taskId}`

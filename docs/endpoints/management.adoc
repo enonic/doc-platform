@@ -956,8 +956,6 @@ GET content/projects/list
 
 === SyncAll
 
-NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:project-sync` cluster task (previously a local task named `sync-all-projects`).
-
 Calls forced content sync for all available projects.
 
 .Url
