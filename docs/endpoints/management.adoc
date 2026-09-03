@@ -4,6 +4,11 @@
 
 The Management API provides programmatic access to administrative and operational functions, commonly used by developers and DevOps teams in combination with Enonic CLI.
 
+[NOTE]
+====
+image:xp-8020.svg[XP 8.2.0,opts=inline] The operations below are also available as <<management/resources#,management resources>> (`+/server:snapshot+`, `+/server:dump+`, `+/server:index+`, ...), which a <<../config/vhosts#management-api-policy,virtual host exposes selectively>>. The endpoints on this page are unchanged.
+====
+
 == Authorization [[authorization]]
 
 The management API requires an authenticated user with the Administrator role.
@@ -235,6 +240,8 @@ List of command for manipulating all repositories
 
 === Create
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:dump` cluster task, on any node of the cluster; in a cluster `+$XP_HOME/data+` must be on a shared file system.
+
 Export data from every repository. The result will be stored in the `$XP_HOME/data/dump` directory.
 
 .Url
@@ -315,6 +322,8 @@ NOTE: Task info can be fetched with <<task, task>> request.
 
 === Upgrade
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:upgrade` cluster task.
+
 Upgrade a data dump from a previous version to the current version. The output of the upgrade will be placed alongside the dump that is being upgraded and will have the name `<dump-name>_upgraded_<new-version>`.
 
 NOTE: The current version XP installation must be running with the upgraded app deployed.
@@ -356,6 +365,8 @@ NOTE: Task info can be fetched with <<task, task>> request.
 ----
 
 === Load
+
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:load` cluster task.
 
 Load data from a named system dump into Enonic XP. The dump read has to be stored in the `$XP_HOME/data/dump` directory.
 
@@ -445,6 +456,8 @@ Export and import data from a given repository, branch and content path.
 
 === Create
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:export` cluster task, on any node of the cluster; in a cluster `+$XP_HOME/data+` must be on a shared file system.
+
 Extract data from a given repository, branch and content path. The result will be stored in the `$XP_HOME/data/export` directory as a ZIP archive named `{exportName}.zip`.
 This is useful to move a part of a site from one installation to another.
 
@@ -498,6 +511,8 @@ NOTE: Task info can be fetched with <<task, task>> request.
 ----
 
 === Import
+
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:import` cluster task.
 
 Import data from a named export into Enonic XP at the desired content path.
 The export read has to be stored in the `$XP_HOME/data/export` directory.
@@ -1018,6 +1033,8 @@ Commands for configuring and managing repositories.
 [#reindex]
 === Reindex
 
+WARNING: Deprecated. Synchronous; use <<#_reindex_task,Reindex Task>> or `server:index` <<management/resources#server-index,`reindex`>>.
+
 Reindex the content in the search indices for the given repository and branches. This is usually required after upgrades and may be useful in many other cases.
 
 .Url
@@ -1061,6 +1078,8 @@ POST repo/index/reindex
 
 === Reindex Task
 
+NOTE: image:xp-8020.svg[XP 8.2.0,opts=inline] Runs as the `com.enonic.xp.app.system:reindex` cluster task, on any node of the cluster.
+
 Calls <<reindex,reindex>> endpoint as a task.
 
 .Url
@@ -1097,6 +1116,8 @@ POST repo/index/reindexTask
 NOTE: Task info can be fetched with <<task, task>> request.
 
 === Settings
+
+WARNING: Deprecated. Replica settings are exposed by `server:index` <<management/resources#server-index,`update`>>; other index settings are not exposed.
 
 Update settings for a specified repository.
 
