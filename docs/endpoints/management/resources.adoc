@@ -92,10 +92,6 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 |`list`, `get`, `create`, `delete`
 |Scheduled jobs.
 
-|<<server-webapp,`server:webapp`>>
-|`list`
-|Installed applications that ship a webapp.
-
 |<<server-idprovider,`server:idprovider`>>
 |`list`
 |ID providers, as virtual hosts refer to them.
@@ -442,20 +438,6 @@ POST /server:scheduler
 }
 ----
 
-[#server-webapp]
-== server:webapp
-
-[cols="1,2,4", options="header"]
-|===
-|Verb
-|Request
-|Description
-
-|`list`
-|`+GET /server:webapp+`
-|Installed applications that ship a webapp: `{"webapps": [{"name": "<application key>"}]}`.
-|===
-
 [#server-idprovider]
 == server:idprovider
 
@@ -542,6 +524,6 @@ The <<../management#,legacy endpoints>> are unchanged. They map to the resources
 |`get`, `create` and `delete` are new.
 
 |`GET webapps/list`
-|`server:webapp` `list`
-|
+|-
+|Not migrated; installed applications are node state.
 |===
