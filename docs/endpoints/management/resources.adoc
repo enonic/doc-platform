@@ -6,7 +6,7 @@ image:xp-8020.svg[XP 8.2.0,opts=inline] Resource-oriented management APIs on the
 
 == Overview
 
-Every management operation is exposed as a *resource* with a fixed set of *verbs*: `list`, `get`, `create`, `load`, `restore`, `prune`, `watch`. A resource is an API on the management endpoint, addressed by its descriptor key at the root of the port:
+Every management operation is exposed as a *resource* with a fixed set of *verbs*: `list`, `get`, `create`, `delete`, `load`, `restore`, `prune`, `watch`. A resource is an API on the management endpoint, addressed by its descriptor key at the root of the port:
 
   http://localhost:4848/server:snapshot
 
@@ -81,8 +81,16 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 |Content projects with their sites; syncing inherited content.
 
 |<<server-task,`server:task`>>
-|`list`, `get`
+|`list`, `get`, `watch`
 |The tasks the commands above hand out ids for.
+
+|<<server-scheduler,`server:scheduler`>>
+|`list`, `get`, `create`, `delete`
+|Scheduled jobs.
+
+|<<server-webapp,`server:webapp`>>
+|`list`
+|Installed applications that ship a webapp.
 
 |<<server-vhost,`server:vhost`>>
 |`list`
@@ -364,6 +372,78 @@ POST /server:project/sync
 |`get`
 |`+GET /server:task/{id}+`
 |State, progress and description of one task - the id every `202` response returns.
+
+|`watch`
+|`+GET /server:task/watch+` (SSE) +
+`+GET /server:task/{id}/watch+` (SSE) +
+alias `+/events+` for both
+|Server-sent events. Without an id: a `list` event with every task on connect, then `submitted`, `updated`, `finished`, `failed` and `removed` events for every task on the cluster. With an id: a `task` event with the task on connect, then the events of that task. The data of every event has the shape of `get`.
+|===
+
+.Watch one task
+[source]
+----
+GET /server:task/d9f3b1e4-.../watch
+Accept: text/event-stream
+
+event: task
+data: {"id":"d9f3b1e4-...","state":"RUNNING","progress":{"current":3,"total":10,"info":""},...}
+
+event: finished
+data: {"id":"d9f3b1e4-...","state":"FINISHED",...}
+----
+
+[#server-scheduler]
+== server:scheduler
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:scheduler+`
+|Every scheduled job: `{"jobs": [...]}`, each with `name`, `descriptor`, `calendar`, `enabled`, `config`, `user`, `lastRun`, `lastTaskId`.
+
+|`get`
+|`+GET /server:scheduler/{name}+`
+|One scheduled job.
+
+|`create`
+|`+POST /server:scheduler+`
+|Creates a job. `name`, `descriptor` (the task to run) and `schedule` are required; `description`, `config` (the task's config), `enabled` (default `true`) and `user` (the principal the task runs as) are optional. `schedule.type` is `CRON` (`value` a cron expression, `timeZone` required), `ONE_TIME` (`value` an ISO instant, optional `deleteAfterRun`) or `FIXED_RATE` (`value` an ISO duration). Returns `201` with the job.
+
+|`delete`
+|`+DELETE /server:scheduler/{name}+`
+|Deletes the job.
+|===
+
+.Dump every night at 03:00
+[source,json]
+----
+POST /server:scheduler
+{
+  "name": "nightly-dump",
+  "descriptor": "com.enonic.xp.app.system:dump",
+  "schedule": {"type": "CRON", "value": "0 3 * * *", "timeZone": "Europe/Oslo"},
+  "config": {"name": "nightly", "includeVersions": true},
+  "user": "user:system:su"
+}
+----
+
+[#server-webapp]
+== server:webapp
+
+[cols="1,2,4", options="header"]
+|===
+|Verb
+|Request
+|Description
+
+|`list`
+|`+GET /server:webapp+`
+|Installed applications that ship a webapp: `{"webapps": [{"name": "<application key>"}]}`.
 |===
 
 [#server-vhost]
@@ -472,13 +552,17 @@ The <<../management#,legacy endpoints>> are unchanged. They map to the resources
 
 |`GET task/{taskId}`
 |`server:task` `get`
-|Listing tasks is new.
+|Listing and watching tasks are new.
 
 |`GET idproviders/list`
 |`server:idprovider` `list`
 |
 
-|`GET scheduler/list`, `GET webapps/list`
-|-
-|Not migrated; remain on the legacy API.
+|`GET scheduler/list`
+|`server:scheduler` `list`
+|`get`, `create` and `delete` are new.
+
+|`GET webapps/list`
+|`server:webapp` `list`
+|
 |===
