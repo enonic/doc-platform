@@ -759,35 +759,39 @@ virtual.schema.override = false
 
 `com.enonic.xp.server.management.app.cfg`
 
-Configure the security policy for the management Applications API on Port 4848 (`+/server:app/*+`, see <<../endpoints/management/resources#server-app,server:app>>). Controls the `pull` verb (`+/server:app/pull+`, alias `+/server:app/installUrl+`), which installs an application from a remote URL. A virtual host exposes or withholds `pull` with its <<vhosts#management-api-policy,`verbs`>> setting for `server:app`.
+Configure the security policy for the management Applications API on Port 4848 (`+/server:app/*+`, see <<../endpoints/management/resources#server-app,server:app>>). Controls the `pull` verb (`+/server:app/pull+`, alias `+/server:app/installUrl+`), which installs an application from a remote URL.
+
+This file is the installation-wide policy for `pull`. It applies to every request, whether it arrives on the bare management port or through a virtual host. A virtual host can only withhold `pull` with its <<vhosts#management-api-policy,`verbs`>> setting for `server:app`, never widen it: when `pull` is exposed, the allow-list and checksum requirement below still apply. Per-virtual-host allow-lists are not supported.
 
 .Default configuration
 [source,properties]
 ----
-installUrl.allowedUrls = https://*
-installUrl.checksumRequired = true
+pull.allowedUrls = https://*
+pull.checksumRequired = true
 ----
 
-installUrl.allowedUrls:: Comma-separated wildcard patterns of URLs allowed by `/installUrl`. A trailing `*` matches any suffix; otherwise the pattern is matched exactly as a string prefix. Set to an empty string to disable `/installUrl` entirely. Default: `https://*` (any https URL).
+pull.allowedUrls:: Comma-separated wildcard patterns of URLs `pull` may install from. A trailing `*` matches any suffix; otherwise the pattern is matched exactly as a string prefix. Set to an empty string to disable `pull` entirely. Default: `https://*` (any https URL).
 
-installUrl.checksumRequired:: When `true`, every `/installUrl` request must include a non-empty `sha512` field; the download is rejected if the computed digest does not match. Set to `false` to allow installs without a checksum (not recommended). Default: `true`.
+pull.checksumRequired:: When `true`, every `pull` request must include a non-empty `sha512` field; the download is rejected if the computed digest does not match. Set to `false` to allow installs without a checksum (not recommended). Default: `true`.
+
+The legacy keys `installUrl.allowedUrls` and `installUrl.checksumRequired` are still read and have the same meaning. A `pull.*` key takes precedence over its `installUrl.*` counterpart when both are present.
 
 .Restrict installs to the official Enonic public repository
 [source,properties]
 ----
-installUrl.allowedUrls = https://repo.enonic.com/public/*
+pull.allowedUrls = https://repo.enonic.com/public/*
 ----
 
 .Allow several explicit hosts
 [source,properties]
 ----
-installUrl.allowedUrls = https://repo.enonic.com/public/*, https://my.cdn.com/apps/*
+pull.allowedUrls = https://repo.enonic.com/public/*, https://my.cdn.com/apps/*
 ----
 
-.Disable /installUrl entirely (uploads via /install are unaffected)
+.Disable pull entirely (uploads via /server:app/install are unaffected)
 [source,properties]
 ----
-installUrl.allowedUrls =
+pull.allowedUrls =
 ----
 
 

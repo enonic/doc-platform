@@ -121,7 +121,7 @@ Installed applications.
 |`pull`
 |`+POST /server:app/pull+` +
 alias `+/server:app/installUrl+`
-|Fetches and installs an application from `URL`; `sha512` holds the expected digest. The URL must match the allow-list in <<../../config/system#management-app,`com.enonic.xp.server.management.app.cfg`>>, which also sets whether `sha512` is required.
+|Fetches and installs an application from `URL`; `sha512` holds the expected digest. The URL must match the allow-list in <<../../config/system#management-app,`com.enonic.xp.server.management.app.cfg`>>, which also sets whether `sha512` is required. That policy applies regardless of the virtual host the request arrived on.
 
 |`uninstall`
 |`+POST /server:app/uninstall+`

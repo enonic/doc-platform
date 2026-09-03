@@ -184,6 +184,8 @@ mapping.backup.context.api.server\:task.verbs = *                  <3>
 
 A path alias (`+/server:system/vacuum+` for `+/server:system/prune+`, `+/server:app/installUrl+` for `+/server:app/pull+`) belongs to the verb it aliases and is exposed exactly when that verb is.
 
+`verbs` decides only whether a verb is reachable through the mapping. What a verb is allowed to do is configured by the resource itself and is not a virtual host setting: `server:app` `pull`, for example, enforces the allow-list and checksum policy in <<system#management-app,`com.enonic.xp.server.management.app.cfg`>> on every mapping that exposes it.
+
 Keys under `api.` are validated when the file is loaded. A key that is neither `api.rest.enabled` nor `+api.<application>:<api>.<setting>+` (typically a colon that was not escaped) is a configuration error and the file is rejected.
 
 Resources may define further settings in the same namespace. A Universal API of an installed application mounted on the management endpoint reads its own `+api.<application>:<api>.<setting>+` attributes from the context with `contextLib` - see <<https://developer.enonic.com/docs/xp/stable/code/web/apis#management-endpoint,Universal APIs on the management endpoint>>.
