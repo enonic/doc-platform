@@ -96,10 +96,6 @@ Same as the rest of the management endpoint: an authenticated user with the `sys
 |`list`
 |Installed applications that ship a webapp.
 
-|<<server-vhost,`server:vhost`>>
-|`list`
-|Virtual host mappings, as configured.
-
 |<<server-idprovider,`server:idprovider`>>
 |`list`
 |ID providers, as virtual hosts refer to them.
@@ -459,41 +455,6 @@ POST /server:scheduler
 |`+GET /server:webapp+`
 |Installed applications that ship a webapp: `{"webapps": [{"name": "<application key>"}]}`.
 |===
-
-[#server-vhost]
-== server:vhost
-
-[cols="1,2,4", options="header"]
-|===
-|Verb
-|Request
-|Description
-
-|`list`
-|`+GET /server:vhost+`
-|Whether virtual hosts are enabled and every mapping in matching order: name, host, source, target, endpoint, order, default id provider and the id providers with their enabled flows.
-|===
-
-The projection is fixed: a mapping's `context` and `allow` are never included.
-
-[source,json]
-----
-{
-  "enabled": true,
-  "vhosts": [
-    {
-      "name": "stats",
-      "host": "stats.enonic.com",
-      "source": "/",
-      "target": "/",
-      "endpoint": "statistics",
-      "order": 10,
-      "defaultIdProviderKey": "myidprovider",
-      "idProviders": [{"key": "myidprovider", "flows": ["autologin"]}]
-    }
-  ]
-}
-----
 
 [#server-idprovider]
 == server:idprovider
