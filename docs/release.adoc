@@ -13,11 +13,11 @@ This release includes a preview of the GraalJS engine, a more predictable schedu
 
 image:preview.svg[Preview,opts=inline] GraalJS, the engine that will replace Nashorn, is available as a preview. It implements the current ECMAScript standard, where Nashorn stops at ES5.
 
-Nashorn remains the default and the supported engine. The engine is chosen per application via the `+X-Script-Engine+` header in the bundle manifest, with the installation default set in <<config/system#script-engine, system properties>>. A single app can be moved to GraalJS and back without affecting the others. The differences for application code - module state per context, disposer registration, `executeFunction` - are described in the https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs[dev kit runtime documentation].
+Nashorn remains the default and the supported engine. The engine is chosen per application via the `+X-Script-Engine+` header in the bundle manifest, with the installation default set in <<config/system#script-engine, system properties>>. A single app can be moved to GraalJS and back without affecting the others. The differences for application code - module state per context, disposer registration, `executeFunction` - are described in the https://developer.enonic.com/docs/code/stable/runtime/engines#graaljs[dev kit documentation on JavaScript engines].
 
 WARNING: GraalJS is not for production use.
 
-On both engines, https://developer.enonic.com/docs/code/stable/fundamentals/main[`main.ts`] now completes before anything else in the app runs on that node. Initialization code no longer needs guards against early requests.
+On both engines, https://developer.enonic.com/docs/code/stable/runtime/main[`main.ts`] now completes before anything else in the app runs on that node. Initialization code no longer needs guards against early requests.
 
 === Scheduler
 

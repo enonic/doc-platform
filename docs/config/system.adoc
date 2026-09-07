@@ -57,7 +57,7 @@ image:preview.svg[Preview,opts=inline] XP runs server-side JavaScript on one of 
 
 The engine is chosen per application: the `+X-Script-Engine+` header in the application's bundle manifest names it, and an application that declares none runs on the engine set by `xp.script-engine`. Applications on different engines coexist in the same installation.
 
-For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/fundamentals/runtime[dev kit runtime documentation].
+For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/runtime/engines#graaljs[dev kit documentation on JavaScript engines].
 
 ==== Tuning the GraalJS context pool
 
