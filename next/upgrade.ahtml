@@ -441,11 +441,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#preparations">Preparations</a></li>
-<li><a href="#non_cluster_upgrade">Non-cluster upgrade</a></li>
-<li><a href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></li>
-<li><a href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></li>
-<li><a href="#applications">Applications</a></li>
+<li><a href="#before_you_start">Before you start</a></li>
+<li><a href="#choose_a_strategy">Choose a strategy</a></li>
+<li><a href="#replacing_the_runtime">Replacing the runtime</a></li>
+<li><a href="#single-node">Single node upgrade</a></li>
+<li><a href="#rolling">Rolling cluster upgrade</a></li>
+<li><a href="#full-restart">Full restart cluster upgrade</a></li>
+<li><a href="#after_the_upgrade">After the upgrade</a></li>
 <li><a href="#v8_1_notes">v8.1 notes</a>
 <ul class="sectlevel2">
 <li><a href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></li>
@@ -478,38 +480,81 @@ Coming from XP 7? Follow <a href="upgrade/xp7.ahtml">Upgrading from XP 7 to XP 8
 </div>
 </div>
 <div class="sect1">
-<h2 id="preparations"><a class="link" href="#preparations">Preparations</a></h2>
+<h2 id="before_you_start"><a class="link" href="#before_you_start">Before you start</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.</p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-Before migrating any data, every application running on your installation - both custom-built and 3rd party - must already be available in an XP 8 compatible version. Migration cannot be completed until all applications are ready for XP 8.
-</td>
-</tr>
-</table>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Read the notes below for every feature release between your current version and the target. Each states whether a rolling upgrade is supported or a full restart is required, and lists changed defaults and new settings.</p>
+</li>
+<li>
+<p>Back up. Take a <a href="deployment/backup-restore.ahtml#snapshot-restore">snapshot</a> of the repositories, or a <a href="deployment/backup-restore.ahtml#backup">full backup</a>, and verify that you can restore it.</p>
+</li>
+<li>
+<p>Test the upgrade in a staging environment before touching production.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="non_cluster_upgrade"><a class="link" href="#non_cluster_upgrade">Non-cluster upgrade</a></h2>
+<h2 id="choose_a_strategy"><a class="link" href="#choose_a_strategy">Choose a strategy</a></h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Single node</dt>
+<dd>
+<p>Follow <a href="#single-node">Single node upgrade</a>. A single node cannot be upgraded without downtime.</p>
+</dd>
+<dt class="hdlist1">Cluster, every release in your path supports rolling upgrade</dt>
+<dd>
+<p>Follow <a href="#rolling">Rolling cluster upgrade</a> for zero downtime.</p>
+</dd>
+<dt class="hdlist1">Cluster, any release in your path requires a full restart</dt>
+<dd>
+<p>Follow <a href="#full-restart">Full restart cluster upgrade</a>. This procedure is always safe, whatever the release.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Fix releases (8.0.3 to 8.0.4) always support rolling upgrade. Feature releases (8.0.x to 8.1.0) say so in their notes. Major upgrades (7.x to 8.x) are a data migration and follow <a href="upgrade/xp7.ahtml">their own guide</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="replacing_the_runtime"><a class="link" href="#replacing_the_runtime">Replacing the runtime</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:</p>
+<p>Every procedure below has a step that replaces the XP runtime with the new version. What that means depends on how XP is installed. In every case XP_HOME, with its configuration, repositories and blobs, is kept and reused; only the runtime changes.</p>
 </div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Distribution</dt>
+<dd>
+<p>Unpack the new distribution and start it against the existing <a href="deployment/distro.ahtml#xp_home">XP_HOME</a>, or replace the contents of the installation folder except <code>home/</code>.</p>
+</dd>
+<dt class="hdlist1">Docker</dt>
+<dd>
+<p>Start a container from the new image tag with the same volumes mounted. See <a href="deployment/docker.ahtml">Docker</a>.</p>
+</dd>
+<dt class="hdlist1">Kubernetes</dt>
+<dd>
+<p>Change the image version in your deployment. See <a href="deployment/k8s.ahtml">Kubernetes</a>.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="single-node"><a class="link" href="#single-node">Single node upgrade</a></h2>
+<div class="sectionbody">
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Stop your instance</p>
+<p>Stop the instance.</p>
 </li>
 <li>
-<p>Replace the XP runtime image with the new one</p>
+<p>Replace the runtime with the new version.</p>
 </li>
 <li>
 <p>Start the instance.</p>
@@ -519,15 +564,8 @@ Before migrating any data, every application running on your installation - both
 </div>
 </div>
 <div class="sect1">
-<h2 id="rolling_cluster_upgrade"><a class="link" href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></h2>
+<h2 id="rolling"><a class="link" href="#rolling">Rolling cluster upgrade</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>All fix upgrades (i.e. from 8.4.1 to 8.4.8), and most feature upgrades (i.e. from 8.5.x to 8.6.x) support rolling upgrades - with zero downtime.
-None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and require a full restart of the cluster.</p>
-</div>
-<div class="paragraph">
-<p>To safely perform a rolling upgrade, perform the following steps.</p>
-</div>
 <div class="admonitionblock warning">
 <table>
 <tr>
@@ -535,61 +573,48 @@ None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and requ
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Before you perform a rolling upgrade, verify that all feature version in your upgrade path (from version &#8594; to version) support rolling upgrade
+Before you begin, confirm that every release in your upgrade path supports rolling upgrade. If any does not, use the <a href="#full-restart">full restart procedure</a> instead.
 </td>
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>Upgrade one node at a time, and wait for each node to start and join the cluster before moving on to the next:</p>
+</div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Upgrade only one node at a time. Wait for the node to start and join the cluster before you move on</p>
+<p>Master nodes first. We recommend dedicated master nodes.</p>
 </li>
 <li>
-<p>Stop, upgrade image and start your master nodes first (We always recommend using dedicated master nodes)</p>
+<p>Then data nodes.</p>
 </li>
 <li>
-<p>Stop, upgrade image and start data nodes</p>
-</li>
-<li>
-<p>Stop, upgrade image and start remaining nodes</p>
+<p>Then the remaining nodes.</p>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>For each node: stop it, replace the runtime, start it.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="full_restart_cluster_upgrade"><a class="link" href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></h2>
+<h2 id="full-restart"><a class="link" href="#full-restart">Full restart cluster upgrade</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Selected feature versions (i.e. when upgrading from 7.6.x to 7.7.x or 7.8.x) may require a full restart in order to guarantee no loss of
-data and/or state. Releases that require full restart are marked with a special warning section below.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-This strategy may safely be applied to upgrading any XP cluster and/or version
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Follow the steps below to complete a restart upgrade:</p>
+<p>Required by releases whose notes say so, such as 8.0.x to 8.1.0, and safe for any upgrade.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Stop all cluster nodes</p>
+<p>Stop all cluster nodes.</p>
 </li>
 <li>
-<p>Replace the xp runtime image with the new for all nodes</p>
+<p>Replace the runtime on every node.</p>
 </li>
 <li>
-<p>Start all nodes in parallel</p>
+<p>Start all nodes in parallel.</p>
 </li>
 </ol>
 </div>
@@ -600,7 +625,7 @@ This strategy may safely be applied to upgrading any XP cluster and/or version
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-It is important to start the nodes at the same time to avoid timeouts, should any upgrade scripts be supplied with the new version.
+Start the nodes at the same time. Should the new version include upgrade scripts, nodes that wait for the others may otherwise time out.
 </td>
 </tr>
 </table>
@@ -608,10 +633,20 @@ It is important to start the nodes at the same time to avoid timeouts, should an
 </div>
 </div>
 <div class="sect1">
-<h2 id="applications"><a class="link" href="#applications">Applications</a></h2>
+<h2 id="after_the_upgrade"><a class="link" href="#after_the_upgrade">After the upgrade</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>After upgrading to a new feature version of Enonic XP, it&#8217;s a good idea to check the Enonic Market - newer versions of the apps you are using may be available there. We generally always recommend updating your apps to the latest version!</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Verify that the instance reports the new version. The <a href="admin/dashboard.ahtml">Dashboard</a> shows it in its statistics widget, and the server log prints it at startup.</p>
+</li>
+<li>
+<p>Confirm that your applications started. The <a href="admin/applications.ahtml">Applications tool</a> lists their state.</p>
+</li>
+<li>
+<p>Check <a href="https://market.enonic.com">Enonic Market</a> for newer versions of the apps you use. Applications built for XP 8 keep working across 8.x releases, so this is recommended, not required. Developers find the deprecations introduced by each release in the <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade notes</a>.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
@@ -619,7 +654,10 @@ It is important to start the nodes at the same time to avoid timeouts, should an
 <h2 id="v8_1_notes"><a class="link" href="#v8_1_notes">v8.1 notes</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.</p>
+<p><strong>Full restart required.</strong> The scheduler was rebuilt in 8.1: scheduling moved from a Hazelcast scheduled task to a coordinator that elects one node to run the schedule. An 8.0 node and an 8.1 node in the same cluster would each schedule on their own terms, so do not upgrade a cluster to 8.1 node by node. Use the <a href="#full-restart">full restart procedure</a>.</p>
+</div>
+<div class="paragraph">
+<p>Apart from that, XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.</p>
 </div>
 <div class="sect2">
 <h3 id="read_through_blobstore_cache_is_bounded"><a class="link" href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></h3>
@@ -666,7 +704,7 @@ It is important to start the nodes at the same time to avoid timeouts, should an
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 15:18:04 UTC
+Last updated 2026-09-07 19:39:08 UTC
 </div>
 </div>
 </body>

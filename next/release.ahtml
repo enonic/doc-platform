@@ -573,7 +573,7 @@ GraalJS is not for production use.
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Re-route to other content.</strong> A site mapping filter can change which content is rendered while the visitor&#8217;s URL stays the same - no redirect, no second request. Useful for A/B variants and personalized landing pages. See <a href="https://developer.enonic.com/docs/code/stable/web/filters#reroute">re-routing to another content</a>.</p>
+<p><strong>Re-route to other content.</strong> A site mapping filter can change which content is rendered while the visitor&#8217;s URL stays the same - no redirect, no second request. Useful for A/B variants and personalized landing pages. See <a href="https://developer.enonic.com/docs/code/stable/web/sites/mappings#reroute">re-routing to another content</a>.</p>
 </li>
 <li>
 <p><strong>Pass data down the pipeline.</strong> <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-context#setcustomlocalattribute"><code>setCustomLocalAttribute()</code></a> passes values from a filter or a controller to response processors and the code that runs after it. Custom properties on the request object were never carried across.</p>
@@ -1046,7 +1046,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 15:18:04 UTC
+Last updated 2026-09-07 19:39:08 UTC
 </div>
 </div>
 </body>
