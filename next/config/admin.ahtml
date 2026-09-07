@@ -441,7 +441,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#admin">Admin</a></li>
 <li><a href="#xp_dashboard">XP Dashboard</a>
 <ul class="sectlevel2">
 <li><a href="#content_security_policy">Content Security Policy</a></li>
@@ -460,38 +459,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="admin"><a class="link" href="#admin">Admin</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><code>com.enonic.xp.admin.cfg</code></p>
-</div>
-<div class="paragraph">
-<p>General settings for /admin.</p>
-</div>
-<div class="listingblock">
-<div class="title">Disable Content Security Policy for site preview</div>
-<div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">site.preview.contentSecurityPolicy=</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">Allow scripts from maps.googleapis.com</div>
-<div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">site.preview.contentSecurityPolicy=default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self' maps.googleapis.com; object-src 'none'; img-src * data:; style-src * 'unsafe-inline'; font-src * data:</code></pre>
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">site.preview.contentSecurityPolicy</dt>
-<dd>
-<p>Defines default value for Content-Security-Policy header for the site engine - when running in Admin Context. The policy is applied in <code>preview</code> and <code>inline</code> mode - if the page controllers do not specify a Content-Security-Policy header itself.
-Default: <code>default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self'; object-src 'none'; img-src * data:; style-src * 'unsafe-inline'; font-src * data:</code></p>
-</dd>
-</dl>
-</div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="xp_dashboard"><a class="link" href="#xp_dashboard">XP Dashboard</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -506,9 +473,7 @@ Default: <code>default-src 'self'; base-uri 'self'; form-action 'self'; script-s
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Disabling or changing built-in Content Security Policy is generally NOT RECOMMENDED. You may need to tweak
-CSP settings <em>only</em> if you are building a Dashboard widget where you want to allow references to external resources
-(for example, a YouTube video) or other potentially unsafe (from the CSP point of view) actions.
+Disabling or changing the built-in Content Security Policy is not recommended. A Dashboard widget that needs external resources, such as an embedded video or a chart library, should declare them through an <a href="https://developer.enonic.com/docs/code/stable/web/extensions/processors">extension response processor</a>, which applies only where the widget is shown and only for users allowed to see it. The settings below change the policy for every Dashboard page and every user.
 </td>
 </tr>
 </table>
@@ -561,7 +526,7 @@ Default: <code>false</code></p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 14:23:07 UTC
+Last updated 2026-09-07 14:47:05 UTC
 </div>
 </div>
 </body>

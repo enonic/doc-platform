@@ -562,10 +562,10 @@ GraalJS is not for production use.
 <div class="sect2">
 <h3 id="content_security_policy_as_an_api"><a class="link" href="#content_security_policy_as_an_api">Content Security Policy as an API</a></h3>
 <div class="paragraph">
-<p>A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so the page, its layouts, its parts and any response processor all contribute to a single header, nonce included. The header is composed when the response is flushed, so late contributions are not lost. A report-only companion lets you enforce one policy while trialling a stricter one. See <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-portal#csp"><code>csp()</code></a> in the portal library.</p>
+<p>A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so the page, its layouts, its parts and any response processor all contribute to a single header, nonce included. The header is composed when the response is flushed, so late contributions are not lost. A report-only companion lets you enforce one policy while trialling a stricter one. A <code>Content-Security-Policy</code> header set directly on the response is folded into the policy rather than sent as it is, so later contributions still apply. See <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-portal#csp"><code>csp()</code></a> in the portal library.</p>
 </div>
 <div class="paragraph">
-<p>Admin extensions get the same control over the tool page that hosts them. A new Java SPI for admin extension response processors lets an extension adjust the tool&#8217;s CSP and add page contributions.</p>
+<p>Admin extensions get the same control over the tool page that hosts them. A new Java SPI lets an extension adjust the tool&#8217;s CSP and add page contributions. See <a href="https://developer.enonic.com/docs/code/stable/web/extensions/processors">extension response processors</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1046,7 +1046,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 14:23:07 UTC
+Last updated 2026-09-07 14:47:05 UTC
 </div>
 </div>
 </body>
