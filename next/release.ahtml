@@ -444,15 +444,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#xp_8_1">XP 8.1</a>
 <ul class="sectlevel2">
 <li><a href="#graaljs_preview">GraalJS preview</a></li>
-<li><a href="#scheduler_you_can_place_and_pace">Scheduler you can place and pace</a></li>
+<li><a href="#scheduler">Scheduler</a></li>
 <li><a href="#content_security_policy_as_an_api">Content Security Policy as an API</a></li>
-<li><a href="#requests_that_can_be_steered">Requests that can be steered</a></li>
+<li><a href="#request_steering">Request steering</a></li>
 <li><a href="#admin_events_over_one_socket">Admin events over one socket</a></li>
-<li><a href="#ask_a_query_for_the_fields_you_need">Ask a query for the fields you need</a></li>
-<li><a href="#query_a_subtree">Query a subtree</a></li>
+<li><a href="#query_fields_and_subtrees">Query fields and subtrees</a></li>
 <li><a href="#exports_read_one_version_of_a_node">Exports read one version of a node</a></li>
-<li><a href="#a_read_through_blobstore_stays_within_bounds">A read-through blobstore stays within bounds</a></li>
+<li><a href="#bounded_read_through_blobstore">Bounded read-through blobstore</a></li>
 <li><a href="#request_handling_on_virtual_threads">Request handling on virtual threads</a></li>
+<li><a href="#other_changes">Other changes</a></li>
 <li><a href="#deprecations">Deprecations</a></li>
 </ul>
 </li>
@@ -483,7 +483,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <a href="release/upgrade.ahtml">Upgrading to XP 8</a>.</p>
+<p>The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <a href="upgrade.ahtml">Upgrading</a>.</p>
 </div>
 </div>
 </div>
@@ -491,7 +491,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="xp_8_1"><a class="link" href="#xp_8_1">XP 8.1</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>A feature release focused on the runtime beneath your apps: a preview of the JavaScript engine that replaces Nashorn, a scheduler that keeps its promises about where and when jobs run, and finer control over what a request handler may declare to the browser.</p>
+<p>This release includes a preview of the GraalJS engine, a more predictable scheduler, a Content Security Policy API, and a selection of smaller improvements and bugfixes. There are no breaking changes for applications. See the <a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1">XP 8.1 upgrade notes</a> for deprecations worth cleaning up.</p>
 </div>
 <div class="sect2">
 <h3 id="graaljs_preview"><a class="link" href="#graaljs_preview">GraalJS preview</a></h3>
@@ -513,61 +513,76 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
     <text x="315" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="426">preview</text>
     <text x="315" y="140" transform="scale(.1)" textLength="426">preview</text>
   </g>
-</svg></span> The engine that will replace Nashorn is here to try. GraalJS implements the current ECMAScript standard, well past Nashorn&#8217;s ES5.</p>
+</svg></span> GraalJS, the engine that will replace Nashorn, is available as a preview. It implements the current ECMAScript standard, where Nashorn stops at ES5.</p>
 </div>
 <div class="paragraph">
-<p><strong>Not for production:</strong> Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, <code>executeFunction</code> - is covered in the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs">dev kit runtime documentation</a>.</p>
+<p>Nashorn remains the default and the supported engine. The engine is chosen per application via the <code>X-Script-Engine</code> header in the bundle manifest, with the installation default set in <a href="config/system.ahtml#script-engine">system properties</a>. A single app can be moved to GraalJS and back without affecting the others. The differences for application code - module state per context, disposer registration, <code>executeFunction</code> - are described in the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs">dev kit runtime documentation</a>.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+GraalJS is not for production use.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>Two long-standing rough edges were settled on the way. <code>main.ts</code> now runs to completion before anything else in the app on that node, on either engine, which greatly simplifies initialization code. And the global namespace was brought closer to what browsers and Node expose, so more npm modules run unmodified.</p>
+<p>On both engines, <a href="https://developer.enonic.com/docs/code/stable/fundamentals/main"><code>main.ts</code></a> now completes before anything else in the app runs on that node. Initialization code no longer needs guards against early requests.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="scheduler_you_can_place_and_pace"><a class="link" href="#scheduler_you_can_place_and_pace">Scheduler you can place and pace</a></h3>
+<h3 id="scheduler"><a class="link" href="#scheduler">Scheduler</a></h3>
 <div class="paragraph">
-<p>Three changes make scheduled jobs predictable in a cluster:</p>
+<p>Four changes make scheduled jobs more predictable in a cluster:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Where the scheduler ticks is now a deployment decision.</strong> <code>acceptScheduling = false</code> excludes a node from the choice - typically the master nodes, which have to stay responsive to hold the quorum and can be modest machines precisely because they are not meant to do heavy work. The schedule, and the maintenance it submits, then runs where the machine can afford it: a data node serving no HTTP traffic, or one dedicated to background work. See <a href="config/system.ahtml#scheduler">scheduler configuration</a>.</p>
+<p><strong>Control where the scheduler runs.</strong> Set <code>acceptScheduling = false</code> to keep a node out of scheduling - typically the master nodes, which must stay responsive to hold the quorum. Scheduling and the maintenance tasks it submits then run on a node that can afford the load. See <a href="config/system.ahtml#scheduler">scheduler configuration</a>.</p>
 </li>
 <li>
-<p><strong>A job does not overlap itself.</strong> A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. This is best effort — a partitioned cluster can still produce an overlap.</p>
+<p><strong>Jobs do not overlap themselves.</strong> The scheduler checks whether the previous run is still going before submitting a new one. A blocked <code>CRON</code> occurrence is skipped, and a blocked <code>FIXED_RATE</code> run waits until its predecessor finishes. This is best effort - a partitioned cluster can still produce an overlap.</p>
 </li>
 <li>
-<p><strong>One-time jobs can clean up after themselves.</strong> <code>deleteAfterRun</code> on a <code>ONE_TIME</code> schedule removes the job once it has fired, so a job created to do one thing does not linger.</p>
+<p><strong>New schedule type.</strong> <code>FIXED_RATE</code> takes an ISO-8601 duration, such as <code>'PT5M'</code> for every five minutes, for work that repeats at an interval rather than at a time of day.</p>
 </li>
 <li>
-<p><strong>A third schedule type.</strong> <code>FIXED_RATE</code> takes an ISO-8601 duration - <code>'PT5M'</code> for every five minutes - for work that belongs at an interval rather than at a time of day.</p>
+<p><strong>Self-deleting one-time jobs.</strong> <code>deleteAfterRun</code> on a <code>ONE_TIME</code> schedule removes the job once it has fired.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Jobs can also be declared in the scheduler config file, and the scheduler&#8217;s list response now reports each job&#8217;s run state. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler">scheduler library</a>.</p>
+<p>A task started by the scheduler can read the previous run&#8217;s task id from the <code>schedule.lastTaskId</code> context attribute, useful for incremental processing. Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and new entries are picked up without a restart. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler">scheduler library</a>.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="content_security_policy_as_an_api"><a class="link" href="#content_security_policy_as_an_api">Content Security Policy as an API</a></h3>
 <div class="paragraph">
-<p>A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so a page, its layouts, its parts and any response processor all contribute to the single emitted header, nonce included - and the header is composed when the response is flushed, so late contributions still land. A report-only companion runs alongside it, letting you enforce a settled policy while trialling a stricter one.</p>
+<p>A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so the page, its layouts, its parts and any response processor all contribute to a single header, nonce included. The header is composed when the response is flushed, so late contributions are not lost. A report-only companion lets you enforce one policy while trialling a stricter one. See <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-portal#csp"><code>csp()</code></a> in the portal library.</p>
+</div>
+<div class="paragraph">
+<p>Admin extensions get the same control over the tool page that hosts them. A new Java SPI for admin extension response processors lets an extension adjust the tool&#8217;s CSP and add page contributions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="requests_that_can_be_steered"><a class="link" href="#requests_that_can_be_steered">Requests that can be steered</a></h3>
+<h3 id="request_steering"><a class="link" href="#request_steering">Request steering</a></h3>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Re-route to other content.</strong> A filter reached through a site mapping can change which content is rendered while the visitor&#8217;s address stays exactly as it was - no redirect, no second request. A/B variants and personalized landing pages become a few lines in a filter.</p>
+<p><strong>Re-route to other content.</strong> A site mapping filter can change which content is rendered while the visitor&#8217;s URL stays the same - no redirect, no second request. Useful for A/B variants and personalized landing pages. See <a href="https://developer.enonic.com/docs/code/stable/web/filters#reroute">re-routing to another content</a>.</p>
 </li>
 <li>
-<p><strong>Carry your own data down the pipeline.</strong> Custom context attributes pass values from a filter or an implementation to the response processors and the code that runs after it, where inventing a request property never worked.</p>
+<p><strong>Pass data down the pipeline.</strong> <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-context#setcustomlocalattribute"><code>setCustomLocalAttribute()</code></a> passes values from a filter or a controller to response processors and the code that runs after it. Custom properties on the request object were never carried across.</p>
 </li>
 <li>
-<p><strong>Base URLs that resolve to the right place.</strong> Media and page URLs anchor at the site&#8217;s base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media served from a separate host such as a CDN.</p>
+<p><strong>Media and page base URLs.</strong> Media and page URLs are anchored to the site&#8217;s base URL, or to the project when the request has no content, so absolute URLs are correct in previews, APIs and headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media can be served from a separate host such as a CDN. See <a href="config/cms.ahtml#media_base_url">serving media from another host</a>.</p>
 </li>
 <li>
-<p><strong>API locations from context attributes.</strong> A vhost may declare where an API lives, and URL generation follows it - keeping routing decisions with the vhost they belong to. See <a href="config/vhosts.ahtml">virtual host configuration</a>.</p>
+<p><strong>API locations from vhost context.</strong> A vhost can declare where an API is served, and URL generation follows it. See <a href="config/vhosts.ahtml#api-locations">API locations</a>.</p>
 </li>
 </ul>
 </div>
@@ -575,29 +590,36 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect2">
 <h3 id="admin_events_over_one_socket"><a class="link" href="#admin_events_over_one_socket">Admin events over one socket</a></h3>
 <div class="paragraph">
-<p>An admin events hub lets an application define its own topics and push to them, so admin tools and extensions receive live updates over a shared connection instead of each opening its own. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-admin">admin library</a>.</p>
+<p>A new admin events hub lets an application define its own topics and publish to them. Admin tools and extensions receive live updates over one shared connection instead of each opening its own. See <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-admin#settopic"><code>setTopic()</code></a> in the admin library.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ask_a_query_for_the_fields_you_need"><a class="link" href="#ask_a_query_for_the_fields_you_need">Ask a query for the fields you need</a></h3>
+<h3 id="query_fields_and_subtrees"><a class="link" href="#query_fields_and_subtrees">Query fields and subtrees</a></h3>
 <div class="paragraph">
-<p>The <code>returns</code> parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.</p>
+<p>Two additions to <code>query()</code> in the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-node">node</a> and <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-content#query">content</a> libraries:</p>
 </div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><code>returns</code></strong> adds named index fields to each hit, so a listing that only needs a name and a path no longer costs a read per hit. The values come from the search index, so read the node where the exact value matters.</p>
+</li>
+<li>
+<p><strong><code>parent</code></strong> restricts a query to the direct children of a node, and <strong><code>recursive: true</code></strong> extends it to the whole subtree. This replaces the deprecated <code>getChildren()</code> and <code>findChildren()</code>.</p>
+</li>
+</ul>
 </div>
-<div class="sect2">
-<h3 id="query_a_subtree"><a class="link" href="#query_a_subtree">Query a subtree</a></h3>
 <div class="paragraph">
-<p><code>parent</code> restricts a query to the direct children of a node, and <code>descendant</code> widens it to the whole subtree beneath it. Available on the node and content libraries.</p>
+<p>In the Java API, <code>NodeService</code> gains <code>list</code> and <code>enumerate</code> methods for reading a subtree in path order. <code>ListNodesResult</code> and its <code>recursive</code> flag are removed.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="exports_read_one_version_of_a_node"><a class="link" href="#exports_read_one_version_of_a_node">Exports read one version of a node</a></h3>
 <div class="paragraph">
-<p>An export reads each node at the exact version its scan observed, so a subtree that changes while the export runs is written as it was seen rather than as a mixture.</p>
+<p>An export now reads each node at the version its scan observed. A subtree that changes while the export runs is written as it was seen, not as a mix of old and new. The <code>batchSize</code> parameter of <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-export#exportnodes"><code>exportNodes()</code></a> is ignored as a result.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="a_read_through_blobstore_stays_within_bounds"><a class="link" href="#a_read_through_blobstore_stays_within_bounds">A read-through blobstore stays within bounds</a></h3>
+<h3 id="bounded_read_through_blobstore"><a class="link" href="#bounded_read_through_blobstore">Bounded read-through blobstore</a></h3>
 <div class="paragraph">
 <p><code>readThrough.cacheCapacity</code> caps the local cache in front of a remote object store. See <a href="config/system.ahtml#file-blobstore">file blobstore configuration</a>.</p>
 </div>
@@ -622,24 +644,76 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
     <text x="330" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="461">unstable</text>
     <text x="330" y="140" transform="scale(.1)" textLength="461">unstable</text>
   </g>
-</svg></span> <code>threadPool.virtualThreads</code> hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — <strong>not for production</strong>. See <a href="config/system.ahtml#jetty">Jetty configuration</a>.</p>
+</svg></span> <code>threadPool.virtualThreads</code> moves request handling to virtual threads. A request waiting on I/O - a database round trip, an outbound HTTP call, a slow client - no longer occupies a platform thread while it waits, so I/O-bound traffic stops tying up the pool. CPU-bound requests gain nothing. Selectors and acceptors stay on platform threads. See <a href="config/system.ahtml#jetty">Jetty configuration</a>.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Virtual thread request handling is experimental and not for production use.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="other_changes"><a class="link" href="#other_changes">Other changes</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Java code can mark a method with <code>@Traced</code> to have it appear in XP&#8217;s internal tracing, the same mechanism the platform itself now uses.</p>
+</li>
+<li>
+<p>Cron jobs no longer fire twice within the same second, and a cron slot passing during a restart or a scheduler move is caught up instead of skipped.</p>
+</li>
+<li>
+<p>Disposers registered by an application no longer race its own redeploy.</p>
+</li>
+<li>
+<p>Duplicating a node tree fires the same events for the root as for the rest of the tree.</p>
+</li>
+<li>
+<p><code>importNodes()</code> no longer fails when the optional <code>xslt</code> parameter is omitted.</p>
+</li>
+<li>
+<p><code>apiUrl()</code> encodes its <code>path</code> like every other URL builder.</p>
+</li>
+<li>
+<p><code>readThrough.sizeThreshold</code> is honored on reads, and only <code>system.admin</code> can list exports.</p>
+</li>
+<li>
+<p>The JNA warning at startup is gone.</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
 <h3 id="deprecations"><a class="link" href="#deprecations">Deprecations</a></h3>
 <div class="paragraph">
-<p>Still working, slated for removal:</p>
+<p>Still working, slated for removal. The <a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1">upgrade notes</a> show the replacement for each:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>executeFunction</code> - not supported on GraalJS. Submit a named task instead.</p>
+<p><code>executeFunction()</code> in lib-task - not supported on GraalJS. Submit a named task instead.</p>
 </li>
 <li>
-<p><code>Resource.getTimestamp</code> - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.</p>
+<p><code>getChildren()</code> in lib-content and <code>findChildren()</code> in lib-node - use <code>query()</code> with <code>parent</code>.</p>
 </li>
 <li>
-<p><code>content.findByParent</code> replaced with content.query</p>
+<p>The <code>baseUrl</code> parameter of <code>imageUrl()</code>, <code>attachmentUrl()</code> and <code>apiUrl()</code> - configure the location once instead, see <a href="config/cms.ahtml#media_base_url">media base URL</a> and <a href="config/vhosts.ahtml#api-locations">API locations</a>.</p>
+</li>
+<li>
+<p><code>batchSize</code> on <code>exportNodes()</code> - ignored.</p>
+</li>
+<li>
+<p><code>Resource.getTimestamp()</code>, and <code>modifiedTime</code> on icons and descriptors - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.</p>
+</li>
+<li>
+<p><code>ApplicationListener</code> in the Java API - track <code>Application</code> services instead.</p>
 </li>
 </ul>
 </div>
@@ -659,7 +733,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-This release contains <strong>Breaking changes when upgrading from XP7</strong>. We have made every effort to minimize the impact of these, but please review the full list of breaking changes and migration steps in the <a href="release/upgrade.ahtml#breaking-changes">upgrade notes</a> before upgrading. Several XP 7 concepts have also been renamed — see <a href="#naming">A paradigm shift in naming</a>.
+This release contains <strong>Breaking changes when upgrading from XP7</strong>. We have made every effort to minimize the impact of these, but please review the full list of breaking changes and migration steps in the <a href="upgrade/xp7.ahtml#breaking-changes">upgrade notes</a> before upgrading. Several XP 7 concepts have also been renamed — see <a href="#naming">A paradigm shift in naming</a>.
 </td>
 </tr>
 </table>
@@ -807,7 +881,7 @@ This release contains <strong>Breaking changes when upgrading from XP7</strong>.
 <div class="sect2">
 <h3 id="stricter_identity_validation"><a class="link" href="#stricter_identity_validation">Stricter identity validation</a></h3>
 <div class="paragraph">
-<p>Identity keys, content IDs, names, and descriptors now follow consistent, deterministic validation rules: lowercase-only IDs, explicit regex per key type, and length caps that match what the system actually supports. The intent is to eliminate the class of bugs that came from quietly accepting characters that broke serialization, URLs, or filesystem paths downstream. The full ruleset lives in the <a href="https://developer.enonic.com/docs/code/stable/upgrade#identity-keys">dev kit upgrade guide</a>.</p>
+<p>Identity keys, content IDs, names, and descriptors now follow consistent, deterministic validation rules: lowercase-only IDs, explicit regex per key type, and length caps that match what the system actually supports. The intent is to eliminate the class of bugs that came from quietly accepting characters that broke serialization, URLs, or filesystem paths downstream. The full ruleset lives in the <a href="https://developer.enonic.com/docs/code/stable/upgrade/xp7#identity-keys">dev kit upgrade guide</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -969,7 +1043,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </table>
 </div>
 <div class="paragraph">
-<p>The complete map, with migration details, lives in the <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade guide</a>.</p>
+<p>The complete map, with migration details, lives in the <a href="https://developer.enonic.com/docs/code/stable/upgrade/xp7">dev kit upgrade guide</a>.</p>
 </div>
 </div>
 </div>
@@ -977,7 +1051,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 11:05:04 UTC
+Last updated 2026-09-07 09:31:43 UTC
 </div>
 </div>
 </body>

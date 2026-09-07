@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>Upgrading to XP8</title>
+<title>Upgrading from XP 7 to XP 8</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,19 +437,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Upgrading to XP8</h1>
+<h1>Upgrading from XP 7 to XP 8</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#preparations">Preparations</a></li>
-<li><a href="#non_cluster_upgrade">Non-cluster upgrade</a></li>
-<li><a href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></li>
-<li><a href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></li>
-<li><a href="#applications">Applications</a></li>
-<li><a href="#upgrading_to_v8_0">Upgrading to v8.0</a>
-<ul class="sectlevel2">
 <li><a href="#requirements">Requirements</a></li>
-<li><a href="#breaking-changes">Breaking changes</a></li>
+<li><a href="#breaking-changes">Breaking changes</a>
+<ul class="sectlevel2">
+<li><a href="#file_application_deployments">File Application deployments</a></li>
+<li><a href="#jansi_logback_plugin_no_longer_supported">Jansi Logback plugin no longer supported</a></li>
+<li><a href="#default_cms_repository">Default CMS repository</a></li>
+<li><a href="#metrics_endpoint">Metrics Endpoint</a></li>
+<li><a href="#management_api">Management API</a></li>
+<li><a href="#admin_dashboard">Admin Dashboard</a></li>
+<li><a href="#general_admin_tools">General Admin Tools</a></li>
+<li><a href="#security_changes">Security changes</a></li>
+<li><a href="#other_configuration">Other configuration</a></li>
+</ul>
+</li>
 <li><a href="#1_install_xp_8">1. Install XP 8</a></li>
 <li><a href="#2_create_service_accounts">2. Create service accounts</a></li>
 <li><a href="#3_dump_data">3. Dump data</a></li>
@@ -458,161 +463,19 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#6_validate">6. Validate</a></li>
 <li><a href="#7_go_live">7. Go live</a></li>
 </ul>
-</li>
-</ul>
 </div>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This procedure applies to feature (8.x.0) and fix upgrades (8.x.y, etc).</p>
+<p>This guide covers migrating an Enonic XP 7 instance to XP 8. For upgrades between XP 8 releases, and the general upgrade procedure, see <a href="../upgrade.ahtml">Upgrading</a>.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="preparations"><a class="link" href="#preparations">Preparations</a></h2>
+<h2 id="requirements"><a class="link" href="#requirements">Requirements</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.</p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-Before migrating any data, every application running on your installation - both custom-built and 3rd party - must already be available in an XP 8 compatible version. Migration cannot be completed until all applications are ready for XP 8.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="non_cluster_upgrade"><a class="link" href="#non_cluster_upgrade">Non-cluster upgrade</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Stop your instance</p>
-</li>
-<li>
-<p>Replace your XP7 runtime image with the new XP7 image</p>
-</li>
-<li>
-<p>Start the instance.</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="rolling_cluster_upgrade"><a class="link" href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>All fix upgrades (i.e. from 8.4.1 to 8.4.8), and most feature upgrades (i.e. from 8.5.x to 8.6.x) support rolling upgrades - with zero downtime.
-None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and require a full restart of the cluster.</p>
-</div>
-<div class="paragraph">
-<p>To safely perform a rolling upgrade, perform the following steps.</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Before you perform a rolling upgrade, verify that all feature version in your upgrade path (from version &#8594; to version) support rolling upgrade
-</td>
-</tr>
-</table>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Upgrade only one node at a time. Wait for the node to start and join the cluster before you move on</p>
-</li>
-<li>
-<p>Stop, upgrade image and start your master nodes first (We always recommend using dedicated master nodes)</p>
-</li>
-<li>
-<p>Stop, upgrade image and start data nodes</p>
-</li>
-<li>
-<p>Stop, upgrade image and start remaining nodes</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="full_restart_cluster_upgrade"><a class="link" href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Selected feature versions (i.e. when upgrading from 7.6.x to 7.7.x or 7.8.x) may require a full restart in order to guarantee no loss of
-data and/or state. Releases that require full restart are marked with a special warning section below.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-This strategy may safely be applied to upgrading any XP cluster and/or version
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Follow the steps below to complete a restart upgrade:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Stop all cluster nodes</p>
-</li>
-<li>
-<p>Replace the xp runtime image with the new for all nodes</p>
-</li>
-<li>
-<p>Start all nodes in parallel</p>
-</li>
-</ol>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-It is important to start the nodes at the same time to avoid timeouts, should any upgrade scripts be supplied with the new version.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="applications"><a class="link" href="#applications">Applications</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>After upgrading to a new feature version of Enonic XP, it&#8217;s a good idea to check the Enonic Market - newer versions of the apps you are using may be available there. We generally always recommend updating your apps to the latest version!</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="upgrading_to_v8_0"><a class="link" href="#upgrading_to_v8_0">Upgrading to v8.0</a></h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="requirements"><a class="link" href="#requirements">Requirements</a></h3>
 <div class="paragraph">
 <p>This guide focuses on completing an upgrade with zero downtime, and requires you to set up production environment on XP 8 in parallel with existing 7.16 environment.
 Carefully follow the below steps to upgrade your instance:</p>
@@ -669,16 +532,18 @@ Updating custom applications is a developer task that must be done ahead of time
 </table>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="breaking-changes"><a class="link" href="#breaking-changes">Breaking changes</a></h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="breaking-changes"><a class="link" href="#breaking-changes">Breaking changes</a></h3>
-<div class="sect3">
-<h4 id="file_application_deployments"><a class="link" href="#file_application_deployments">File Application deployments</a></h4>
+<h3 id="file_application_deployments"><a class="link" href="#file_application_deployments">File Application deployments</a></h3>
 <div class="paragraph">
 <p>If you have one or more applications deployed as files, replace them with their respective XP 8 versions</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="jansi_logback_plugin_no_longer_supported"><a class="link" href="#jansi_logback_plugin_no_longer_supported">Jansi Logback plugin no longer supported</a></h4>
+<div class="sect2">
+<h3 id="jansi_logback_plugin_no_longer_supported"><a class="link" href="#jansi_logback_plugin_no_longer_supported">Jansi Logback plugin no longer supported</a></h3>
 <div class="paragraph">
 <p>Console appender in distributive used to use Jansi plugin for colorized output. This plugin is no longer supported as logback now natively supports colorized output.
 Remove the <code>withJansi</code> element from your logback.xml file to avoid errors when starting the server.</p>
@@ -709,22 +574,22 @@ Remove the <code>withJansi</code> element from your logback.xml file to avoid er
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="default_cms_repository"><a class="link" href="#default_cms_repository">Default CMS repository</a></h4>
+<div class="sect2">
+<h3 id="default_cms_repository"><a class="link" href="#default_cms_repository">Default CMS repository</a></h3>
 <div class="paragraph">
 <p>With XP 8, the default CMS repository <code>com.enonic.cms.default</code> is no longer created automatically. In fact, there is no default CMS repository at all. Existing <code>com.enonic.cms.default</code> repository is converted to a normal one without any special permissions or behavior. During XP 8 startup the repository will be converted to a normal repository. To avoid permission conflicts, it is recommended to migrate the default repository prior migration.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="metrics_endpoint"><a class="link" href="#metrics_endpoint">Metrics Endpoint</a></h4>
+<div class="sect2">
+<h3 id="metrics_endpoint"><a class="link" href="#metrics_endpoint">Metrics Endpoint</a></h3>
 <div class="paragraph">
 <p>Statistics endpoint <a href="http://&lt;host&gt;:2609/metrics" class="bare">http://&lt;host&gt;:2609/metrics</a> is no longer reporting Dropwizard Metrics JSON. Instead, it reports metrics in <a href="https://github.com/prometheus/OpenMetrics/blob/main/specification/OpenMetrics.md">OpenMetrics</a> format.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="management_api"><a class="link" href="#management_api">Management API</a></h3>
 <div class="sect3">
-<h4 id="management_api"><a class="link" href="#management_api">Management API</a></h4>
-<div class="sect4">
-<h5 id="post_repoexport"><a class="link" href="#post_repoexport">POST /repo/export</a></h5>
+<h4 id="post_repoexport"><a class="link" href="#post_repoexport">POST /repo/export</a></h4>
 <div class="paragraph">
 <p>The following request parameters have been removed:</p>
 </div>
@@ -749,8 +614,8 @@ Remove the <code>withJansi</code> element from your logback.xml file to avoid er
 replacing the previous folder-based export structure.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="post_repoimport"><a class="link" href="#post_repoimport">POST /repo/import</a></h5>
+<div class="sect3">
+<h4 id="post_repoimport"><a class="link" href="#post_repoimport">POST /repo/import</a></h4>
 <div class="paragraph">
 <p>The <code>dryRun</code> request parameter has been removed.</p>
 </div>
@@ -770,8 +635,8 @@ Folder-based exports from XP 7 should be converted to ZIP format before they can
 </table>
 </div>
 </div>
-<div class="sect4">
-<h5 id="post_systemdump"><a class="link" href="#post_systemdump">POST /system/dump</a></h5>
+<div class="sect3">
+<h4 id="post_systemdump"><a class="link" href="#post_systemdump">POST /system/dump</a></h4>
 <div class="paragraph">
 <p>The <code>archive</code> request parameter field has been removed.</p>
 </div>
@@ -779,41 +644,41 @@ Folder-based exports from XP 7 should be converted to ZIP format before they can
 <p>Dumps are now always stored as ZIP archives named <code>{name}.zip</code> in the dumps directory, replacing the previous folder-based structure.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="post_systemload"><a class="link" href="#post_systemload">POST /system/load</a></h5>
+<div class="sect3">
+<h4 id="post_systemload"><a class="link" href="#post_systemload">POST /system/load</a></h4>
 <div class="paragraph">
 <p>The <code>archive</code> request parameter field has been removed.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="post_reposnapshot"><a class="link" href="#post_reposnapshot">POST /repo/snapshot</a></h5>
+<div class="sect3">
+<h4 id="post_reposnapshot"><a class="link" href="#post_reposnapshot">POST /repo/snapshot</a></h4>
 <div class="paragraph">
 <p>No longer waits for the snapshot to complete and returns immediately after the snapshot process is started. The response contains a <code>taskId</code> field that can be used to track the progress of the snapshot.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="post_reposnapshotrestore"><a class="link" href="#post_reposnapshotrestore">POST /repo/snapshot/restore</a></h5>
+<div class="sect3">
+<h4 id="post_reposnapshotrestore"><a class="link" href="#post_reposnapshotrestore">POST /repo/snapshot/restore</a></h4>
 <div class="paragraph">
 <p>No longer waits for the snapshot restore to complete and returns immediately after the restore process is started. The response contains a <code>taskId</code> field that can be used to track the progress of the snapshot restore.</p>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="admin_dashboard"><a class="link" href="#admin_dashboard">Admin Dashboard</a></h4>
+<div class="sect2">
+<h3 id="admin_dashboard"><a class="link" href="#admin_dashboard">Admin Dashboard</a></h3>
 <div class="paragraph">
 <p>Default Admin Home path is now <code>/admin</code> instead of <code>/admin/home</code>.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="general_admin_tools"><a class="link" href="#general_admin_tools">General Admin Tools</a></h4>
+<div class="sect2">
+<h3 id="general_admin_tools"><a class="link" href="#general_admin_tools">General Admin Tools</a></h3>
 <div class="paragraph">
 <p>All admin tools are now present on the Launcher Menu as it was stated in documentation. In case when admin tool should not be present on the launcher panel convert it to an API.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="security_changes"><a class="link" href="#security_changes">Security changes</a></h3>
 <div class="sect3">
-<h4 id="security_changes"><a class="link" href="#security_changes">Security changes</a></h4>
-<div class="sect4">
-<h5 id="xp_supassword"><a class="link" href="#xp_supassword">xp.suPassword</a></h5>
+<h4 id="xp_supassword"><a class="link" href="#xp_supassword">xp.suPassword</a></h4>
 <div class="paragraph">
 <p><code>md5</code> and <code>sha1</code> hashing algorithms are no longer supported <code>xp.suPassword</code> system property as they are no longer considered secure.
 Plain text password isn&#8217;t supported anymore either. Please use stronger hashing algorithms <code>sha256</code> or <code>sha512</code>.
@@ -823,8 +688,8 @@ More details about configuring <code>su</code> password can be found in <a href=
 <p>System <code>su</code> user password is no longer read from the database either. If you had a <code>su</code> password stored in the database, it will be ignored after the upgrade.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="user_passwords"><a class="link" href="#user_passwords">User passwords</a></h5>
+<div class="sect3">
+<h4 id="user_passwords"><a class="link" href="#user_passwords">User passwords</a></h4>
 <div class="paragraph">
 <p>User passwords are still supported in XP8, although the hashing algorithm is changed for new passwords.</p>
 </div>
@@ -838,8 +703,8 @@ When a user with an old password logs in, the password is verified using the old
 It is strongly recommended to change all passwords after the upgrade to ensure all passwords are stored using the new algorithm.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="websocket_same_origin_check"><a class="link" href="#websocket_same_origin_check">WebSocket same-origin check</a></h5>
+<div class="sect3">
+<h4 id="websocket_same_origin_check"><a class="link" href="#websocket_same_origin_check">WebSocket same-origin check</a></h4>
 <div class="paragraph">
 <p>WebSocket handshakes are now subject to a built-in same-origin check.
 If a WebSocket controller does not supply its own <code>checkOrigin</code> function, handshake requests with an <code>Origin</code> that does not match the request host are rejected.
@@ -854,8 +719,8 @@ As a last resort, the check can be disabled with the <code>websocket.defaultOrig
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="other_configuration"><a class="link" href="#other_configuration">Other configuration</a></h4>
+<div class="sect2">
+<h3 id="other_configuration"><a class="link" href="#other_configuration">Other configuration</a></h3>
 <div class="ulist">
 <ul>
 <li>
@@ -863,8 +728,8 @@ As a last resort, the check can be disabled with the <code>websocket.defaultOrig
 </li>
 </ul>
 </div>
-<div class="sect4">
-<h5 id="draftbranchallowedfor"><a class="link" href="#draftbranchallowedfor">draftBranchAllowedFor</a></h5>
+<div class="sect3">
+<h4 id="draftbranchallowedfor"><a class="link" href="#draftbranchallowedfor">draftBranchAllowedFor</a></h4>
 <div class="ulist">
 <ul>
 <li>
@@ -874,8 +739,8 @@ Instead - to access content from the draft branch - user must have any content p
 </ul>
 </div>
 </div>
-<div class="sect4">
-<h5 id="deployment_configuration"><a class="link" href="#deployment_configuration">deployment configuration</a></h5>
+<div class="sect3">
+<h4 id="deployment_configuration"><a class="link" href="#deployment_configuration">deployment configuration</a></h4>
 <div class="ulist">
 <ul>
 <li>
@@ -886,8 +751,10 @@ Instead - to access content from the draft branch - user must have any content p
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="1_install_xp_8"><a class="link" href="#1_install_xp_8">1. Install XP 8</a></h3>
+</div>
+<div class="sect1">
+<h2 id="1_install_xp_8"><a class="link" href="#1_install_xp_8">1. Install XP 8</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>We recommend setting up a new production environment for XP 8, running in parallel with your XP 7 environment.
 This will virtually eliminate downtime and also be a safety net should the upgrade fail somehow.</p>
@@ -899,14 +766,18 @@ This will virtually eliminate downtime and also be a safety net should the upgra
 <p>Start your new server and verify everything is working properly.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="2_create_service_accounts"><a class="link" href="#2_create_service_accounts">2. Create service accounts</a></h3>
+</div>
+<div class="sect1">
+<h2 id="2_create_service_accounts"><a class="link" href="#2_create_service_accounts">2. Create service accounts</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Generate (or download, if already exists) a private key for a service account with Administrator role, one on the existing XP7 instance (to be used for <code>dump create</code>), another on the new XP8 instance (to be used for <code>dump load</code>). The key will be automatically downloaded to your disk after it&#8217;s generated. Read <a href="../security/service-accounts.ahtml">here</a> to learn how to generate keys for service accounts.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="3_dump_data"><a class="link" href="#3_dump_data">3. Dump data</a></h3>
+</div>
+<div class="sect1">
+<h2 id="3_dump_data"><a class="link" href="#3_dump_data">3. Dump data</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>We are now ready to dump data from our existing XP7 instance:</p>
 </div>
@@ -928,8 +799,10 @@ The <code>--archive</code> parameter must be provided, otherwise XP8 will not be
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="4_upgrade_and_load"><a class="link" href="#4_upgrade_and_load">4. Upgrade and load</a></h3>
+</div>
+<div class="sect1">
+<h2 id="4_upgrade_and_load"><a class="link" href="#4_upgrade_and_load">4. Upgrade and load</a></h2>
+<div class="sectionbody">
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Move dump</dt>
@@ -960,8 +833,10 @@ Don&#8217;t worry about the CLI losing connection, this is only related to the s
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="5_update_apps"><a class="link" href="#5_update_apps">5. Update apps</a></h3>
+</div>
+<div class="sect1">
+<h2 id="5_update_apps"><a class="link" href="#5_update_apps">5. Update apps</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>All installed applications must be updated to latest versions compatible with XP 8.</p>
 </div>
@@ -978,14 +853,18 @@ Don&#8217;t worry about the CLI losing connection, this is only related to the s
 </dl>
 </div>
 </div>
-<div class="sect2">
-<h3 id="6_validate"><a class="link" href="#6_validate">6. Validate</a></h3>
+</div>
+<div class="sect1">
+<h2 id="6_validate"><a class="link" href="#6_validate">6. Validate</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Validate that your new installation is working as expected. We recommend checking logs, and performing live tests on services.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="7_go_live"><a class="link" href="#7_go_live">7. Go live</a></h3>
+</div>
+<div class="sect1">
+<h2 id="7_go_live"><a class="link" href="#7_go_live">7. Go live</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>With all lights green, redirect all traffic from your old XP 7 servers to the upgraded XP 8 environment.</p>
 </div>
@@ -995,10 +874,9 @@ Don&#8217;t worry about the CLI losing connection, this is only related to the s
 </div>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 11:05:04 UTC
+Last updated 2026-09-07 09:31:43 UTC
 </div>
 </div>
 </body>

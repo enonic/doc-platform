@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>Web (Port 8080)</title>
+<title>Upgrading</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,23 +437,23 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Web (Port 8080)</h1>
+<h1>Upgrading</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#api">/api (:8080/api)</a>
+<li><a href="#preparations">Preparations</a></li>
+<li><a href="#non_cluster_upgrade">Non-cluster upgrade</a></li>
+<li><a href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></li>
+<li><a href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></li>
+<li><a href="#applications">Applications</a></li>
+<li><a href="#v8_1_notes">v8.1 notes</a>
 <ul class="sectlevel2">
-<li><a href="#api_registry">API registry</a></li>
-<li><a href="#api_index_page">API index page</a></li>
-<li><a href="#contextual_mounts">Contextual mounts</a></li>
+<li><a href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></li>
+<li><a href="#scheduler_placement">Scheduler placement</a></li>
+<li><a href="#new_settings">New settings</a></li>
+<li><a href="#management_api">Management API</a></li>
 </ul>
 </li>
-<li><a href="#admin">/admin (:8080/admin)</a></li>
-<li><a href="#site">/site (:8080/site)</a></li>
-<li><a href="#webapp">/webapp (:8080/webapp)</a></li>
-<li><a href="#vhosts">Vhosts</a></li>
-<li><a href="#identity_and_access_management">Identity and access management</a></li>
 </ul>
 </div>
 </div>
@@ -461,67 +461,97 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>The Web endpoint is the starting point for 3rd party client interactions with Enonic, including APIs, XP Admin and the Site service.</p>
+<p>This page covers upgrading an Enonic XP 8 instance to a newer feature (8.x.0) or fix (8.x.y) release, and lists what to expect from each feature release.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Coming from XP 7? Follow <a href="upgrade/xp7.ahtml">Upgrading from XP 7 to XP 8</a> instead. A major upgrade is a data migration, not a runtime replacement.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="introduction"><a class="link" href="#introduction">Introduction</a></h2>
+<h2 id="preparations"><a class="link" href="#preparations">Preparations</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is where your content and applications get exposed to the world. It serves as the main entry point for all client interactions, including APIs, administrative tools, and content delivery.</p>
-</div>
-<div class="paragraph">
-<p>The Web endpoint consists of four main services: <a href="#api">/api</a>, <a href="#admin">/admin</a>, <a href="#site">/site</a> and <a href="#webapp">/webapp</a>, each serving specific purposes and use cases.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-When running Enonic SDK distribution, localhost:8080 will display an overview of the instance, for developer convenice. Other XP distributions will redirect to /admin.
-</td>
-</tr>
-</table>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/welcome.png" alt="welcome" width="1022">
-</div>
+<p>Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="api"><a class="link" href="#api">/api (:8080/api)</a></h2>
+<h2 id="non_cluster_upgrade"><a class="link" href="#non_cluster_upgrade">Non-cluster upgrade</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Inspired by the Kubernetes API model, Enonic XP allows applications to contribute their own APIs that are automatically integrated with the platform&#8217;s security and IAM. The <code>/api</code> endpoint serves as a unified access point for all these APIs, providing a consistent interface for clients to interact with the platform&#8217;s capabilities.</p>
+<p>Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:</p>
 </div>
-<div class="sect2">
-<h3 id="api_registry"><a class="link" href="#api_registry">API registry</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Stop your instance</p>
+</li>
+<li>
+<p>Replace the XP runtime image with the new one</p>
+</li>
+<li>
+<p>Start the instance.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="rolling_cluster_upgrade"><a class="link" href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>APIs are mounted on the dedicated <code>/api</code> endpoint with the following URL pattern:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>/api/&lt;appname&gt;:&lt;apiname&gt;</pre>
-</div>
+<p>All fix upgrades (i.e. from 8.4.1 to 8.4.8), and most feature upgrades (i.e. from 8.5.x to 8.6.x) support rolling upgrades - with zero downtime.
+None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and require a full restart of the cluster.</p>
 </div>
 <div class="paragraph">
-<p>For example, the Guillotine GraphQL API would be accessed at:</p>
+<p>To safely perform a rolling upgrade, perform the following steps.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre>https://your-xp-instance.com/api/com.enonic.app.guillotine:graphql</pre>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Before you perform a rolling upgrade, verify that all feature version in your upgrade path (from version &#8594; to version) support rolling upgrade
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Upgrade only one node at a time. Wait for the node to start and join the cluster before you move on</p>
+</li>
+<li>
+<p>Stop, upgrade image and start your master nodes first (We always recommend using dedicated master nodes)</p>
+</li>
+<li>
+<p>Stop, upgrade image and start data nodes</p>
+</li>
+<li>
+<p>Stop, upgrade image and start remaining nodes</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="api_index_page"><a class="link" href="#api_index_page">API index page</a></h3>
+<div class="sect1">
+<h2 id="full_restart_cluster_upgrade"><a class="link" href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>When enabled, the API index page provides a human-friendly overview of the APIs mounted in <code>/api</code>. It lists all registered APIs along with their respective endpoints and descriptions, making it easier for developers to discover and understand the capabilities of the platform.</p>
+<p>Selected feature versions (i.e. when upgrading from 7.6.x to 7.7.x or 7.8.x) may require a full restart in order to guarantee no loss of
+data and/or state. Releases that require full restart are marked with a special warning section below.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -530,19 +560,27 @@ When running Enonic SDK distribution, localhost:8080 will display an overview of
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The API index page is disabled by default in production environments for security reasons, but can be enabled in development mode or explicitly via configuration. See <a href="../config/system.ahtml#universal-api">Universal API</a> for details.
+This strategy may safely be applied to upgrading any XP cluster and/or version
 </td>
 </tr>
 </table>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="images/api-index.png" alt="api index" width="1790">
+<div class="paragraph">
+<p>Follow the steps below to complete a restart upgrade:</p>
 </div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Stop all cluster nodes</p>
+</li>
+<li>
+<p>Replace the xp runtime image with the new for all nodes</p>
+</li>
+<li>
+<p>Start all nodes in parallel</p>
+</li>
+</ol>
 </div>
-</div>
-<div class="sect2">
-<h3 id="contextual_mounts"><a class="link" href="#contextual_mounts">Contextual mounts</a></h3>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -550,118 +588,66 @@ The API index page is disabled by default in production environments for securit
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-APIs can also be contextually mounted across other Web services via the <code>_</code> path:
+It is important to start the nodes at the same time to avoid timeouts, should any upgrade scripts be supplied with the new version.
 </td>
 </tr>
 </table>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="applications"><a class="link" href="#applications">Applications</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After upgrading to a new feature version of Enonic XP, it&#8217;s a good idea to check the Enonic Market - newer versions of the apps you are using may be available there. We generally always recommend updating your apps to the latest version!</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="v8_1_notes"><a class="link" href="#v8_1_notes">v8.1 notes</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.</p>
+</div>
+<div class="sect2">
+<h3 id="read_through_blobstore_cache_is_bounded"><a class="link" href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></h3>
+<div class="paragraph">
+<p>A file blobstore configured with <code>readThrough</code> used to grow without limit. It is now kept within <code>readThrough.cacheCapacity</code>, default <code>1gb</code>, and blobs are evicted to stay under it. Raise the value if your local cache was deliberately larger. See <a href="config/system.ahtml#file-blobstore">file blobstore configuration</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="scheduler_placement"><a class="link" href="#scheduler_placement">Scheduler placement</a></h3>
+<div class="paragraph">
+<p><code>acceptScheduling</code> in <code>com.enonic.xp.scheduler.cfg</code> decides whether a node may run the scheduler. Default <code>true</code>, so nothing changes unless you set it. Set it to <code>false</code> on master nodes to keep scheduling, and the maintenance tasks it submits, off them. <code>distributable.acceptSystem</code> in <code>com.enonic.xp.task.cfg</code> does the same for the built-in maintenance tasks alone. See <a href="config/system.ahtml#scheduler">scheduler</a> and <a href="config/system.ahtml#task">task</a> configuration.</p>
+</div>
+<div class="paragraph">
+<p>Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and an entry added while the server runs is picked up without a restart. Keep the file consistent across the nodes that allow scheduling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="new_settings"><a class="link" href="#new_settings">New settings</a></h3>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Site service</strong> - <code>/site/&lt;project&gt;/&lt;branch&gt;/_/&lt;appname&gt;:&lt;apiname&gt;</code></p>
+<p><code>xp.script-engine</code> in system properties selects the default JavaScript engine. Default <code>Nashorn</code>. GraalJS is a preview, not for production. See <a href="config/system.ahtml#script-engine">JavaScript engine</a>.</p>
 </li>
 <li>
-<p><strong>Webapp service</strong> - <code>/webapp/&lt;appname&gt;/_/&lt;appname&gt;:&lt;apiname&gt;</code></p>
+<p><code>threadPool.virtualThreads</code> in the Jetty configuration handles requests on virtual threads. Default <code>false</code>. Unstable, not for production. See <a href="config/system.ahtml#jetty">Jetty configuration</a>.</p>
 </li>
 <li>
-<p><strong>Admin service</strong> - <code>/admin/_/&lt;appname&gt;:&lt;apiname&gt;</code></p>
+<p><code>media.defaultBaseUrl</code> and <code>legacy.mediaApiAutoMount.enabled</code> in the portal configuration let media be served from a separate host. See <a href="config/cms.ahtml#media_base_url">serving media from another host</a>.</p>
+</li>
+<li>
+<p><code>portal.apiBaseUrl</code> context attributes in a virtual host mapping declare where APIs are served. See <a href="config/vhosts.ahtml#api-locations">API locations</a>.</p>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect2">
+<h3 id="management_api"><a class="link" href="#management_api">Management API</a></h3>
 <div class="paragraph">
-<p>This allows APIs to be scoped to specific contexts, such as a content site or administrative tool. The mount point of the API is determined by each individual application, allowing for flexible API design and organization. For example, an admin tool may mount an API within the admin service.</p>
+<p>The <code>scheduler/list</code> response leaves out fields that do not apply to a job&#8217;s schedule type, and fields the job has not set, instead of reporting them as <code>null</code>. Clients that relied on those <code>null</code> values should be adjusted. New fields: <code>deleteAfterRun</code> on <code>ONE_TIME</code>, and <code>duration</code> on the new <code>FIXED_RATE</code> type. See <a href="endpoints/management.ahtml#scheduler">Scheduler</a>.</p>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="admin"><a class="link" href="#admin">/admin (:8080/admin)</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>XP Admin is the dynamically extensible Administrative User Interface for your XP instance. Applications, Content, Users, and system settings is just the beginning. XP Admin can be extended by applications to provide custom administrative tools and interfaces.</p>
-</div>
-<div class="paragraph">
-<p>Visiting :8080 will automatically redirect you to the admin console, where you can log in and manage your XP instance. The admin console is built on top of the admin service, allowing it to be easily extended with custom tools and interfaces.</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-You may customize the authentication via vhosts as described above.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>The XP admin is described in more detail in the <a href="#../admin">Admin</a> section of the documentation.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="site"><a class="link" href="#site">/site (:8080/site)</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>The Site service is a built-in feature to deliver content-driven websites and applications directly from Enonic XP, using the Enonic framework. It provides a powerful and flexible way to build and serve content-rich sites without introducing a 3rd party front-end framework and hosting environment.</p>
-</div>
-<div class="paragraph">
-<p>Access your content via the site engine using the following URL pattern: <code>/site/&lt;project&gt;/&lt;branch&gt;/&lt;content-path&gt;</code></p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-The site service relies on both content, and installed Enonic applications to provide any functionality. The site service is also fully integrated with the Universal API, allowing developers to mount APIs contextually within the sites.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Use vhosts to mount a site on <code>www.yourdomain.com</code> or <code>blog.yourdomain.com</code>.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="webapp"><a class="link" href="#webapp">/webapp (:8080/webapp)</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>The Webapp service allows you to serve any kind of web applications built with any traditional front-end framework, such as React, Angular, or Vue. The server-side is powered by an Enonic application. This allows you to leverage the full power of the XP platform, including its APIs, IAM, and content management capabilities, while still using your preferred front-end technology.</p>
-</div>
-<div class="paragraph">
-<p>Access your web applications using the following URL pattern: <code>/webapp/&lt;appname&gt;/</code></p>
-</div>
-<div class="paragraph">
-<p>For a more detailed introduction to building web applications on Enonic, see <a href="https://developer.enonic.com/docs/code">Enonic Development Kit</a> or check out this tutorial <a href="https://developer.enonic.com/learn/building-xp-webapps">My first web app</a>.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="vhosts"><a class="link" href="#vhosts">Vhosts</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>The Web endpoint supports virtual hosts, allowing you to expose APIs and content on custom domains and paths. For example, you can mount the full API on <code>apis.yourdomain.com</code> or a site on <code>www.yourdomain.com</code> - including use of sub-paths like <code>yourdomain.com/content</code>.</p>
-</div>
-<div class="paragraph">
-<p>For more information on how to configure vhosts, see <a href="../config/vhosts.ahtml">Virtual Hosts</a>.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="identity_and_access_management"><a class="link" href="#identity_and_access_management">Identity and access management</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>The Web endpoint is fully integrated with XP&#8217;s identity and access management (IAM) system, allowing you to control access to your applications and content based on user roles and permissions.</p>
-</div>
-<div class="paragraph">
-<p>Authentication is configured per vhost by mapping ID providers, so different parts of your platform can use different authentication mechanisms. See <a href="../config/vhosts.ahtml">Virtual Hosts</a> for the mapping syntax and <a href="../security/idproviders.ahtml">ID providers</a> for the available providers.</p>
-</div>
-<div class="paragraph">
-<p>For service-to-service access, the platform supports JWT authentication via the system ID provider — see <a href="../security/service-accounts.ahtml#jwt-authentication">JWT authentication</a>. Individual endpoints may document additional authentication options; see for example <a href="management.ahtml#authorization">Management API</a>.</p>
 </div>
 </div>
 </div>

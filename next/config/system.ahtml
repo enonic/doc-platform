@@ -583,7 +583,7 @@ To generate <code>sha512</code> hash suitable for <code>xp.suPassword</code>, yo
     <text x="315" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="426">preview</text>
     <text x="315" y="140" transform="scale(.1)" textLength="426">preview</text>
   </g>
-</svg></span> The JavaScript engine applications run on, <code>Nashorn</code> or <code>GraalJS</code>. Default: <code>Nashorn</code>. See <a href="#script-engine">JavaScript engine</a> below.</p>
+</svg></span> The default JavaScript engine for applications, <code>Nashorn</code> or <code>GraalJS</code>. An application overrides it with the <code>X-Script-Engine</code> header in its bundle manifest. Default: <code>Nashorn</code>. See <a href="#script-engine">JavaScript engine</a> below.</p>
 </dd>
 </dl>
 </div>
@@ -608,6 +608,9 @@ To generate <code>sha512</code> hash suitable for <code>xp.suPassword</code>, yo
     <text x="315" y="140" transform="scale(.1)" textLength="426">preview</text>
   </g>
 </svg></span> XP runs server-side JavaScript on one of two engines. <strong>Nashorn</strong> is the default and the supported engine. <strong>GraalJS</strong> ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn&#8217;s ES5.1 baseline. <strong>Not for production.</strong></p>
+</div>
+<div class="paragraph">
+<p>The engine is chosen per application: the <code>X-Script-Engine</code> header in the application&#8217;s bundle manifest names it, and an application that declares none runs on the engine set by <code>xp.script-engine</code>. Applications on different engines coexist in the same installation.</p>
 </div>
 <div class="paragraph">
 <p>For what changes for application code — module state, disposers, <code>executeFunction</code> — see the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime">dev kit runtime documentation</a>.</p>
@@ -2381,7 +2384,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 11:05:04 UTC
+Last updated 2026-09-07 09:31:43 UTC
 </div>
 </div>
 </body>

@@ -556,7 +556,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you are looking to upgrade from a previous version of XP, check out the <a href="release/upgrade.ahtml">Upgrade documentation</a>
+If you are looking to upgrade from a previous version of XP, check out the <a href="upgrade.ahtml">Upgrade documentation</a>
 </td>
 </tr>
 </table>
@@ -566,7 +566,7 @@ If you are looking to upgrade from a previous version of XP, check out the <a hr
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-25 11:05:04 UTC
+Last updated 2026-09-07 09:31:43 UTC
 </div>
 </div>
 </body>
