@@ -6,58 +6,70 @@ This page covers upgrading an Enonic XP 8 instance to a newer feature (8.x.0) or
 
 IMPORTANT: Coming from XP 7? Follow <<upgrade/xp7#, Upgrading from XP 7 to XP 8>> instead. A major upgrade is a data migration, not a runtime replacement.
 
-== Preparations
+== Before you start
 
-Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.
+. Read the notes below for every feature release between your current version and the target. Each states whether a rolling upgrade is supported or a full restart is required, and lists changed defaults and new settings.
+. Back up. Take a <<deployment/backup-restore#snapshot-restore, snapshot>> of the repositories, or a <<deployment/backup-restore#backup, full backup>>, and verify that you can restore it.
+. Test the upgrade in a staging environment before touching production.
 
-IMPORTANT: Before migrating any data, every application running on your installation - both custom-built and 3rd party - must already be available in an XP 8 compatible version. Migration cannot be completed until all applications are ready for XP 8.
+== Choose a strategy
 
+Single node:: Follow <<#single-node, Single node upgrade>>. A single node cannot be upgraded without downtime.
+Cluster, every release in your path supports rolling upgrade:: Follow <<#rolling, Rolling cluster upgrade>> for zero downtime.
+Cluster, any release in your path requires a full restart:: Follow <<#full-restart, Full restart cluster upgrade>>. This procedure is always safe, whatever the release.
 
+Fix releases (8.0.3 to 8.0.4) always support rolling upgrade. Feature releases (8.0.x to 8.1.0) say so in their notes. Major upgrades (7.x to 8.x) are a data migration and follow <<upgrade/xp7#, their own guide>>.
 
-== Non-cluster upgrade
-Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:
+== Replacing the runtime
 
-. Stop your instance
-. Replace the XP runtime image with the new one
+Every procedure below has a step that replaces the XP runtime with the new version. What that means depends on how XP is installed. In every case XP_HOME, with its configuration, repositories and blobs, is kept and reused; only the runtime changes.
+
+Distribution:: Unpack the new distribution and start it against the existing <<deployment/distro#xp_home, XP_HOME>>, or replace the contents of the installation folder except `home/`.
+Docker:: Start a container from the new image tag with the same volumes mounted. See <<deployment/docker#, Docker>>.
+Kubernetes:: Change the image version in your deployment. See <<deployment/k8s#, Kubernetes>>.
+
+[#single-node]
+== Single node upgrade
+
+. Stop the instance.
+. Replace the runtime with the new version.
 . Start the instance.
 
-== Rolling Cluster upgrade
+[#rolling]
+== Rolling cluster upgrade
 
-All fix upgrades (i.e. from 8.4.1 to 8.4.8), and most feature upgrades (i.e. from 8.5.x to 8.6.x) support rolling upgrades - with zero downtime.
-None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and require a full restart of the cluster.
+WARNING: Before you begin, confirm that every release in your upgrade path supports rolling upgrade. If any does not, use the <<#full-restart, full restart procedure>> instead.
 
-To safely perform a rolling upgrade, perform the following steps.
+Upgrade one node at a time, and wait for each node to start and join the cluster before moving on to the next:
 
-WARNING: Before you perform a rolling upgrade, verify that all feature version in your upgrade path (from version -> to version) support rolling upgrade
+. Master nodes first. We recommend dedicated master nodes.
+. Then data nodes.
+. Then the remaining nodes.
 
-. Upgrade only one node at a time. Wait for the node to start and join the cluster before you move on
-. Stop, upgrade image and start your master nodes first (We always recommend using dedicated master nodes)
-. Stop, upgrade image and start data nodes
-. Stop, upgrade image and start remaining nodes
+For each node: stop it, replace the runtime, start it.
 
-== Full restart Cluster upgrade
+[#full-restart]
+== Full restart cluster upgrade
 
-Selected feature versions (i.e. when upgrading from 7.6.x to 7.7.x or 7.8.x) may require a full restart in order to guarantee no loss of
-data and/or state. Releases that require full restart are marked with a special warning section below.
+Required by releases whose notes say so, such as 8.0.x to 8.1.0, and safe for any upgrade.
 
-NOTE: This strategy may safely be applied to upgrading any XP cluster and/or version
+. Stop all cluster nodes.
+. Replace the runtime on every node.
+. Start all nodes in parallel.
 
-Follow the steps below to complete a restart upgrade:
+NOTE: Start the nodes at the same time. Should the new version include upgrade scripts, nodes that wait for the others may otherwise time out.
 
-. Stop all cluster nodes
-. Replace the xp runtime image with the new for all nodes
-. Start all nodes in parallel
+== After the upgrade
 
-NOTE: It is important to start the nodes at the same time to avoid timeouts, should any upgrade scripts be supplied with the new version.
-
-
-== Applications
-
-After upgrading to a new feature version of Enonic XP, it's a good idea to check the Enonic Market - newer versions of the apps you are using may be available there. We generally always recommend updating your apps to the latest version!
+. Verify that the instance reports the new version. The <<admin/dashboard#, Dashboard>> shows it in its statistics widget, and the server log prints it at startup.
+. Confirm that your applications started. The <<admin/applications#, Applications tool>> lists their state.
+. Check https://market.enonic.com[Enonic Market] for newer versions of the apps you use. Applications built for XP 8 keep working across 8.x releases, so this is recommended, not required. Developers find the deprecations introduced by each release in the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes].
 
 == v8.1 notes
 
-XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.
+*Full restart required.* The scheduler was rebuilt in 8.1: scheduling moved from a Hazelcast scheduled task to a coordinator that elects one node to run the schedule. An 8.0 node and an 8.1 node in the same cluster would each schedule on their own terms, so do not upgrade a cluster to 8.1 node by node. Use the <<#full-restart, full restart procedure>>.
+
+Apart from that, XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.
 
 === Read-through blobstore cache is bounded
 

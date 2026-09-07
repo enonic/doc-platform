@@ -38,7 +38,7 @@ Admin extensions get the same control over the tool page that hosts them. A new 
 
 === Request steering
 
-* *Re-route to other content.* A site mapping filter can change which content is rendered while the visitor's URL stays the same - no redirect, no second request. Useful for A/B variants and personalized landing pages. See https://developer.enonic.com/docs/code/stable/web/filters#reroute[re-routing to another content].
+* *Re-route to other content.* A site mapping filter can change which content is rendered while the visitor's URL stays the same - no redirect, no second request. Useful for A/B variants and personalized landing pages. See https://developer.enonic.com/docs/code/stable/web/sites/mappings#reroute[re-routing to another content].
 * *Pass data down the pipeline.* https://developer.enonic.com/docs/code/stable/libraries/lib-context#setcustomlocalattribute[`setCustomLocalAttribute()`] passes values from a filter or a controller to response processors and the code that runs after it. Custom properties on the request object were never carried across.
 * *Media and page base URLs.* Media and page URLs are anchored to the site's base URL, or to the project when the request has no content, so absolute URLs are correct in previews, APIs and headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media can be served from a separate host such as a CDN. See <<config/cms#media_base_url, serving media from another host>>.
 * *API locations from vhost context.* A vhost can declare where an API is served, and URL generation follows it. See <<config/vhosts#api-locations, API locations>>.
