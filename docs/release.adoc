@@ -24,11 +24,11 @@ On both engines, https://developer.enonic.com/docs/code/stable/runtime/main[`mai
 Four changes make scheduled jobs more predictable in a cluster:
 
 * *Control where the scheduler runs.* Set `acceptScheduling = false` to keep a node out of scheduling - typically the master nodes, which must stay responsive to hold the quorum. Scheduling and the maintenance tasks it submits then run on a node that can afford the load. See <<config/system#scheduler, scheduler configuration>>.
-* *Jobs do not overlap themselves.* The scheduler checks whether the previous run is still going before submitting a new one. A blocked `+CRON+` occurrence is skipped, and a blocked `+FIXED_RATE+` run waits until its predecessor finishes. This is best effort - a partitioned cluster can still produce an overlap.
-* *New schedule type.* `+FIXED_RATE+` takes an ISO-8601 duration, such as `'PT5M'` for every five minutes, for work that repeats at an interval rather than at a time of day.
-* *Self-deleting one-time jobs.* `deleteAfterRun` on a `+ONE_TIME+` schedule removes the job once it has fired.
+* *Jobs do not overlap themselves.* The scheduler checks whether the previous run is still going before submitting a new one. A blocked `+CRON+` occurrence is skipped, and a blocked `+FIXED_RATE+` run waits until its predecessor finishes. This is best effort - a partitioned cluster can still produce an overlap. See https://developer.enonic.com/docs/code/stable/background/scheduler#non-overlap[non-overlapping runs].
+* *New schedule type.* https://developer.enonic.com/docs/code/stable/background/scheduler#fixed-rate[`+FIXED_RATE+`] takes an ISO-8601 duration, such as `'PT5M'` for every five minutes, for work that repeats at an interval rather than at a time of day.
+* *Self-deleting one-time jobs.* `deleteAfterRun` on a https://developer.enonic.com/docs/code/stable/background/scheduler#one-time[`+ONE_TIME+`] schedule removes the job once it has fired.
 
-A task started by the scheduler can read the previous run's task id from the `schedule.lastTaskId` context attribute, useful for incremental processing. Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and new entries are picked up without a restart. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
+A task started by the scheduler can read the previous run's task id from the `schedule.lastTaskId` context attribute, useful for incremental processing; see https://developer.enonic.com/docs/code/stable/background/scheduler#last-task-id[what a scheduled task receives]. Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and new entries are picked up without a restart. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
 
 === Content Security Policy as an API
 
@@ -51,10 +51,10 @@ A new admin events hub lets an application define its own topics and publish to 
 
 Two additions to `query()` in the https://developer.enonic.com/docs/code/stable/libraries/lib-node[node] and https://developer.enonic.com/docs/code/stable/libraries/lib-content#query[content] libraries:
 
-* *`returns`* adds named index fields to each hit, so a listing that only needs a name and a path no longer costs a read per hit. The values come from the search index, so read the node where the exact value matters.
-* *`parent`* restricts a query to the direct children of a node, and *`recursive: true`* extends it to the whole subtree. This replaces the deprecated `getChildren()` and `findChildren()`.
+* *`returns`* adds named index fields to each hit, so a listing that only needs a name and a path no longer costs a read per hit. The values come from the search index, so read the node where the exact value matters. See https://developer.enonic.com/docs/code/stable/libraries/lib-node#repo-query[`query()` in lib-node].
+* *`parent`* restricts a query to the direct children of a node, and *`recursive: true`* extends it to the whole subtree. This replaces the deprecated `getChildren()` and `findChildren()`; see https://developer.enonic.com/docs/code/stable/libraries/lib-content#query[`query()` in lib-content].
 
-In the Java API, `NodeService` gains `list` and `enumerate` methods for reading a subtree in path order. `ListNodesResult` and its `recursive` flag are removed.
+In the Java API, `NodeService` gains `list` and `enumerate` methods for reading a subtree in path order. `ListNodesResult` and its `recursive` flag are removed; see the https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[upgrade notes].
 
 === Exports read one version of a node
 
@@ -73,24 +73,24 @@ WARNING: Virtual thread request handling is experimental and not for production 
 === Other changes
 
 * Java code can mark a method with `@Traced` to have it appear in XP's internal tracing, the same mechanism the platform itself now uses.
-* Cron jobs no longer fire twice within the same second, and a cron slot passing during a restart or a scheduler move is caught up instead of skipped.
-* Disposers registered by an application no longer race its own redeploy.
-* Duplicating a node tree fires the same events for the root as for the rest of the tree.
-* `importNodes()` no longer fails when the optional `xslt` parameter is omitted.
-* `apiUrl()` encodes its `path` like every other URL builder.
-* `readThrough.sizeThreshold` is honored on reads, and only `system.admin` can list exports.
+* https://developer.enonic.com/docs/code/stable/background/scheduler#cron[Cron jobs] no longer fire twice within the same second, and a cron slot passing during a restart or a scheduler move is caught up instead of skipped.
+* https://developer.enonic.com/docs/code/stable/runtime/java-bridge#disposer[Disposers] registered by an application no longer race its own redeploy.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-node#duplicate[Duplicating] a node tree fires the same events for the root as for the rest of the tree.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-export#importnodes[`importNodes()`] no longer fails when the optional `xslt` parameter is omitted.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-portal#apiurl[`apiUrl()`] encodes its `path` like every other URL builder.
+* <<config/system#file-blobstore, `readThrough.sizeThreshold`>> is honored on reads, and only `system.admin` can <<endpoints/management#export, list exports>>.
 * The JNA warning at startup is gone.
 
 === Deprecations
 
 Still working, slated for removal. The https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1[upgrade notes] show the replacement for each:
 
-* `executeFunction()` in lib-task - not supported on GraalJS. Submit a named task instead.
-* `getChildren()` in lib-content and `findChildren()` in lib-node - use `query()` with `parent`.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task[`executeFunction()`] in lib-task - not supported on GraalJS. Submit a named task instead.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content[`getChildren()` in lib-content and `findChildren()` in lib-node] - use `query()` with `parent`.
 * The `baseUrl` parameter of `imageUrl()`, `attachmentUrl()` and `apiUrl()` - configure the location once instead, see <<config/cms#media_base_url, media base URL>> and <<config/vhosts#api-locations, API locations>>.
-* `batchSize` on `exportNodes()` - ignored.
-* `Resource.getTimestamp()`, and `modifiedTime` on icons and descriptors - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
-* `ApplicationListener` in the Java API - track `Application` services instead.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export[`batchSize` on `exportNodes()`] - ignored.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps[`Resource.getTimestamp()`, and `modifiedTime` on icons and descriptors] - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[`ApplicationListener`] in the Java API - track `Application` services instead.
 
 
 == XP 8

@@ -439,6 +439,7 @@ NOTE: Task info can be fetched with <<task, task>> request.
         Export tasks
 ////
 
+[#export]
 == Export
 
 Export and import data from a given repository, branch and content path.
