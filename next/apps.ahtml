@@ -462,13 +462,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="introduction"><a class="link" href="#introduction">Introduction</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Enonic applications are standalone software packages that can be installed and started on Enonic XP. The App runtime can run multiple applications in a single instance simultaneously.</p>
+<p>An <strong>Enonic application</strong> is a named package of functionality that XP installs, starts and configures as one unit. The application name is unique within an installation, and everything the application ships is identified by it: schemas, endpoints, tools, extensions, jobs and configuration. Many applications run side by side in one XP instance, and most of XP&#8217;s own components are applications.</p>
 </div>
 <div class="paragraph">
-<p>Once started, an application has access to all platform services, including the <a href="storage.ahtml">NoSQL storage</a> and <a href="security.ahtml">identity and access management</a>.</p>
-</div>
-<div class="paragraph">
-<p>A single application may offer many different capabilities, from CMS schemas to exposing APIs to other apps. Fundamentally, most of XP&#8217;s core software components are built as applications.</p>
+<p>An application may contain nothing but CMS schemas, or code that serves a site or an API, or Java components, or all of these. Once started, it has access to all platform services, including the <a href="storage.ahtml">NoSQL storage</a> and <a href="security.ahtml">identity and access management</a>.</p>
 </div>
 </div>
 </div>
@@ -540,14 +537,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="building_applications"><a class="link" href="#building_applications">Building applications</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>For details on building applications — including the App runtime, JavaScript framework, and engines for sites, webapps, tasks, and admin tools — see the <a href="https://developer.enonic.com/docs/code">Enonic Development Kit</a>.</p>
+<p>For what an application can contain and how to build one, see <a href="https://developer.enonic.com/docs/code/stable/apps">Applications</a> in the Enonic Development Kit.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 10:16:00 UTC
+Last updated 2026-09-07 14:23:07 UTC
 </div>
 </div>
 </body>

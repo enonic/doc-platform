@@ -773,7 +773,7 @@ This release contains <strong>Breaking changes when upgrading from XP7</strong>.
 <p>YAML replaces XML for all CMS schemas and app descriptors. This means content types, application definitions, ID providers, etc., are now all defined in YAML. YAML is a widely adopted format that is easier to read and write than JSON, especially for complex configurations - and it supports comments. The new YAML-based descriptors are more concise and maintainable, making life easier for developers. For the full documentation, visit the <a href="https://developer.enonic.com/docs/code/stable/schemas">schema system documentation</a>.</p>
 </div>
 <div class="paragraph">
-<p>Schemas are also now organized into <a href="https://developer.enonic.com/docs/cms/stable/schemas/namespaces">namespaces</a>. Every schema is identified as <code>&lt;namespace&gt;:&lt;name&gt;</code>. When shipping schemas with an app, the app name is still the default namespace - but the namespace concept decouples schemas from apps, paving the way for schemas to be authored and managed independently.</p>
+<p>Every schema is identified by the name of the app that ships it, as <code>&lt;app&gt;:&lt;name&gt;</code>, such as <code>com.example.myapp:article</code>, in the same way as APIs, tools and extensions. Platform-provided types use the reserved names <code>base</code>, <code>portal</code> and <code>media</code>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -999,11 +999,6 @@ This release contains <strong>Breaking changes when upgrading from XP7</strong>.
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>TextLine</code>, <code>ItemSet</code>, <code>FieldSet</code>, etc. are all form items - regardless of the value they produce</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Schemas scoped by app (<code>&lt;app-key&gt;:&lt;name&gt;</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Schemas scoped by <a href="https://developer.enonic.com/docs/cms/stable/schemas/namespaces">namespace</a> (<code>&lt;namespace&gt;:&lt;name&gt;</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The app name is still the default namespace when shipping schemas with an app</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>site/</code> resource folder</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developer.enonic.com/docs/code/stable/schemas"><code>cms/</code></a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CMS resources now live in <code>src/main/resources/cms</code></p></td>
@@ -1051,7 +1046,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 10:16:00 UTC
+Last updated 2026-09-07 14:23:07 UTC
 </div>
 </div>
 </body>
