@@ -471,6 +471,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#scheduler">Scheduler</a>
 <ul class="sectlevel2">
 <li><a href="#jobs_in_the_config_file">Jobs in the config file</a></li>
+<li><a href="#predefined-jobs">Predefined jobs</a></li>
 </ul>
 </li>
 <li><a href="#export">Export</a></li>
@@ -2314,6 +2315,54 @@ init-job.my-job2.config={"myparam1":"value1","myset":{"myparam2":"value2"}}</cod
 <div class="paragraph">
 <p>Properties prefixed with <code>init-job.my-job1</code> describe properties of <code>my-job1</code> job.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="predefined-jobs"><a class="link" href="#predefined-jobs">Predefined jobs</a></h3>
+<div class="paragraph">
+<p>XP ships two jobs of its own. Both are disabled by default, and both are enabled and tuned through the same <code>init-job.*</code> properties.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Vacuum</dt>
+<dd>
+<p>Deletes unused blobs and binaries from the blobstore. What is considered unused is set in the <a href="#vacuum">vacuum configuration</a>.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">init-job.vacuum.enabled=false
+init-job.vacuum.cron=0 5 * * *
+init-job.vacuum.descriptor=com.enonic.xp.app.system:vacuum
+init-job.vacuum.description=Job to run vacuum
+init-job.vacuum.user=system:su</code></pre>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Audit log cleanup</dt>
+<dd>
+<p>Deletes records from the audit log repository older than the <code>ageThreshold</code> set in <code>com.enonic.xp.audit.cfg</code>. Nothing is removed until that threshold is set.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">init-job.audit-log-cleanup.enabled=false
+init-job.audit-log-cleanup.cron=0 5 * * *
+init-job.audit-log-cleanup.descriptor=com.enonic.xp.app.system:audit-log-cleanup
+init-job.audit-log-cleanup.description=Job to clean up old audit log history
+init-job.audit-log-cleanup.user=system:su</code></pre>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Take a backup before enabling either job. Both delete data that cannot be recovered otherwise.
+</td>
+</tr>
+</table>
+</div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">init-job.my-job1.enabled</dt>
@@ -2384,7 +2433,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 19:39:08 UTC
+Last updated 2026-09-07 20:24:49 UTC
 </div>
 </div>
 </body>
