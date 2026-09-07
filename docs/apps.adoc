@@ -6,11 +6,9 @@ Build and deploy schemas, code, and functionality via Enonic applications.
 
 == Introduction
 
-Enonic applications are standalone software packages that can be installed and started on Enonic XP. The App runtime can run multiple applications in a single instance simultaneously.
+An *Enonic application* is a named package of functionality that XP installs, starts and configures as one unit. The application name is unique within an installation, and everything the application ships is identified by it: schemas, endpoints, tools, extensions, jobs and configuration. Many applications run side by side in one XP instance, and most of XP's own components are applications.
 
-Once started, an application has access to all platform services, including the <<storage#, NoSQL storage>> and <<security#, identity and access management>>.
-
-A single application may offer many different capabilities, from CMS schemas to exposing APIs to other apps. Fundamentally, most of XP's core software components are built as applications.
+An application may contain nothing but CMS schemas, or code that serves a site or an API, or Java components, or all of these. Once started, it has access to all platform services, including the <<storage#, NoSQL storage>> and <<security#, identity and access management>>.
 
 == Enonic Market
 
@@ -42,4 +40,4 @@ Applications can be configured by adding a <<config/system#, custom configuratio
 
 == Building applications
 
-For details on building applications — including the App runtime, JavaScript framework, and engines for sites, webapps, tasks, and admin tools — see the https://developer.enonic.com/docs/code[Enonic Development Kit].
+For what an application can contain and how to build one, see https://developer.enonic.com/docs/code/stable/apps[Applications] in the Enonic Development Kit.

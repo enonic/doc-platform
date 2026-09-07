@@ -122,7 +122,7 @@ APIs can be exposed on custom URLs and domains via <<config/vhosts#, virtual hos
 
 YAML replaces XML for all CMS schemas and app descriptors. This means content types, application definitions, ID providers, etc., are now all defined in YAML. YAML is a widely adopted format that is easier to read and write than JSON, especially for complex configurations - and it supports comments. The new YAML-based descriptors are more concise and maintainable, making life easier for developers. For the full documentation, visit the https://developer.enonic.com/docs/code/stable/schemas[schema system documentation].
 
-Schemas are also now organized into https://developer.enonic.com/docs/cms/stable/schemas/namespaces[namespaces]. Every schema is identified as `<namespace>:<name>`. When shipping schemas with an app, the app name is still the default namespace - but the namespace concept decouples schemas from apps, paving the way for schemas to be authored and managed independently.
+Every schema is identified by the name of the app that ships it, as `<app>:<name>`, such as `com.example.myapp:article`, in the same way as APIs, tools and extensions. Platform-provided types use the reserved names `base`, `portal` and `media`.
 
 === Simplified permissions
 
@@ -246,10 +246,6 @@ XP 8 renames or reframes several familiar XP 7 concepts. Use this map when readi
 |Input types and sets
 |https://developer.enonic.com/docs/cms/stable/schemas/form-items[Form items]
 |`TextLine`, `ItemSet`, `FieldSet`, etc. are all form items - regardless of the value they produce
-
-|Schemas scoped by app (`<app-key>:<name>`)
-|Schemas scoped by https://developer.enonic.com/docs/cms/stable/schemas/namespaces[namespace] (`<namespace>:<name>`)
-|The app name is still the default namespace when shipping schemas with an app
 
 |`site/` resource folder
 |https://developer.enonic.com/docs/code/stable/schemas[`cms/`]
