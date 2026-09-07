@@ -516,7 +516,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </svg></span> GraalJS, the engine that will replace Nashorn, is available as a preview. It implements the current ECMAScript standard, where Nashorn stops at ES5.</p>
 </div>
 <div class="paragraph">
-<p>Nashorn remains the default and the supported engine. The engine is chosen per application via the <code>X-Script-Engine</code> header in the bundle manifest, with the installation default set in <a href="config/system.ahtml#script-engine">system properties</a>. A single app can be moved to GraalJS and back without affecting the others. The differences for application code - module state per context, disposer registration, <code>executeFunction</code> - are described in the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs">dev kit runtime documentation</a>.</p>
+<p>Nashorn remains the default and the supported engine. The engine is chosen per application via the <code>X-Script-Engine</code> header in the bundle manifest, with the installation default set in <a href="config/system.ahtml#script-engine">system properties</a>. A single app can be moved to GraalJS and back without affecting the others. The differences for application code - module state per context, disposer registration, <code>executeFunction</code> - are described in the <a href="https://developer.enonic.com/docs/code/stable/runtime/engines#graaljs">dev kit documentation on JavaScript engines</a>.</p>
 </div>
 <div class="admonitionblock warning">
 <table>
@@ -531,7 +531,7 @@ GraalJS is not for production use.
 </table>
 </div>
 <div class="paragraph">
-<p>On both engines, <a href="https://developer.enonic.com/docs/code/stable/fundamentals/main"><code>main.ts</code></a> now completes before anything else in the app runs on that node. Initialization code no longer needs guards against early requests.</p>
+<p>On both engines, <a href="https://developer.enonic.com/docs/code/stable/runtime/main"><code>main.ts</code></a> now completes before anything else in the app runs on that node. Initialization code no longer needs guards against early requests.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1051,7 +1051,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 09:31:43 UTC
+Last updated 2026-09-07 10:16:00 UTC
 </div>
 </div>
 </body>

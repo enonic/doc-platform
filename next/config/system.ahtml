@@ -613,7 +613,7 @@ To generate <code>sha512</code> hash suitable for <code>xp.suPassword</code>, yo
 <p>The engine is chosen per application: the <code>X-Script-Engine</code> header in the application&#8217;s bundle manifest names it, and an application that declares none runs on the engine set by <code>xp.script-engine</code>. Applications on different engines coexist in the same installation.</p>
 </div>
 <div class="paragraph">
-<p>For what changes for application code — module state, disposers, <code>executeFunction</code> — see the <a href="https://developer.enonic.com/docs/code/stable/fundamentals/runtime">dev kit runtime documentation</a>.</p>
+<p>For what changes for application code — module state, disposers, <code>executeFunction</code> — see the <a href="https://developer.enonic.com/docs/code/stable/runtime/engines#graaljs">dev kit documentation on JavaScript engines</a>.</p>
 </div>
 <div class="sect3">
 <h4 id="tuning_the_graaljs_context_pool"><a class="link" href="#tuning_the_graaljs_context_pool">Tuning the GraalJS context pool</a></h4>
@@ -2384,7 +2384,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 09:31:43 UTC
+Last updated 2026-09-07 10:16:00 UTC
 </div>
 </div>
 </body>
