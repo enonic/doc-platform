@@ -545,18 +545,18 @@ GraalJS is not for production use.
 <p><strong>Control where the scheduler runs.</strong> Set <code>acceptScheduling = false</code> to keep a node out of scheduling - typically the master nodes, which must stay responsive to hold the quorum. Scheduling and the maintenance tasks it submits then run on a node that can afford the load. See <a href="config/system.ahtml#scheduler">scheduler configuration</a>.</p>
 </li>
 <li>
-<p><strong>Jobs do not overlap themselves.</strong> The scheduler checks whether the previous run is still going before submitting a new one. A blocked <code>CRON</code> occurrence is skipped, and a blocked <code>FIXED_RATE</code> run waits until its predecessor finishes. This is best effort - a partitioned cluster can still produce an overlap.</p>
+<p><strong>Jobs do not overlap themselves.</strong> The scheduler checks whether the previous run is still going before submitting a new one. A blocked <code>CRON</code> occurrence is skipped, and a blocked <code>FIXED_RATE</code> run waits until its predecessor finishes. This is best effort - a partitioned cluster can still produce an overlap. See <a href="https://developer.enonic.com/docs/code/stable/background/scheduler#non-overlap">non-overlapping runs</a>.</p>
 </li>
 <li>
-<p><strong>New schedule type.</strong> <code>FIXED_RATE</code> takes an ISO-8601 duration, such as <code>'PT5M'</code> for every five minutes, for work that repeats at an interval rather than at a time of day.</p>
+<p><strong>New schedule type.</strong> <a href="https://developer.enonic.com/docs/code/stable/background/scheduler#fixed-rate"><code>FIXED_RATE</code></a> takes an ISO-8601 duration, such as <code>'PT5M'</code> for every five minutes, for work that repeats at an interval rather than at a time of day.</p>
 </li>
 <li>
-<p><strong>Self-deleting one-time jobs.</strong> <code>deleteAfterRun</code> on a <code>ONE_TIME</code> schedule removes the job once it has fired.</p>
+<p><strong>Self-deleting one-time jobs.</strong> <code>deleteAfterRun</code> on a <a href="https://developer.enonic.com/docs/code/stable/background/scheduler#one-time"><code>ONE_TIME</code></a> schedule removes the job once it has fired.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>A task started by the scheduler can read the previous run&#8217;s task id from the <code>schedule.lastTaskId</code> context attribute, useful for incremental processing. Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and new entries are picked up without a restart. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler">scheduler library</a>.</p>
+<p>A task started by the scheduler can read the previous run&#8217;s task id from the <code>schedule.lastTaskId</code> context attribute, useful for incremental processing; see <a href="https://developer.enonic.com/docs/code/stable/background/scheduler#last-task-id">what a scheduled task receives</a>. Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and new entries are picked up without a restart. See the <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler">scheduler library</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -601,15 +601,15 @@ GraalJS is not for production use.
 <div class="ulist">
 <ul>
 <li>
-<p><strong><code>returns</code></strong> adds named index fields to each hit, so a listing that only needs a name and a path no longer costs a read per hit. The values come from the search index, so read the node where the exact value matters.</p>
+<p><strong><code>returns</code></strong> adds named index fields to each hit, so a listing that only needs a name and a path no longer costs a read per hit. The values come from the search index, so read the node where the exact value matters. See <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-node#repo-query"><code>query()</code> in lib-node</a>.</p>
 </li>
 <li>
-<p><strong><code>parent</code></strong> restricts a query to the direct children of a node, and <strong><code>recursive: true</code></strong> extends it to the whole subtree. This replaces the deprecated <code>getChildren()</code> and <code>findChildren()</code>.</p>
+<p><strong><code>parent</code></strong> restricts a query to the direct children of a node, and <strong><code>recursive: true</code></strong> extends it to the whole subtree. This replaces the deprecated <code>getChildren()</code> and <code>findChildren()</code>; see <a href="https://developer.enonic.com/docs/code/stable/libraries/lib-content#query"><code>query()</code> in lib-content</a>.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>In the Java API, <code>NodeService</code> gains <code>list</code> and <code>enumerate</code> methods for reading a subtree in path order. <code>ListNodesResult</code> and its <code>recursive</code> flag are removed.</p>
+<p>In the Java API, <code>NodeService</code> gains <code>list</code> and <code>enumerate</code> methods for reading a subtree in path order. <code>ListNodesResult</code> and its <code>recursive</code> flag are removed; see the <a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java">upgrade notes</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -667,22 +667,22 @@ Virtual thread request handling is experimental and not for production use.
 <p>Java code can mark a method with <code>@Traced</code> to have it appear in XP&#8217;s internal tracing, the same mechanism the platform itself now uses.</p>
 </li>
 <li>
-<p>Cron jobs no longer fire twice within the same second, and a cron slot passing during a restart or a scheduler move is caught up instead of skipped.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/background/scheduler#cron">Cron jobs</a> no longer fire twice within the same second, and a cron slot passing during a restart or a scheduler move is caught up instead of skipped.</p>
 </li>
 <li>
-<p>Disposers registered by an application no longer race its own redeploy.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/runtime/java-bridge#disposer">Disposers</a> registered by an application no longer race its own redeploy.</p>
 </li>
 <li>
-<p>Duplicating a node tree fires the same events for the root as for the rest of the tree.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/libraries/lib-node#duplicate">Duplicating</a> a node tree fires the same events for the root as for the rest of the tree.</p>
 </li>
 <li>
-<p><code>importNodes()</code> no longer fails when the optional <code>xslt</code> parameter is omitted.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/libraries/lib-export#importnodes"><code>importNodes()</code></a> no longer fails when the optional <code>xslt</code> parameter is omitted.</p>
 </li>
 <li>
-<p><code>apiUrl()</code> encodes its <code>path</code> like every other URL builder.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/libraries/lib-portal#apiurl"><code>apiUrl()</code></a> encodes its <code>path</code> like every other URL builder.</p>
 </li>
 <li>
-<p><code>readThrough.sizeThreshold</code> is honored on reads, and only <code>system.admin</code> can list exports.</p>
+<p><a href="config/system.ahtml#file-blobstore"><code>readThrough.sizeThreshold</code></a> is honored on reads, and only <code>system.admin</code> can <a href="endpoints/management.ahtml#export">list exports</a>.</p>
 </li>
 <li>
 <p>The JNA warning at startup is gone.</p>
@@ -698,22 +698,22 @@ Virtual thread request handling is experimental and not for production use.
 <div class="ulist">
 <ul>
 <li>
-<p><code>executeFunction()</code> in lib-task - not supported on GraalJS. Submit a named task instead.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task"><code>executeFunction()</code></a> in lib-task - not supported on GraalJS. Submit a named task instead.</p>
 </li>
 <li>
-<p><code>getChildren()</code> in lib-content and <code>findChildren()</code> in lib-node - use <code>query()</code> with <code>parent</code>.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content"><code>getChildren()</code> in lib-content and <code>findChildren()</code> in lib-node</a> - use <code>query()</code> with <code>parent</code>.</p>
 </li>
 <li>
 <p>The <code>baseUrl</code> parameter of <code>imageUrl()</code>, <code>attachmentUrl()</code> and <code>apiUrl()</code> - configure the location once instead, see <a href="config/cms.ahtml#media_base_url">media base URL</a> and <a href="config/vhosts.ahtml#api-locations">API locations</a>.</p>
 </li>
 <li>
-<p><code>batchSize</code> on <code>exportNodes()</code> - ignored.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export"><code>batchSize</code> on <code>exportNodes()</code></a> - ignored.</p>
 </li>
 <li>
-<p><code>Resource.getTimestamp()</code>, and <code>modifiedTime</code> on icons and descriptors - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps"><code>Resource.getTimestamp()</code>, and <code>modifiedTime</code> on icons and descriptors</a> - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.</p>
 </li>
 <li>
-<p><code>ApplicationListener</code> in the Java API - track <code>Application</code> services instead.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java"><code>ApplicationListener</code></a> in the Java API - track <code>Application</code> services instead.</p>
 </li>
 </ul>
 </div>
@@ -1046,7 +1046,7 @@ Note the double rename: the word <strong>mixin</strong> changed meaning between 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 15:08:31 UTC
+Last updated 2026-09-07 15:18:04 UTC
 </div>
 </div>
 </body>
