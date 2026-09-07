@@ -910,6 +910,35 @@ init-job.my-job2.config={"myparam1":"value1","myset":{"myparam2":"value2"}}
 ----
 Properties prefixed with `init-job.my-job1` describe properties of `my-job1` job.
 
+[#predefined-jobs]
+=== Predefined jobs
+
+XP ships two jobs of its own. Both are disabled by default, and both are enabled and tuned through the same `init-job.*` properties.
+
+Vacuum:: Deletes unused blobs and binaries from the blobstore. What is considered unused is set in the <<#vacuum, vacuum configuration>>.
++
+[source,properties]
+----
+init-job.vacuum.enabled=false
+init-job.vacuum.cron=0 5 * * *
+init-job.vacuum.descriptor=com.enonic.xp.app.system:vacuum
+init-job.vacuum.description=Job to run vacuum
+init-job.vacuum.user=system:su
+----
+
+Audit log cleanup:: Deletes records from the audit log repository older than the `ageThreshold` set in `com.enonic.xp.audit.cfg`. Nothing is removed until that threshold is set.
++
+[source,properties]
+----
+init-job.audit-log-cleanup.enabled=false
+init-job.audit-log-cleanup.cron=0 5 * * *
+init-job.audit-log-cleanup.descriptor=com.enonic.xp.app.system:audit-log-cleanup
+init-job.audit-log-cleanup.description=Job to clean up old audit log history
+init-job.audit-log-cleanup.user=system:su
+----
+
+WARNING: Take a backup before enabling either job. Both delete data that cannot be recovered otherwise.
+
 init-job.my-job1.enabled:: true - job will be scheduled at server start.
 init-job.my-job1.cron:: * * * * *  - will be run every minute.
 
