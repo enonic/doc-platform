@@ -48,12 +48,14 @@ xp.stop.gracePeriod:: Time in milliseconds XP waits for all services to stop. De
 felix.fileinstall.poll:: Frequency in ms for how often the configuration folders are scanned for changes
 xp.config.paths:: Config folders to scan in addition to `XP_HOME/config/`. Useful for fine grained control over configuration management. Folders will be scanned in the defined order. The first file found per configuration will be used.
 
-xp.script-engine:: image:preview.svg[Preview,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. See <<#script-engine, JavaScript engine>> below.
+xp.script-engine:: image:preview.svg[Preview,opts=inline] The default JavaScript engine for applications, `Nashorn` or `GraalJS`. An application overrides it with the `+X-Script-Engine+` header in its bundle manifest. Default: `Nashorn`. See <<#script-engine, JavaScript engine>> below.
 
 [#script-engine]
 === JavaScript engine
 
 image:preview.svg[Preview,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline. *Not for production.*
+
+The engine is chosen per application: the `+X-Script-Engine+` header in the application's bundle manifest names it, and an application that declares none runs on the engine set by `xp.script-engine`. Applications on different engines coexist in the same installation.
 
 For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/fundamentals/runtime[dev kit runtime documentation].
 
@@ -791,6 +793,7 @@ installUrl.allowedUrls =
 ----
 
 
+[#task]
 == Task
 
 `com.enonic.xp.task.cfg`

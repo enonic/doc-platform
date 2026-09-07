@@ -1299,6 +1299,7 @@ GET task/{taskId}
 .Response
 https://developer.enonic.com/docs/code/stable/libraries/lib-task#task-info[`TaskInfo`] object.
 
+[#scheduler]
 == Scheduler
 
 Scheduled jobs related commands.

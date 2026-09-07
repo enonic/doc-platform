@@ -1,0 +1,78 @@
+= Upgrading
+:toc: right
+:imagesdir: images
+
+This page covers upgrading an Enonic XP 8 instance to a newer feature (8.x.0) or fix (8.x.y) release, and lists what to expect from each feature release.
+
+IMPORTANT: Coming from XP 7? Follow <<upgrade/xp7#, Upgrading from XP 7 to XP 8>> instead. A major upgrade is a data migration, not a runtime replacement.
+
+== Preparations
+
+Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.
+
+
+== Non-cluster upgrade
+Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:
+
+. Stop your instance
+. Replace the XP runtime image with the new one
+. Start the instance.
+
+== Rolling Cluster upgrade
+
+All fix upgrades (i.e. from 8.4.1 to 8.4.8), and most feature upgrades (i.e. from 8.5.x to 8.6.x) support rolling upgrades - with zero downtime.
+None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and require a full restart of the cluster.
+
+To safely perform a rolling upgrade, perform the following steps.
+
+WARNING: Before you perform a rolling upgrade, verify that all feature version in your upgrade path (from version -> to version) support rolling upgrade
+
+. Upgrade only one node at a time. Wait for the node to start and join the cluster before you move on
+. Stop, upgrade image and start your master nodes first (We always recommend using dedicated master nodes)
+. Stop, upgrade image and start data nodes
+. Stop, upgrade image and start remaining nodes
+
+== Full restart Cluster upgrade
+
+Selected feature versions (i.e. when upgrading from 7.6.x to 7.7.x or 7.8.x) may require a full restart in order to guarantee no loss of
+data and/or state. Releases that require full restart are marked with a special warning section below.
+
+NOTE: This strategy may safely be applied to upgrading any XP cluster and/or version
+
+Follow the steps below to complete a restart upgrade:
+
+. Stop all cluster nodes
+. Replace the xp runtime image with the new for all nodes
+. Start all nodes in parallel
+
+NOTE: It is important to start the nodes at the same time to avoid timeouts, should any upgrade scripts be supplied with the new version.
+
+
+== Applications
+
+After upgrading to a new feature version of Enonic XP, it's a good idea to check the Enonic Market - newer versions of the apps you are using may be available there. We generally always recommend updating your apps to the latest version!
+
+== v8.1 notes
+
+XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.
+
+=== Read-through blobstore cache is bounded
+
+A file blobstore configured with `readThrough` used to grow without limit. It is now kept within `readThrough.cacheCapacity`, default `1gb`, and blobs are evicted to stay under it. Raise the value if your local cache was deliberately larger. See <<config/system#file-blobstore, file blobstore configuration>>.
+
+=== Scheduler placement
+
+`acceptScheduling` in `com.enonic.xp.scheduler.cfg` decides whether a node may run the scheduler. Default `true`, so nothing changes unless you set it. Set it to `false` on master nodes to keep scheduling, and the maintenance tasks it submits, off them. `distributable.acceptSystem` in `com.enonic.xp.task.cfg` does the same for the built-in maintenance tasks alone. See <<config/system#scheduler, scheduler>> and <<config/system#task, task>> configuration.
+
+Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and an entry added while the server runs is picked up without a restart. Keep the file consistent across the nodes that allow scheduling.
+
+=== New settings
+
+* `xp.script-engine` in system properties selects the default JavaScript engine. Default `Nashorn`. GraalJS is a preview, not for production. See <<config/system#script-engine, JavaScript engine>>.
+* `threadPool.virtualThreads` in the Jetty configuration handles requests on virtual threads. Default `false`. Unstable, not for production. See <<config/system#jetty, Jetty configuration>>.
+* `media.defaultBaseUrl` and `legacy.mediaApiAutoMount.enabled` in the portal configuration let media be served from a separate host. See <<config/cms#media_base_url, serving media from another host>>.
+* `portal.apiBaseUrl` context attributes in a virtual host mapping declare where APIs are served. See <<config/vhosts#api-locations, API locations>>.
+
+=== Management API
+
+The `scheduler/list` response leaves out fields that do not apply to a job's schedule type, and fields the job has not set, instead of reporting them as `null`. Clients that relied on those `null` values should be adjusted. New fields: `deleteAfterRun` on `ONE_TIME`, and `duration` on the new `FIXED_RATE` type. See <<endpoints/management#scheduler, Scheduler>>.
