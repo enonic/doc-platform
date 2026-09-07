@@ -10,6 +10,9 @@ IMPORTANT: Coming from XP 7? Follow <<upgrade/xp7#, Upgrading from XP 7 to XP 8>
 
 Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.
 
+IMPORTANT: Before migrating any data, every application running on your installation - both custom-built and 3rd party - must already be available in an XP 8 compatible version. Migration cannot be completed until all applications are ready for XP 8.
+
+
 
 == Non-cluster upgrade
 Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:
