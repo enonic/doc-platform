@@ -483,6 +483,18 @@ Coming from XP 7? Follow <a href="upgrade/xp7.ahtml">Upgrading from XP 7 to XP 8
 <div class="paragraph">
 <p>Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.</p>
 </div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Before migrating any data, every application running on your installation - both custom-built and 3rd party - must already be available in an XP 8 compatible version. Migration cannot be completed until all applications are ready for XP 8.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -654,7 +666,7 @@ It is important to start the nodes at the same time to avoid timeouts, should an
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 14:47:05 UTC
+Last updated 2026-09-07 15:08:31 UTC
 </div>
 </div>
 </body>
