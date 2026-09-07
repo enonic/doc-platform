@@ -160,7 +160,7 @@ mapping.adm.com.enonic.xp.branch.Branch = master
 [#api-locations]
 === API locations
 
-image:xp-8010.svg[XP 8.1.0,opts=inline] APIs may be served from somewhere other than the address a request arrives on: a dedicated API host, a shorter path, or a media host. The context of a virtual host mapping declares where, for requests it matches:
+image:xp-810.svg[XP 8.1.0,opts=inline] APIs may be served from somewhere other than the address a request arrives on: a dedicated API host, a shorter path, or a media host. The context of a virtual host mapping declares where, for requests it matches:
 
 [source,properties]
 ----

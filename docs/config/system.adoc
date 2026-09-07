@@ -188,7 +188,7 @@ Read-through turns this store into a local cache in front of another blobstore p
 readThrough.provider:: name of the blobstore provider to read through to. Default: `none` - no read-through, this store holds the blobs itself.
 readThrough.enabled:: enables or disables read-through. Default: `false`.
 readThrough.sizeThreshold:: maximum size of an object admitted to the local store. Larger blobs are always served from the read-through provider. Default: `100mb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
-readThrough.cacheCapacity:: image:xp-8010.svg[XP 8.1.0,opts=inline] total size the local store is kept within. Default: `1gb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
+readThrough.cacheCapacity:: image:xp-810.svg[XP 8.1.0,opts=inline] total size the local store is kept within. Default: `1gb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
 +
 Without a capacity the local store grows to hold everything ever read - which is why `readThrough.cacheCapacity` exists. XP keeps a size-weighted index over the local store and, on every access, decides from it what is admitted and what is evicted.
 +
@@ -823,7 +823,7 @@ clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a jo
 
 Configure which nodes may run the scheduler, and the jobs to create for scheduling.
 
-acceptScheduling:: image:xp-8010.svg[XP 8.1.0,opts=inline] Whether this node may run the scheduler. Default: `true`.
+acceptScheduling:: image:xp-810.svg[XP 8.1.0,opts=inline] Whether this node may run the scheduler. Default: `true`.
 +
 Exactly one node of a cluster runs the scheduler, picked among those that allow it, and the duty moves to another such node when that one leaves the cluster. Setting this to `false` excludes the node from that choice; nothing else about it changes - it serves the scheduler API and holds the jobs like every other node, so applications creating or querying jobs behave the same wherever they run.
 +
@@ -847,7 +847,7 @@ Properties prefixed with `init-job.<my-job-name>` describe a job named `<my-job-
 
 In a cluster the jobs come from the config file of the node that runs the scheduler. Keep the file consistent across the nodes that allow scheduling.
 
-image:xp-8010.svg[XP 8.1.0,opts=inline] What to expect of an edit:
+image:xp-810.svg[XP 8.1.0,opts=inline] What to expect of an edit:
 
 * Adding an entry creates the job within seconds. Nothing restarts, and jobs already running are undisturbed.
 * Editing an entry does not change a job that exists. The config file creates jobs, it does not maintain them - modify an existing job through the API, or delete it and let the file create it anew.

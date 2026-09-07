@@ -1312,7 +1312,7 @@ List scheduled jobs.
 .Url
 GET scheduler/list
 
-The fields of `calendar` depend on its `type`: `cronValue` and `timeZone` for `CRON`, `value` and image:xp-8010.svg[XP 8.1.0,opts=inline] `deleteAfterRun` for `ONE_TIME`, and image:xp-8010.svg[XP 8.1.0,opts=inline] `duration` - an ISO-8601 duration - for `FIXED_RATE`. Fields that do not apply to the type, and those the job has not set, are left out of the response rather than reported as `null`.
+The fields of `calendar` depend on its `type`: `cronValue` and `timeZone` for `CRON`, `value` and image:xp-810.svg[XP 8.1.0,opts=inline] `deleteAfterRun` for `ONE_TIME`, and image:xp-810.svg[XP 8.1.0,opts=inline] `duration` - an ISO-8601 duration - for `FIXED_RATE`. Fields that do not apply to the type, and those the job has not set, are left out of the response rather than reported as `null`.
 
 .Response
 [source,json]
