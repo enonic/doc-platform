@@ -5,28 +5,6 @@
 This section describes configuration files related to the XP admin console and standard admin tools
 
 
-== Admin
-
-`com.enonic.xp.admin.cfg`
-
-General settings for /admin.
-
-.Disable Content Security Policy for site preview
-[source,properties]
-----
-site.preview.contentSecurityPolicy=
-----
-
-.Allow scripts from maps.googleapis.com
-[source,properties]
-----
-site.preview.contentSecurityPolicy=default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self' maps.googleapis.com; object-src 'none'; img-src * data:; style-src * 'unsafe-inline'; font-src * data:
-----
-
-
-site.preview.contentSecurityPolicy:: Defines default value for Content-Security-Policy header for the site engine - when running in Admin Context. The policy is applied in `preview` and `inline` mode - if the page controllers do not specify a Content-Security-Policy header itself.
-Default: `default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self'; object-src 'none'; img-src * data:; style-src * 'unsafe-inline'; font-src * data:`
-
 
 == XP Dashboard
 
@@ -34,9 +12,7 @@ Default: `default-src 'self'; base-uri 'self'; form-action 'self'; script-src 's
 
 === Content Security Policy
 
-IMPORTANT: Disabling or changing built-in Content Security Policy is generally NOT RECOMMENDED. You may need to tweak
-CSP settings _only_ if you are building a Dashboard widget where you want to allow references to external resources
-(for example, a YouTube video) or other potentially unsafe (from the CSP point of view) actions.
+IMPORTANT: Disabling or changing the built-in Content Security Policy is not recommended. A Dashboard widget that needs external resources, such as an embedded video or a chart library, should declare them through an https://developer.enonic.com/docs/code/stable/web/extensions/processors[extension response processor], which applies only where the widget is shown and only for users allowed to see it. The settings below change the policy for every Dashboard page and every user.
 
 You can provide your own header for Content Security Policy using `contentSecurityPolicy.header` property.
 Note, that if you provide your own header, you should include all necessary directives, as the default headers (`self`) will not be added.

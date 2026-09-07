@@ -32,9 +32,9 @@ A task started by the scheduler can read the previous run's task id from the `sc
 
 === Content Security Policy as an API
 
-A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so the page, its layouts, its parts and any response processor all contribute to a single header, nonce included. The header is composed when the response is flushed, so late contributions are not lost. A report-only companion lets you enforce one policy while trialling a stricter one. See https://developer.enonic.com/docs/code/stable/libraries/lib-portal#csp[`csp()`] in the portal library.
+A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so the page, its layouts, its parts and any response processor all contribute to a single header, nonce included. The header is composed when the response is flushed, so late contributions are not lost. A report-only companion lets you enforce one policy while trialling a stricter one. A `Content-Security-Policy` header set directly on the response is folded into the policy rather than sent as it is, so later contributions still apply. See https://developer.enonic.com/docs/code/stable/libraries/lib-portal#csp[`csp()`] in the portal library.
 
-Admin extensions get the same control over the tool page that hosts them. A new Java SPI for admin extension response processors lets an extension adjust the tool's CSP and add page contributions.
+Admin extensions get the same control over the tool page that hosts them. A new Java SPI lets an extension adjust the tool's CSP and add page contributions. See https://developer.enonic.com/docs/code/stable/web/extensions/processors[extension response processors].
 
 === Request steering
 
