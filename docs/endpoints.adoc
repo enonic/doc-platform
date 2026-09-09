@@ -11,7 +11,7 @@ The gateway for all client interactions, including APIs, Admin and the Site serv
 
 == Management API (Port 4848)
 
-Programmatic access to administrative and operational functions, commonly used together with Enonic CLI. See <<endpoints/management#,Management API>>.
+Programmatic access to administrative and operational functions, commonly used together with Enonic CLI. See <<endpoints/management#,Management API>> and, from 8.2.0, the resource-oriented <<endpoints/management/resources#,Management resources>>.
 
 == Statistics API (Port 2609)
 
