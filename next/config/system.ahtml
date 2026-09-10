@@ -2077,7 +2077,7 @@ Filter rules apply separately on different nodes in cluster. If one cluster node
 <p><code>com.enonic.xp.server.management.app.cfg</code></p>
 </div>
 <div class="paragraph">
-<p>Configure the security policy for the management Applications API on Port 4848 (<code>/api/server:app/*</code>). Currently controls the <code>/installUrl</code> endpoint, which installs an application from a remote URL.</p>
+<p>Configure the security policy for the management Applications API on Port 4848 (<code>/server:app/*</code>). Currently controls the <code>/installUrl</code> endpoint, which installs an application from a remote URL.</p>
 </div>
 <div class="listingblock">
 <div class="title">Default configuration</div>
@@ -2433,7 +2433,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-07 20:33:03 UTC
+Last updated 2026-09-10 19:11:26 UTC
 </div>
 </div>
 </body>
