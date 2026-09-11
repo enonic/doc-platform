@@ -663,7 +663,7 @@ The value is set in percentage of total Heap, or in memory units (<code>mb</code
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Audit log can be disabled by common <code><a href="#audit_enabled">enabled</a></code> property. Content flag won&#8217;t affect anything in this case.
+Audit log can be disabled by common <code><a href="logging.ahtml#audit_enabled">enabled</a></code> property. Content flag won&#8217;t affect anything in this case.
 </td>
 </tr>
 </table>
@@ -738,7 +738,7 @@ As such, it may lead to slower system response and reduced efficiency. Important
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-10 19:11:26 UTC
+Last updated 2026-09-11 11:10:31 UTC
 </div>
 </div>
 </body>

@@ -529,7 +529,7 @@ Never expose the XP web endpoint directly to the public Internet. Always place a
 <dl>
 <dt class="hdlist1">Routing</dt>
 <dd>
-<p>Forward incoming requests to XP&#8217;s web endpoint. In a clustered deployment this also means distributing requests across the available nodes — see <a href="#_load_balancing">Load balancing</a>.</p>
+<p>Forward incoming requests to XP&#8217;s web endpoint. In a clustered deployment this also means distributing requests across the available nodes — see <a href="#load_balancing">Load balancing</a>.</p>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -611,7 +611,7 @@ The reverse proxy must allow WebSocket connections to be upgraded and passed thr
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-This is a getting-started baseline for a single node. Production deployments are typically clustered and add load balancing across several nodes — see <a href="#_load_balancing">Load balancing</a>.
+This is a getting-started baseline for a single node. Production deployments are typically clustered and add load balancing across several nodes — see <a href="#load_balancing">Load balancing</a>.
 </td>
 </tr>
 </table>
@@ -832,7 +832,7 @@ Tune the rule set to your application. Overly aggressive rules can block legitim
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-10 19:11:26 UTC
+Last updated 2026-09-11 11:10:31 UTC
 </div>
 </div>
 </body>

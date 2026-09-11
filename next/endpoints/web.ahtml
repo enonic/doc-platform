@@ -596,7 +596,7 @@ You may customize the authentication via vhosts as described above.
 </table>
 </div>
 <div class="paragraph">
-<p>The XP admin is described in more detail in the <a href="#../admin">Admin</a> section of the documentation.</p>
+<p>The XP admin is described in more detail in the <a href="../admin.ahtml">Admin</a> section of the documentation.</p>
 </div>
 </div>
 </div>
@@ -668,7 +668,7 @@ The site service relies on both content, and installed Enonic applications to pr
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-10 19:11:26 UTC
+Last updated 2026-09-11 11:10:31 UTC
 </div>
 </div>
 </body>

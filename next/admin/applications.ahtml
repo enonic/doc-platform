@@ -558,7 +558,7 @@ For automated and <a href="https://developer.enonic.com/docs/code/stable/tooling
 <h2 id="lifecycle_controls"><a class="link" href="#lifecycle_controls">Lifecycle controls</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Selecting an application exposes Start, Stop, and Uninstall actions. Stopping an application runs its disposer; starting it re-runs <code>main.js</code>. See <a href="../apps.ahtml#life-cycle">Application life cycle</a> for the full sequence.</p>
+<p>Selecting an application exposes Start, Stop, and Uninstall actions. Stopping an application runs its disposer; starting it re-runs <code>main.js</code>. See <a href="../apps.ahtml#life_cycle">Application life cycle</a> for the full sequence.</p>
 </div>
 </div>
 </div>
@@ -573,7 +573,7 @@ For automated and <a href="https://developer.enonic.com/docs/code/stable/tooling
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-10 19:11:26 UTC
+Last updated 2026-09-11 11:10:31 UTC
 </div>
 </div>
 </body>

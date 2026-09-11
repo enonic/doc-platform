@@ -472,7 +472,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Pre-compiled XP distributions can be manually downloaded from the <a href="https://repo.enonic.com/#browse/browse:public:com">Enonic Repo</a>, or built from source on <a href="https://github.com/enonic/xp">GitHub</a>.</p>
 </div>
 <div class="paragraph">
-<p>Also check out the <a href="docker.ahtml#XP Docker image">docker.ahtml</a> versions of XP, which are based on the same distributions, but optimized for containerized deployment.</p>
+<p>Also check out the <a href="docker.ahtml">XP Docker image</a> versions of XP, which are based on the same distributions, but optimized for containerized deployment.</p>
 </div>
 </div>
 </div>
@@ -697,7 +697,7 @@ For optimal performance ,mount this to a local persisted volume. Caches do not n
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-10 19:11:26 UTC
+Last updated 2026-09-11 11:10:31 UTC
 </div>
 </div>
 </body>

@@ -796,7 +796,7 @@ mapping.example.context.portal.apiBaseUrl.media\:image = https://images.example.
 The published site is available on <code>&lt;host&gt;:8080/site/default/master/homepage</code>.</p>
 </div>
 <div class="paragraph">
-<p>In this case, a <a href="./system.ahtml#vhost">vhost configuration</a> looking like this will get the job done:</p>
+<p>In this case, a <a href="#configuration_file">vhost configuration</a> looking like this will get the job done:</p>
 </div>
 <div class="listingblock">
 <div class="title">Sample vhost config file</div>
@@ -885,14 +885,14 @@ Location of hosts file on Mac/Linux_: <code>/etc/hosts</code>, on Windows: <code
 <p>Pointing your browser to <code>http://example.com:8080</code> will reveal the glorious result.</p>
 </div>
 <div class="paragraph">
-<p>Visit the <a href="./system.ahtml#vhost">vhost configuration</a> section for more details.</p>
+<p>Visit the <a href="#configuration_file">vhost configuration</a> section for more details.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-10 19:11:26 UTC
+Last updated 2026-09-11 11:10:31 UTC
 </div>
 </div>
 </body>
