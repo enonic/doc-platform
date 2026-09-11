@@ -44,7 +44,7 @@ TIP: For automated and https://developer.enonic.com/docs/code/stable/tooling/ci-
 
 == Lifecycle controls
 
-Selecting an application exposes Start, Stop, and Uninstall actions. Stopping an application runs its disposer; starting it re-runs `main.js`. See <<../apps#life-cycle, Application life cycle>> for the full sequence.
+Selecting an application exposes Start, Stop, and Uninstall actions. Stopping an application runs its disposer; starting it re-runs `main.js`. See <<../apps#life_cycle, Application life cycle>> for the full sequence.
 
 
 == Configuration

@@ -63,7 +63,7 @@ Visiting :8080 will automatically redirect you to the admin console, where you c
 
 TIP: You may customize the authentication via vhosts as described above.
 
-The XP admin is described in more detail in the <<../admin,Admin>> section of the documentation.
+The XP admin is described in more detail in the <<../admin#,Admin>> section of the documentation.
 
 
 [#site]

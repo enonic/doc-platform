@@ -114,7 +114,7 @@ auditlog.enabled = true
 ----
 
 auditlog.enabled:: Set to `false` to disable the creation of audit log entries on content API operations. Default: `true`.
-IMPORTANT: Audit log can be disabled by common `<<audit_enabled, enabled>>` property. Content flag won't affect anything in this case.
+IMPORTANT: Audit log can be disabled by common `<<logging#audit_enabled, enabled>>` property. Content flag won't affect anything in this case.
 
 auditlog.filter:: Comma separated values `rule(,rule)\*` of allow/deny rules. Default: `!system.content.update,*` (allow everything except "content update" event).
 

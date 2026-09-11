@@ -8,10 +8,24 @@ on:
       - "7.x"
     paths:
       - 'docs/**'
+      - '.github/**'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '.github/**'
   workflow_dispatch:
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check cross-references
+        run: python3 .github/scripts/check-xrefs.py
+
   docs:
+    needs: validate
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: enonic/release-tools/generate-docs@master

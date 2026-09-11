@@ -189,7 +189,7 @@ An API mounted on the site, webapp or admin tool that serves the request keeps i
 "Example Inc", the owner of "example.com" just finished building their new site.
 The published site is available on `<host>:8080/site/default/master/homepage`.
 
-In this case, a <<./system#vhost,vhost configuration>> looking like this will get the job done:
+In this case, a <<#configuration_file,vhost configuration>> looking like this will get the job done:
 
 .Sample vhost config file
 [source,properties]
@@ -235,4 +235,4 @@ NOTE: Location of hosts file on Mac/Linux_: `/etc/hosts`, on Windows: `c:\Window
 
 Pointing your browser to `\http://example.com:8080` will reveal the glorious result.
 
-Visit the <<./system#vhost,vhost configuration>> section for more details.
+Visit the <<#configuration_file,vhost configuration>> section for more details.

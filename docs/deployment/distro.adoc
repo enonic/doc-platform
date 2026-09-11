@@ -12,7 +12,7 @@ XP is built and distributed as a self-contained package for multiple different a
 == Downloading
 Pre-compiled XP distributions can be manually downloaded from the https://repo.enonic.com/#browse/browse:public:com[Enonic Repo], or built from source on https://github.com/enonic/xp[GitHub].
 
-Also check out the <<docker#XP Docker image>> versions of XP, which are based on the same distributions, but optimized for containerized deployment.
+Also check out the <<docker#,XP Docker image>> versions of XP, which are based on the same distributions, but optimized for containerized deployment.
 
 == Server vs SDK
 

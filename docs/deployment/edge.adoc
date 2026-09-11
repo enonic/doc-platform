@@ -25,7 +25,7 @@ Small deployments may collapse several of these into a single component (for exa
 
 The edge must cover a baseline of responsibilities before traffic reaches XP. These are typically handled by a reverse proxy (such as Nginx, Apache HTTP Server, or HAProxy), but a capable load balancer may also provide the same capabilities — notably routing, TLS termination, logging and filtering — can fulfil the role without a separate web server. The required responsibilities are:
 
-Routing:: Forward incoming requests to XP's web endpoint. In a clustered deployment this also means distributing requests across the available nodes — see <<_load_balancing, Load balancing>>.
+Routing:: Forward incoming requests to XP's web endpoint. In a clustered deployment this also means distributing requests across the available nodes — see <<load_balancing, Load balancing>>.
 +
 NOTE: This must be combined with the <<../config/vhosts#virtual-hosts, virtual host configuration>> in XP itself, which maps incoming requests to the correct service target based on the forwarded host and path.
 
@@ -63,7 +63,7 @@ For a single XP node, a minimal reverse proxy only needs to terminate TLS and fo
 
 IMPORTANT: The reverse proxy must allow WebSocket connections to be upgraded and passed through to XP. Content Studio (live edit and collaboration), the portal live-edit channel, and applications using `lib-websocket` all depend on WebSockets. The examples below include the required upgrade handling.
 
-NOTE: This is a getting-started baseline for a single node. Production deployments are typically clustered and add load balancing across several nodes — see <<_load_balancing, Load balancing>>.
+NOTE: This is a getting-started baseline for a single node. Production deployments are typically clustered and add load balancing across several nodes — see <<load_balancing, Load balancing>>.
 
 .Nginx
 [source,nginx]
