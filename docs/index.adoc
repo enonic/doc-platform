@@ -39,4 +39,4 @@ The platform provides essential services and APIs that applications leverage to 
 
 Curious about whats new, or how to upgrade from a previous version of XP? Check out the <<release#,release notes>>.
 
-NOTE: If you are looking to upgrade from a previous version of XP, check out the <<release/upgrade#,Upgrade documentation>>
+NOTE: If you are looking to upgrade from a previous version of XP, check out the <<upgrade#,Upgrade documentation>>

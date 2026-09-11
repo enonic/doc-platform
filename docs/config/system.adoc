@@ -48,14 +48,16 @@ xp.stop.gracePeriod:: Time in milliseconds XP waits for all services to stop. De
 felix.fileinstall.poll:: Frequency in ms for how often the configuration folders are scanned for changes
 xp.config.paths:: Config folders to scan in addition to `XP_HOME/config/`. Useful for fine grained control over configuration management. Folders will be scanned in the defined order. The first file found per configuration will be used.
 
-xp.script-engine:: image:preview.svg[Preview,opts=inline] The JavaScript engine applications run on, `Nashorn` or `GraalJS`. Default: `Nashorn`. See <<#script-engine, JavaScript engine>> below.
+xp.script-engine:: image:preview.svg[Preview,opts=inline] The default JavaScript engine for applications, `Nashorn` or `GraalJS`. An application overrides it with the `+X-Script-Engine+` header in its bundle manifest. Default: `Nashorn`. See <<#script-engine, JavaScript engine>> below.
 
 [#script-engine]
 === JavaScript engine
 
 image:preview.svg[Preview,opts=inline] XP runs server-side JavaScript on one of two engines. *Nashorn* is the default and the supported engine. *GraalJS* ships alongside it as a preview: it implements the current ECMAScript standard rather than Nashorn's ES5.1 baseline. *Not for production.*
 
-For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/fundamentals/runtime[dev kit runtime documentation].
+The engine is chosen per application: the `+X-Script-Engine+` header in the application's bundle manifest names it, and an application that declares none runs on the engine set by `xp.script-engine`. Applications on different engines coexist in the same installation.
+
+For what changes for application code — module state, disposers, `executeFunction` — see the https://developer.enonic.com/docs/code/stable/runtime/engines#graaljs[dev kit documentation on JavaScript engines].
 
 ==== Tuning the GraalJS context pool
 
@@ -186,7 +188,7 @@ Read-through turns this store into a local cache in front of another blobstore p
 readThrough.provider:: name of the blobstore provider to read through to. Default: `none` - no read-through, this store holds the blobs itself.
 readThrough.enabled:: enables or disables read-through. Default: `false`.
 readThrough.sizeThreshold:: maximum size of an object admitted to the local store. Larger blobs are always served from the read-through provider. Default: `100mb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
-readThrough.cacheCapacity:: image:xp-8010.svg[XP 8.1.0,opts=inline] total size the local store is kept within. Default: `1gb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
+readThrough.cacheCapacity:: image:xp-810.svg[XP 8.1.0,opts=inline] total size the local store is kept within. Default: `1gb`. The size notation accepts a number plus a byte-size identifier (b/kb/mb/gb/tb/pb).
 +
 Without a capacity the local store grows to hold everything ever read - which is why `readThrough.cacheCapacity` exists. XP keeps a size-weighted index over the local store and, on every access, decides from it what is admitted and what is evicted.
 +
@@ -759,7 +761,7 @@ virtual.schema.override = false
 
 `com.enonic.xp.server.management.app.cfg`
 
-Configure the security policy for the management Applications API on Port 4848 (`/api/server:app/*`). Currently controls the `/installUrl` endpoint, which installs an application from a remote URL.
+Configure the security policy for the management Applications API on Port 4848 (`/server:app/*`). Currently controls the `/installUrl` endpoint, which installs an application from a remote URL.
 
 .Default configuration
 [source,properties]
@@ -791,6 +793,7 @@ installUrl.allowedUrls =
 ----
 
 
+[#task]
 == Task
 
 `com.enonic.xp.task.cfg`
@@ -820,7 +823,7 @@ clustered.timeout:: The time (in ISO-8601 Period format) the node waits for a jo
 
 Configure which nodes may run the scheduler, and the jobs to create for scheduling.
 
-acceptScheduling:: image:xp-8010.svg[XP 8.1.0,opts=inline] Whether this node may run the scheduler. Default: `true`.
+acceptScheduling:: image:xp-810.svg[XP 8.1.0,opts=inline] Whether this node may run the scheduler. Default: `true`.
 +
 Exactly one node of a cluster runs the scheduler, picked among those that allow it, and the duty moves to another such node when that one leaves the cluster. Setting this to `false` excludes the node from that choice; nothing else about it changes - it serves the scheduler API and holds the jobs like every other node, so applications creating or querying jobs behave the same wherever they run.
 +
@@ -844,7 +847,7 @@ Properties prefixed with `init-job.<my-job-name>` describe a job named `<my-job-
 
 In a cluster the jobs come from the config file of the node that runs the scheduler. Keep the file consistent across the nodes that allow scheduling.
 
-image:xp-8010.svg[XP 8.1.0,opts=inline] What to expect of an edit:
+image:xp-810.svg[XP 8.1.0,opts=inline] What to expect of an edit:
 
 * Adding an entry creates the job within seconds. Nothing restarts, and jobs already running are undisturbed.
 * Editing an entry does not change a job that exists. The config file creates jobs, it does not maintain them - modify an existing job through the API, or delete it and let the file create it anew.
@@ -906,6 +909,35 @@ init-job.my-job2.user=system:user1
 init-job.my-job2.config={"myparam1":"value1","myset":{"myparam2":"value2"}}
 ----
 Properties prefixed with `init-job.my-job1` describe properties of `my-job1` job.
+
+[#predefined-jobs]
+=== Predefined jobs
+
+XP ships two jobs of its own. Both are disabled by default, and both are enabled and tuned through the same `init-job.*` properties.
+
+Vacuum:: Deletes unused blobs and binaries from the blobstore. What is considered unused is set in the <<#vacuum, vacuum configuration>>.
++
+[source,properties]
+----
+init-job.vacuum.enabled=false
+init-job.vacuum.cron=0 5 * * *
+init-job.vacuum.descriptor=com.enonic.xp.app.system:vacuum
+init-job.vacuum.description=Job to run vacuum
+init-job.vacuum.user=system:su
+----
+
+Audit log cleanup:: Deletes records from the audit log repository older than the `ageThreshold` set in `com.enonic.xp.audit.cfg`. Nothing is removed until that threshold is set.
++
+[source,properties]
+----
+init-job.audit-log-cleanup.enabled=false
+init-job.audit-log-cleanup.cron=0 5 * * *
+init-job.audit-log-cleanup.descriptor=com.enonic.xp.app.system:audit-log-cleanup
+init-job.audit-log-cleanup.description=Job to clean up old audit log history
+init-job.audit-log-cleanup.user=system:su
+----
+
+WARNING: Take a backup before enabling either job. Both delete data that cannot be recovered otherwise.
 
 init-job.my-job1.enabled:: true - job will be scheduled at server start.
 init-job.my-job1.cron:: * * * * *  - will be run every minute.

@@ -1,0 +1,105 @@
+= Upgrading
+:toc: right
+:imagesdir: images
+
+This page covers upgrading an Enonic XP 8 instance to a newer feature (8.x.0) or fix (8.x.y) release, and lists what to expect from each feature release.
+
+IMPORTANT: Coming from XP 7? Follow <<upgrade/xp7#, Upgrading from XP 7 to XP 8>> instead. A major upgrade is a data migration, not a runtime replacement.
+
+== Before you start
+
+. Read the notes below for every feature release between your current version and the target. Each states whether a rolling upgrade is supported or a full restart is required, and lists changed defaults and new settings.
+. Back up. Take a <<deployment/backup-restore#snapshot-restore, snapshot>> of the repositories, or a <<deployment/backup-restore#backup, full backup>>, and verify that you can restore it.
+. Test the upgrade in a staging environment before touching production.
+
+== Choose a strategy
+
+Single node:: Follow <<#single-node, Single node upgrade>>. A single node cannot be upgraded without downtime.
+Cluster, every release in your path supports rolling upgrade:: Follow <<#rolling, Rolling cluster upgrade>> for zero downtime.
+Cluster, any release in your path requires a full restart:: Follow <<#full-restart, Full restart cluster upgrade>>. This procedure is always safe, whatever the release.
+
+Fix releases (8.0.3 to 8.0.4) always support rolling upgrade. Feature releases (8.0.x to 8.1.0) say so in their notes. Major upgrades (7.x to 8.x) are a data migration and follow <<upgrade/xp7#, their own guide>>.
+
+== Replacing the runtime
+
+Every procedure below has a step that replaces the XP runtime with the new version. What that means depends on how XP is installed. In every case XP_HOME, with its configuration, repositories and blobs, is kept and reused; only the runtime changes.
+
+Distribution:: Unpack the new distribution and start it against the existing <<deployment/distro#xp_home, XP_HOME>>, or replace the contents of the installation folder except `home/`.
+Docker:: Start a container from the new image tag with the same volumes mounted. See <<deployment/docker#, Docker>>.
+Kubernetes:: Change the image version in your deployment. See <<deployment/k8s#, Kubernetes>>.
+
+[#single-node]
+== Single node upgrade
+
+. Stop the instance.
+. Replace the runtime with the new version.
+. Start the instance.
+
+[#rolling]
+== Rolling cluster upgrade
+
+WARNING: Before you begin, confirm that every release in your upgrade path supports rolling upgrade. If any does not, use the <<#full-restart, full restart procedure>> instead.
+
+Upgrade one node at a time, and wait for each node to start and join the cluster before moving on to the next:
+
+. Master nodes first. We recommend dedicated master nodes.
+. Then data nodes.
+. Then the remaining nodes.
+
+For each node: stop it, replace the runtime, start it.
+
+[#full-restart]
+== Full restart cluster upgrade
+
+Required by releases whose notes say so, such as 8.0.x to 8.1.0, and safe for any upgrade.
+
+. Stop all cluster nodes.
+. Replace the runtime on every node.
+. Start all nodes in parallel.
+
+NOTE: Start the nodes at the same time. Should the new version include upgrade scripts, nodes that wait for the others may otherwise time out.
+
+== After the upgrade
+
+. Verify that the instance reports the new version. The <<admin/dashboard#, Dashboard>> shows it in its statistics widget, and the server log prints it at startup.
+. Confirm that your applications started. The <<admin/applications#, Applications tool>> lists their state.
+. Check https://market.enonic.com[Enonic Market] for newer versions of the apps you use. Applications built for XP 8 keep working across 8.x releases, so this is recommended, not required. Developers find the deprecations introduced by each release in the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes].
+
+== v8.2 notes
+
+XP 8.2 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.1 behaviour. Two behavioral changes are worth knowing about:
+
+=== Basic authentication moves to the Standard ID Provider
+
+Basic authentication on the management endpoint is provided by the Standard ID Provider application (bundled with XP) instead of the platform itself. It is deprecated and left only for backwards compatibility: enabled by default, disabled with `idprovider.system.autologin.basic.enabled = false` in `com.enonic.xp.app.standardidprovider.cfg`. An installation running without the Standard ID Provider application has no basic authentication on the management endpoint - use <<security/service-accounts#jwt-authentication, service account JWT authentication>>.
+
+=== autoLogin runs for every enabled ID provider
+
+`autoLogin` runs for every ID provider enabled on a virtual host - the default one first - not only the default one. A request can now be authenticated by a non-default ID provider where it previously stayed anonymous.
+
+== v8.1 notes
+
+*Full restart required.* The scheduler was rebuilt in 8.1: scheduling moved from a Hazelcast scheduled task to a coordinator that elects one node to run the schedule. An 8.0 node and an 8.1 node in the same cluster would each schedule on their own terms, so do not upgrade a cluster to 8.1 node by node. Use the <<#full-restart, full restart procedure>>.
+
+Apart from that, XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.
+
+=== Read-through blobstore cache is bounded
+
+A file blobstore configured with `readThrough` used to grow without limit. It is now kept within `readThrough.cacheCapacity`, default `1gb`, and blobs are evicted to stay under it. Raise the value if your local cache was deliberately larger. See <<config/system#file-blobstore, file blobstore configuration>>.
+
+=== Scheduler placement
+
+`acceptScheduling` in `com.enonic.xp.scheduler.cfg` decides whether a node may run the scheduler. Default `true`, so nothing changes unless you set it. Set it to `false` on master nodes to keep scheduling, and the maintenance tasks it submits, off them. `distributable.acceptSystem` in `com.enonic.xp.task.cfg` does the same for the built-in maintenance tasks alone. See <<config/system#scheduler, scheduler>> and <<config/system#task, task>> configuration.
+
+Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and an entry added while the server runs is picked up without a restart. Keep the file consistent across the nodes that allow scheduling.
+
+=== New settings
+
+* `xp.script-engine` in system properties selects the default JavaScript engine. Default `Nashorn`. GraalJS is a preview, not for production. See <<config/system#script-engine, JavaScript engine>>.
+* `threadPool.virtualThreads` in the Jetty configuration handles requests on virtual threads. Default `false`. Unstable, not for production. See <<config/system#jetty, Jetty configuration>>.
+* `media.defaultBaseUrl` and `legacy.mediaApiAutoMount.enabled` in the portal configuration let media be served from a separate host. See <<config/cms#media_base_url, serving media from another host>>.
+* `portal.apiBaseUrl` context attributes in a virtual host mapping declare where APIs are served. See <<config/vhosts#api-locations, API locations>>.
+
+=== Management API
+
+The `scheduler/list` response leaves out fields that do not apply to a job's schedule type, and fields the job has not set, instead of reporting them as `null`. Clients that relied on those `null` values should be adjusted. New fields: `deleteAfterRun` on `ONE_TIME`, and `duration` on the new `FIXED_RATE` type. See <<endpoints/management#scheduler, Scheduler>>.

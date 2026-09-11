@@ -3,7 +3,7 @@ include::.variables.adoc[]
 :toc: right
 :imagesdir: images
 
-The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <<release/upgrade#, Upgrading to XP 8>>.
+The headline features and themes for each XP feature release. For step-by-step upgrade instructions and the full breaking-change list, see <<upgrade#, Upgrading>>.
 
 == XP 8.2
 
@@ -29,76 +29,97 @@ Basic authentication on the management endpoint is deprecated and left only for 
 
 == XP 8.1
 
-A feature release focused on the runtime beneath your apps: a preview of the JavaScript engine that replaces Nashorn, a scheduler that keeps its promises about where and when jobs run, and finer control over what a request handler may declare to the browser.
+This release includes a preview of the GraalJS engine, a more predictable scheduler, a Content Security Policy API, and a selection of smaller improvements and bugfixes. There are no breaking changes for applications. See the https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1[XP 8.1 upgrade notes] for deprecations worth cleaning up.
 
 === GraalJS preview
 
-image:preview.svg[Preview,opts=inline] The engine that will replace Nashorn is here to try. GraalJS implements the current ECMAScript standard, well past Nashorn's ES5.
+image:preview.svg[Preview,opts=inline] GraalJS, the engine that will replace Nashorn, is available as a preview. It implements the current ECMAScript standard, where Nashorn stops at ES5.
 
-*Not for production:* Nashorn remains the default and the supported engine. The choice is made per application, from its bundle manifest, so a single app can move across and back without disturbing the rest. What changes for application code - per-context module state, unconditional strict mode, disposer registration, `executeFunction` - is covered in the https://developer.enonic.com/docs/code/stable/fundamentals/runtime#graaljs[dev kit runtime documentation].
+Nashorn remains the default and the supported engine. The engine is chosen per application via the `+X-Script-Engine+` header in the bundle manifest, with the installation default set in <<config/system#script-engine, system properties>>. A single app can be moved to GraalJS and back without affecting the others. The differences for application code - module state per context, disposer registration, `executeFunction` - are described in the https://developer.enonic.com/docs/code/stable/runtime/engines#graaljs[dev kit documentation on JavaScript engines].
 
-Two long-standing rough edges were settled on the way. `main.ts` now runs to completion before anything else in the app on that node, on either engine, which greatly simplifies initialization code. And the global namespace was brought closer to what browsers and Node expose, so more npm modules run unmodified.
+WARNING: GraalJS is not for production use.
 
-=== Scheduler you can place and pace
+On both engines, https://developer.enonic.com/docs/code/stable/runtime/main[`main.ts`] now completes before anything else in the app runs on that node. Initialization code no longer needs guards against early requests.
 
-Three changes make scheduled jobs predictable in a cluster:
+=== Scheduler
 
-* *Where the scheduler ticks is now a deployment decision.* `acceptScheduling = false` excludes a node from the choice - typically the master nodes, which have to stay responsive to hold the quorum and can be modest machines precisely because they are not meant to do heavy work. The schedule, and the maintenance it submits, then runs where the machine can afford it: a data node serving no HTTP traffic, or one dedicated to background work. See <<config/system#scheduler, scheduler configuration>>.
-* *A job does not overlap itself.* A run that overruns its interval delays the next one instead of starting it alongside; the delayed run starts once its predecessor finishes. This is best effort — a partitioned cluster can still produce an overlap.
-* *One-time jobs can clean up after themselves.* `deleteAfterRun` on a `+ONE_TIME+` schedule removes the job once it has fired, so a job created to do one thing does not linger.
-* *A third schedule type.* `+FIXED_RATE+` takes an ISO-8601 duration - `'PT5M'` for every five minutes - for work that belongs at an interval rather than at a time of day.
+Four changes make scheduled jobs more predictable in a cluster:
 
-Jobs can also be declared in the scheduler config file, and the scheduler's list response now reports each job's run state. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
+* *Control where the scheduler runs.* Set `acceptScheduling = false` to keep a node out of scheduling - typically the master nodes, which must stay responsive to hold the quorum. Scheduling and the maintenance tasks it submits then run on a node that can afford the load. See <<config/system#scheduler, scheduler configuration>>.
+* *Jobs do not overlap themselves.* The scheduler checks whether the previous run is still going before submitting a new one. A blocked `+CRON+` occurrence is skipped, and a blocked `+FIXED_RATE+` run waits until its predecessor finishes. This is best effort - a partitioned cluster can still produce an overlap. See https://developer.enonic.com/docs/code/stable/background/scheduler#non-overlap[non-overlapping runs].
+* *New schedule type.* https://developer.enonic.com/docs/code/stable/background/scheduler#fixed-rate[`+FIXED_RATE+`] takes an ISO-8601 duration, such as `'PT5M'` for every five minutes, for work that repeats at an interval rather than at a time of day.
+* *Self-deleting one-time jobs.* `deleteAfterRun` on a https://developer.enonic.com/docs/code/stable/background/scheduler#one-time[`+ONE_TIME+`] schedule removes the job once it has fired.
+
+A task started by the scheduler can read the previous run's task id from the `schedule.lastTaskId` context attribute, useful for incremental processing; see https://developer.enonic.com/docs/code/stable/background/scheduler#last-task-id[what a scheduled task receives]. Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and new entries are picked up without a restart. See the https://developer.enonic.com/docs/code/stable/libraries/lib-scheduler[scheduler library].
 
 === Content Security Policy as an API
 
-A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so a page, its layouts, its parts and any response processor all contribute to the single emitted header, nonce included - and the header is composed when the response is flushed, so late contributions still land. A report-only companion runs alongside it, letting you enforce a settled policy while trialling a stricter one.
+A request-scoped CSP builder replaces hand-assembled header strings. One policy is shared for the whole request, so the page, its layouts, its parts and any response processor all contribute to a single header, nonce included. The header is composed when the response is flushed, so late contributions are not lost. A report-only companion lets you enforce one policy while trialling a stricter one. A `Content-Security-Policy` header set directly on the response is folded into the policy rather than sent as it is, so later contributions still apply. See https://developer.enonic.com/docs/code/stable/libraries/lib-portal#csp[`csp()`] in the portal library.
 
-=== Requests that can be steered
+Admin extensions get the same control over the tool page that hosts them. A new Java SPI lets an extension adjust the tool's CSP and add page contributions. See https://developer.enonic.com/docs/code/stable/web/extensions/processors[extension response processors].
 
-* *Re-route to other content.* A filter reached through a site mapping can change which content is rendered while the visitor's address stays exactly as it was - no redirect, no second request. A/B variants and personalized landing pages become a few lines in a filter.
-* *Carry your own data down the pipeline.* Custom context attributes pass values from a filter or an implementation to the response processors and the code that runs after it, where inventing a request property never worked.
-* *Base URLs that resolve to the right place.* Media and page URLs anchor at the site's base URL, or at the project when the request has no content anchor, so absolute URLs are correct in previews, in APIs and in headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media served from a separate host such as a CDN.
-* *API locations from context attributes.* A vhost may declare where an API lives, and URL generation follows it - keeping routing decisions with the vhost they belong to. See <<config/vhosts#, virtual host configuration>>.
+=== Request steering
+
+* *Re-route to other content.* A site mapping filter can change which content is rendered while the visitor's URL stays the same - no redirect, no second request. Useful for A/B variants and personalized landing pages. See https://developer.enonic.com/docs/code/stable/web/sites/mappings#reroute[re-routing to another content].
+* *Pass data down the pipeline.* https://developer.enonic.com/docs/code/stable/libraries/lib-context#setcustomlocalattribute[`setCustomLocalAttribute()`] passes values from a filter or a controller to response processors and the code that runs after it. Custom properties on the request object were never carried across.
+* *Media and page base URLs.* Media and page URLs are anchored to the site's base URL, or to the project when the request has no content, so absolute URLs are correct in previews, APIs and headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media can be served from a separate host such as a CDN. See <<config/cms#media_base_url, serving media from another host>>.
+* *API locations from vhost context.* A vhost can declare where an API is served, and URL generation follows it. See <<config/vhosts#api-locations, API locations>>.
 
 === Admin events over one socket
 
-An admin events hub lets an application define its own topics and push to them, so admin tools and extensions receive live updates over a shared connection instead of each opening its own. See the https://developer.enonic.com/docs/code/stable/libraries/lib-admin[admin library].
+A new admin events hub lets an application define its own topics and publish to them. Admin tools and extensions receive live updates over one shared connection instead of each opening its own. See https://developer.enonic.com/docs/code/stable/libraries/lib-admin#settopic[`setTopic()`] in the admin library.
 
-=== Ask a query for the fields you need
+=== Query fields and subtrees
 
-The `returns` parameter has each hit carry named index fields, so a listing that needs a name and a path no longer costs a read per hit. The values come from the search index, so they are as fresh as the index - where the exact value matters, read the node.
+Two additions to `query()` in the https://developer.enonic.com/docs/code/stable/libraries/lib-node[node] and https://developer.enonic.com/docs/code/stable/libraries/lib-content#query[content] libraries:
 
-=== Query a subtree
+* *`returns`* adds named index fields to each hit, so a listing that only needs a name and a path no longer costs a read per hit. The values come from the search index, so read the node where the exact value matters. See https://developer.enonic.com/docs/code/stable/libraries/lib-node#repo-query[`query()` in lib-node].
+* *`parent`* restricts a query to the direct children of a node, and *`recursive: true`* extends it to the whole subtree. This replaces the deprecated `getChildren()` and `findChildren()`; see https://developer.enonic.com/docs/code/stable/libraries/lib-content#query[`query()` in lib-content].
 
-`parent` restricts a query to the direct children of a node, and `descendant` widens it to the whole subtree beneath it. Available on the node and content libraries.
+In the Java API, `NodeService` gains `list` and `enumerate` methods for reading a subtree in path order. `ListNodesResult` and its `recursive` flag are removed; see the https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[upgrade notes].
 
 === Exports read one version of a node
 
-An export reads each node at the exact version its scan observed, so a subtree that changes while the export runs is written as it was seen rather than as a mixture.
+An export now reads each node at the version its scan observed. A subtree that changes while the export runs is written as it was seen, not as a mix of old and new. The `batchSize` parameter of https://developer.enonic.com/docs/code/stable/libraries/lib-export#exportnodes[`exportNodes()`] is ignored as a result.
 
-=== A read-through blobstore stays within bounds
+=== Bounded read-through blobstore
 
 `readThrough.cacheCapacity` caps the local cache in front of a remote object store. See <<config/system#file-blobstore, file blobstore configuration>>.
 
 === Request handling on virtual threads
 
-image:unstable.svg[Unstable,opts=inline] `threadPool.virtualThreads` hands request handling to virtual threads. A request waiting on I/O — a database round trip, an outbound HTTP call, a slow client — parks its virtual thread and gives the platform worker back until the wait ends, so I/O-bound traffic stops tying up the pool. A request that computes rather than waits gains nothing. Selectors and acceptors stay on platform threads. Treat it as an experiment — *not for production*. See <<config/system#jetty, Jetty configuration>>.
+image:unstable.svg[Unstable,opts=inline] `threadPool.virtualThreads` moves request handling to virtual threads. A request waiting on I/O - a database round trip, an outbound HTTP call, a slow client - no longer occupies a platform thread while it waits, so I/O-bound traffic stops tying up the pool. CPU-bound requests gain nothing. Selectors and acceptors stay on platform threads. See <<config/system#jetty, Jetty configuration>>.
+
+WARNING: Virtual thread request handling is experimental and not for production use.
+
+=== Other changes
+
+* Java code can mark a method with `@Traced` to have it appear in XP's internal tracing, the same mechanism the platform itself now uses.
+* https://developer.enonic.com/docs/code/stable/background/scheduler#cron[Cron jobs] no longer fire twice within the same second, and a cron slot passing during a restart or a scheduler move is caught up instead of skipped.
+* https://developer.enonic.com/docs/code/stable/runtime/java-bridge#disposer[Disposers] registered by an application no longer race its own redeploy.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-node#duplicate[Duplicating] a node tree fires the same events for the root as for the rest of the tree.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-export#importnodes[`importNodes()`] no longer fails when the optional `xslt` parameter is omitted.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-portal#apiurl[`apiUrl()`] encodes its `path` like every other URL builder.
+* <<config/system#file-blobstore, `readThrough.sizeThreshold`>> is honored on reads, and only `system.admin` can <<endpoints/management#export, list exports>>.
+* The JNA warning at startup is gone.
 
 === Deprecations
 
-Still working, slated for removal:
+Still working, slated for removal. The https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1[upgrade notes] show the replacement for each:
 
-* `executeFunction` - not supported on GraalJS. Submit a named task instead.
-* `Resource.getTimestamp` - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
-* `content.findByParent` replaced with content.query
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task[`executeFunction()`] in lib-task - not supported on GraalJS. Submit a named task instead.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content[`getChildren()` in lib-content and `findChildren()` in lib-node] - use `query()` with `parent`.
+* The `baseUrl` parameter of `imageUrl()`, `attachmentUrl()` and `apiUrl()` - configure the location once instead, see <<config/cms#media_base_url, media base URL>> and <<config/vhosts#api-locations, API locations>>.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export[`batchSize` on `exportNodes()`] - ignored.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps[`Resource.getTimestamp()`, and `modifiedTime` on icons and descriptors] - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[`ApplicationListener`] in the Java API - track `Application` services instead.
 
 
 == XP 8
 
 XP 8 is the largest release in 8 years. The runtime is rebuilt on a modern stack, the Universal API unifies how request handlers are written and called, and a long list of API rough edges has been cleaned up.
 
-IMPORTANT: This release contains *Breaking changes when upgrading from XP7*. We have made every effort to minimize the impact of these, but please review the full list of breaking changes and migration steps in the <<release/upgrade#breaking-changes, upgrade notes>> before upgrading. Several XP 7 concepts have also been renamed — see <<#naming, A paradigm shift in naming>>.
+IMPORTANT: This release contains *Breaking changes when upgrading from XP7*. We have made every effort to minimize the impact of these, but please review the full list of breaking changes and migration steps in the <<upgrade/xp7#breaking-changes, upgrade notes>> before upgrading. Several XP 7 concepts have also been renamed — see <<#naming, A paradigm shift in naming>>.
 
 === Stack update
 
@@ -123,7 +144,7 @@ APIs can be exposed on custom URLs and domains via <<config/vhosts#, virtual hos
 
 YAML replaces XML for all CMS schemas and app descriptors. This means content types, application definitions, ID providers, etc., are now all defined in YAML. YAML is a widely adopted format that is easier to read and write than JSON, especially for complex configurations - and it supports comments. The new YAML-based descriptors are more concise and maintainable, making life easier for developers. For the full documentation, visit the https://developer.enonic.com/docs/code/stable/schemas[schema system documentation].
 
-Schemas are also now organized into https://developer.enonic.com/docs/cms/stable/schemas/namespaces[namespaces]. Every schema is identified as `<namespace>:<name>`. When shipping schemas with an app, the app name is still the default namespace - but the namespace concept decouples schemas from apps, paving the way for schemas to be authored and managed independently.
+Every schema is identified by the name of the app that ships it, as `<app>:<name>`, such as `com.example.myapp:article`, in the same way as APIs, tools and extensions. Platform-provided types use the reserved names `base`, `portal` and `media`.
 
 === Simplified permissions
 
@@ -179,7 +200,7 @@ XP8 also implements support for Server Sent Events (SSE) across all <<endpoints/
 
 === Stricter identity validation
 
-Identity keys, content IDs, names, and descriptors now follow consistent, deterministic validation rules: lowercase-only IDs, explicit regex per key type, and length caps that match what the system actually supports. The intent is to eliminate the class of bugs that came from quietly accepting characters that broke serialization, URLs, or filesystem paths downstream. The full ruleset lives in the https://developer.enonic.com/docs/code/stable/upgrade#identity-keys[dev kit upgrade guide].
+Identity keys, content IDs, names, and descriptors now follow consistent, deterministic validation rules: lowercase-only IDs, explicit regex per key type, and length caps that match what the system actually supports. The intent is to eliminate the class of bugs that came from quietly accepting characters that broke serialization, URLs, or filesystem paths downstream. The full ruleset lives in the https://developer.enonic.com/docs/code/stable/upgrade/xp7#identity-keys[dev kit upgrade guide].
 
 === Security hardening
 
@@ -248,10 +269,6 @@ XP 8 renames or reframes several familiar XP 7 concepts. Use this map when readi
 |https://developer.enonic.com/docs/cms/stable/schemas/form-items[Form items]
 |`TextLine`, `ItemSet`, `FieldSet`, etc. are all form items - regardless of the value they produce
 
-|Schemas scoped by app (`<app-key>:<name>`)
-|Schemas scoped by https://developer.enonic.com/docs/cms/stable/schemas/namespaces[namespace] (`<namespace>:<name>`)
-|The app name is still the default namespace when shipping schemas with an app
-
 |`site/` resource folder
 |https://developer.enonic.com/docs/code/stable/schemas[`cms/`]
 |CMS resources now live in `src/main/resources/cms`
@@ -275,5 +292,5 @@ XP 8 renames or reframes several familiar XP 7 concepts. Use this map when readi
 
 WARNING: Note the double rename: the word *mixin* changed meaning between versions. An XP 7 _mixin_ is an XP 8 _form fragment_, while XP 7 _x-data_ is now called _mixin_. When working with XP 7-era material — or AI assistants trained on it — always verify which meaning applies.
 
-The complete map, with migration details, lives in the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade guide].
+The complete map, with migration details, lives in the https://developer.enonic.com/docs/code/stable/upgrade/xp7[dev kit upgrade guide].
 

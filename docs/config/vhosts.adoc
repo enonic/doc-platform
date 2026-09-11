@@ -5,7 +5,7 @@
 
 Expose Universal APIs, Admin, Sites or Webapps on custom domains and paths.
 
-NOTE: Vhosts apply to XP's web endpoint (defaults to port 8080) unless a mapping names another endpoint. image:xp-8020.svg[XP 8.2.0,opts=inline] A mapping may also target the <<#endpoint, management or statistics endpoint>>, bringing ID provider authentication with it.
+NOTE: Vhosts apply to XP's web endpoint (defaults to port 8080) unless a mapping names another endpoint. image:xp-820.svg[XP 8.2.0,opts=inline] A mapping may also target the <<#endpoint, management or statistics endpoint>>, bringing ID provider authentication with it.
 
 
 == Configuration file
@@ -35,9 +35,9 @@ enabled:: turns on or of vhosts, enabled = false should only be used for develop
 host:: specifies the hostname (aka domain) the vhost will handle
 source:: refers to basepath used in request, sample above handles company.com/app
 target:: is the internal route in XP to the specific endpoint/service
-idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`. image:xp-8020.svg[XP 8.2.0,opts=inline] `enabled` may carry a <<#flows, flow list>>: `default&enabled=login,autologin`.
-endpoint:: image:xp-8020.svg[XP 8.2.0,opts=inline] optionally targets the mapping at the <<#endpoint, management or statistics endpoint>> instead of the web endpoint.
-allow:: image:xp-8020.svg[XP 8.2.0,opts=inline] optionally restricts the vhost to a <<#allow, list of principals>>.
+idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`. image:xp-820.svg[XP 8.2.0,opts=inline] `enabled` may carry a <<#flows, flow list>>: `default&enabled=login,autologin`.
+endpoint:: image:xp-820.svg[XP 8.2.0,opts=inline] optionally targets the mapping at the <<#endpoint, management or statistics endpoint>> instead of the web endpoint.
+allow:: image:xp-820.svg[XP 8.2.0,opts=inline] optionally restricts the vhost to a <<#allow, list of principals>>.
 
 NOTE: Each mapping must define a unique name to separate the mappings when multiple mappings exist in the same file. In the example above `myapp` is used.
 
@@ -162,7 +162,7 @@ mapping.adm.com.enonic.xp.branch.Branch = master
 [#api-locations]
 === API locations
 
-image:xp-8010.svg[XP 8.1.0,opts=inline] APIs may be served from somewhere other than the address a request arrives on: a dedicated API host, a shorter path, or a media host. The context of a virtual host mapping declares where, for requests it matches:
+image:xp-810.svg[XP 8.1.0,opts=inline] APIs may be served from somewhere other than the address a request arrives on: a dedicated API host, a shorter path, or a media host. The context of a virtual host mapping declares where, for requests it matches:
 
 [source,properties]
 ----
@@ -189,7 +189,7 @@ An API mounted on the site, webapp or admin tool that serves the request keeps i
 [#flows]
 == ID provider flows
 
-image:xp-8020.svg[XP 8.2.0,opts=inline] The flows an ID provider serves on a vhost can be restricted with a flow list on the `enabled` value:
+image:xp-820.svg[XP 8.2.0,opts=inline] The flows an ID provider serves on a vhost can be restricted with a flow list on the `enabled` value:
 
 [source,properties]
 ----
@@ -209,7 +209,7 @@ Without a flow list, no restriction applies: the ID provider serves whatever flo
 [#endpoint]
 == Management and statistics endpoints
 
-image:xp-8020.svg[XP 8.2.0,opts=inline] A mapping applies to the web endpoint unless another endpoint is named explicitly:
+image:xp-820.svg[XP 8.2.0,opts=inline] A mapping applies to the web endpoint unless another endpoint is named explicitly:
 
 [source,properties]
 ----
@@ -230,7 +230,7 @@ NOTE: Only non-interactive authentication (the `autologin` flow) works on the ma
 [#allow]
 == Allow list
 
-image:xp-8020.svg[XP 8.2.0,opts=inline] `allow` restricts who may pass through the vhost. The list is checked after authentication and before the request reaches anything else: unauthenticated requests are rejected with 401, authenticated ones without any of the listed principals with 403.
+image:xp-820.svg[XP 8.2.0,opts=inline] `allow` restricts who may pass through the vhost. The list is checked after authentication and before the request reaches anything else: unauthenticated requests are rejected with 401, authenticated ones without any of the listed principals with 403.
 
 [source,properties]
 ----
