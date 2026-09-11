@@ -223,9 +223,20 @@ mapping.stats.allow = role:system.admin
 
 `endpoint` accepts `management` (the <<../endpoints/management#, management API>>, port 4848) or `statistics` (the <<../endpoints/statistics#, statistics API>>, port 2609). An unknown value fails the configuration.
 
-Mappings never apply across endpoints: a web mapping stays on the web endpoint, and when no mapping matches on the management or statistics endpoint, that endpoint keeps behaving as if vhosts were not configured.
+Mappings never apply across endpoints: a web mapping stays on the web endpoint. An endpoint no mapping names keeps behaving as if vhosts were not configured; once at least one mapping names the management or statistics endpoint, requests there whose host matches none of its mappings are rejected with 404.
 
 NOTE: Only non-interactive authentication (the `autologin` flow) works on the management and statistics endpoints - there is no login page to redirect to.
+
+[#api-verbs]
+=== Per-API restrictions
+
+A management mapping can also narrow what each <<../endpoints/management#, management API>> exposes, through <<#virtual-host-context, context attributes>> the APIs read. The one setting every management API understands is `verbs`: the comma separated list of operations the vhost exposes, `*` for all. An absent setting means no restriction.
+
+[source,properties]
+----
+mapping.mgmt.context.api.server\:snapshot.verbs = list, create
+mapping.mgmt.context.api.server\:task.verbs = *
+----
 
 [#allow]
 == Allow list

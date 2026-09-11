@@ -11,7 +11,7 @@ A release about who gets in: virtual hosts reach the management and statistics e
 
 === Vhosts on the management and statistics endpoints
 
-A mapping may name the endpoint it applies to - `endpoint = management` or `endpoint = statistics` - and brings ID provider authentication with it. Together with the allow list below, that makes it practical to expose these endpoints behind a proper host name instead of keeping them reachable only from inside. Requests no mapping matches keep behaving exactly as before, so nothing changes until a mapping says so. See <<config/vhosts#endpoint, virtual host configuration>>.
+A mapping may name the endpoint it applies to - `endpoint = management` or `endpoint = statistics` - and brings ID provider authentication with it. Together with the allow list below, that makes it practical to expose these endpoints behind a proper host name instead of keeping them reachable only from inside. An endpoint you leave unmapped behaves exactly as before, so nothing changes until a mapping says so - and once an endpoint is mapped, requests its mappings do not match are rejected. A management mapping can also narrow which operations each management API exposes (<<config/vhosts#api-verbs, per-API verbs>>). See <<config/vhosts#endpoint, virtual host configuration>>.
 
 === Authentication flows per vhost
 
