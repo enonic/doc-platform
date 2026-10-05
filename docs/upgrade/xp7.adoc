@@ -173,7 +173,9 @@ We are now ready to dump data from our existing XP7 instance:
 
     enonic dump create -d xp7to8 --archive --cred-file xp7-private-key.json
 
-IMPORTANT: The `--archive` parameter must be provided, otherwise XP8 will not be able to read the dump. The migration dump must also include version history and all binaries (attachments) — both are included by default; do not pass `--skip-versions`.
+IMPORTANT: The `--archive` parameter must be provided, otherwise XP8 will not be able to read the dump. The migration dump must also include all binaries (attachments), which are included by default.
+
+TIP: Version history is included by default and is migrated to XP 8. If you don't need it, add `--skip-versions` for a smaller dump and a faster migration. Only the current version of each node is then migrated. Upgrading a dump without version history requires XP 8.2 or later.
 
 == 4. Upgrade and load
 
