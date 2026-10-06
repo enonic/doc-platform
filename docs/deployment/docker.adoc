@@ -154,12 +154,16 @@ Like described in the <<java-heap-memory>> section, you should set the heap memo
 
 ===== Heap dumps for OOME
 
-It is useful to make the JVM create a heap dump if the JVM throws an Out Of Memory Exception. Do that by adding to `XP_OPTS`:
+By default, the XP launch scripts make the JVM write a heap dump and exit when it throws an `OutOfMemoryError` (`-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError`). Exiting lets the container restart policy bring XP back up in a clean state instead of leaving a broken process running. The dump is written as `java_pid<pid>.hprof` to the `$XP_HOME/work` directory (or to `XP_TMP`, if set). Options in `XP_OPTS` take precedence, so you can turn this off with `-XX:-HeapDumpOnOutOfMemoryError` or `-XX:-ExitOnOutOfMemoryError`.
+
+The `work` directory is not on a volume in this image, so the dump may be lost when the container is recreated. To keep it, point the dump to a mounted volume by adding to `XP_OPTS`:
 
 [source,bash]
 ----
--XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data/oom.hprof
+-XX:HeapDumpPath=/enonic-xp/home/data
 ----
+
+Heap dumps are as large as the used heap. Make sure the target has enough free space, and remove old dumps when you no longer need them.
 
 ===== Remote debugging
 
@@ -285,8 +289,8 @@ services:
     image: enonic/xp:{version}-ubuntu
     restart: always
     environment:
-      # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also enable JVM OOME heap dump
-      XP_OPTS: -Xms1230M -Xmx1230M -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data/oom.hprof
+      # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also store OOME heap dumps on the data volume
+      XP_OPTS: -Xms1230M -Xmx1230M -XX:HeapDumpPath=/enonic-xp/home/data
     ports:
       - 8080:8080
     volumes:
