@@ -158,10 +158,10 @@ By default, the JVM neither creates a heap dump nor exits when it throws an `Out
 
 [source,bash]
 ----
--XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data
 ----
 
-The dump is written as `java_pid<pid>.hprof` to the `data` volume, so it survives container restarts. Heap dumps are as large as the used heap. Make sure the volume has enough free space, and remove old dumps when you no longer need them.
+The dump is written as gzip-compressed `java_pid<pid>.hprof.gz` to the `data` volume, so it survives container restarts. Even compressed, heap dumps can be large. Make sure the volume has enough free space, and remove old dumps when you no longer need them.
 
 ===== Remote debugging
 
@@ -288,7 +288,7 @@ services:
     restart: always
     environment:
       # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also make the JVM write a heap dump and exit on OOME
-      XP_OPTS: -Xms1230M -Xmx1230M -XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data
+      XP_OPTS: -Xms1230M -Xmx1230M -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data
     ports:
       - 8080:8080
     volumes:
