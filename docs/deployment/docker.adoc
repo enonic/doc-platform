@@ -291,10 +291,10 @@ services:
     image: enonic/xp:{version}-ubuntu
     restart: always
     environment:
-      # Heap memory: 30% of 4 GB host memory (1230 MB), leaving the rest outside the heap.
+      # Heap memory: 30% of 10 GB host memory (3 GB), leaving the rest outside the heap.
       # Out of memory: write a heap dump to the work volume and exit, so Docker restarts XP.
       XP_OPTS: >-
-        -Xms1230M -Xmx1230M
+        -Xms3G -Xmx3G
         -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work
     ports:
       - 8080:8080
