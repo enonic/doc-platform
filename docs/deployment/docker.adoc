@@ -93,7 +93,7 @@ $XP_HOME/work:: Various cached files used by Enonic XP, e.g. resized images. Als
 
 Since this image uses a modern JVM, it will respect the container memory limits set by the docker daemon. There are some pitfalls though. Elasticsearch uses off-heap buffers, that can lead to the container running out of memory. For that reason, as a general rule, you should:
 
-* set the heap size to `30%` of the available memory to the container
+* if the Enonic XP node holds Elasticsearch data, set the heap size to `25-30%` of the available memory to the container
 * if the Enonic XP node is a pure master node, set the heap size to `75%` of the available memory to the container
 * set minimum and maximum heap size to the same value
 * never set heap size over `26 GB`
@@ -145,12 +145,14 @@ In this subection we list some `XP_OPTS` parameters that are useful when running
 
 ===== Memory
 
-Like described in the <<java-heap-memory>> section, you should set the heap memory limits. If your machine has 4GB of memory, and you want to allocate 75% of that to heap memory, do that by adding to `XP_OPTS`.
+Like described in the <<java-heap-memory>> section, you should set the heap memory limits. For example, if the container has 4 GB of memory and the node holds Elasticsearch data, set the heap to 30% of that by adding to `XP_OPTS`:
 
 [source,bash]
 ----
--Xms3G -Xmx3G
+-Xms1230M -Xmx1230M
 ----
+
+On a pure master node with 4 GB of memory, 75% would be `-Xms3G -Xmx3G`.
 
 ===== Heap dumps for OOME
 
@@ -163,7 +165,9 @@ By default, the JVM neither creates a heap dump nor exits when it throws an `Out
 
 The dump is written as gzip-compressed `java_pid1.hprof.gz` to the `work` directory. Make `work` a volume, as in the full example below, so the dump survives the container being recreated.
 
-XP runs as process 1 in the container, so every dump gets the same file name, and the JVM does not overwrite an existing dump. Move or delete the dump after an incident, or the next one will not be written. Even compressed, heap dumps can be large. Make sure the volume has enough free space.
+XP runs as process 1 in the container, so every dump gets the same file name, and the JVM does not overwrite an existing dump. Move or delete the dump after an incident, or the next one will not be written.
+
+Heap dumps take disk space, not memory. An uncompressed dump is about as large as the used heap, up to the `-Xmx` value. Compression makes it several times smaller. Make sure the `work` volume has enough free disk space for it.
 
 ===== Remote debugging
 
@@ -289,8 +293,11 @@ services:
     image: enonic/xp:{version}-ubuntu
     restart: always
     environment:
-      # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also make the JVM write a heap dump to the work volume and exit on OOME
-      XP_OPTS: -Xms1230M -Xmx1230M -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work
+      # Heap memory: assuming 4 GB of RAM on a node with Elasticsearch data, set the heap to 30% of it (1230 MB).
+      # Out of memory: write a heap dump to the work volume and exit, so Docker restarts XP.
+      XP_OPTS: >-
+        -Xms1230M -Xmx1230M
+        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work
     ports:
       - 8080:8080
     volumes:
