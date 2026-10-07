@@ -120,8 +120,8 @@ system.hazelcast.initial.min.cluster.size=3
 
 Since XP is using __elasticsearch__ for storage, we cannot allocate all available memory to heap. __elasticsearch__ uses off-heap buffers and relies on the OS filesystem cache, and other processes on the node need memory too. In general you should:
 
-* Dedicated master nodes: set heap memory to `75%` of available memory.
-* Nodes with Elasticsearch data: leave enough memory outside the heap for other processes and the OS filesystem cache.
+* Dedicated master nodes: start with `75%` of available memory for heap.
+* Nodes with Elasticsearch data: start with `30%` of available memory for heap. Adjust so that enough memory stays outside the heap for other processes and the OS filesystem cache.
 * Never allocate more than `26G` of heap.
 
 You should set the heap memory with the `XP_OPTS` environmental variable. For example, if you want to give XP `512MB` of heap you set `XP_OPTS` to `-Xms512M -Xmx512M`.
@@ -203,7 +203,7 @@ Now you should have a good starting point to create clustered deployments. Just 
 * Tailor the 3 cluster configuration files to your setup.
 * Set heap memory with the `-Xms` and `-Xmx` parameters using the `XP_OPTS` environmental variable.
 * Avoid overwriting the `JAVA_OPTS` environmental variable, use `XP_OPTS`.
-* Take care of how much memory you allocate to heap. On nodes with Elasticsearch data, leave enough memory outside the heap for other processes and the OS filesystem cache. On a dedicated master node you can set it to `75%`.
+* Take care of how much memory you allocate to heap. Start with `30%` of available RAM on nodes with Elasticsearch data, and leave enough memory outside the heap for other processes and the OS filesystem cache. On a dedicated master node you can start with `75%`.
 * Directories `$XP_HOME/repo/blob`, `$XP_HOME/snapshots` and `$XP_HOME/data` should be shared between all nodes.
 * The `$XP_HOME/repo/index` volume should *never* be shared between nodes.
 * Pre-install the snapshotter app for automatic snapshots.

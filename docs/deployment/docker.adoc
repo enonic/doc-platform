@@ -93,8 +93,8 @@ $XP_HOME/work:: Various cached files used by Enonic XP, e.g. resized images. Als
 
 Since this image uses a modern JVM, it will respect the container memory limits set by the docker daemon. Not all of that memory should go to the heap though. Elasticsearch uses off-heap buffers and relies on the OS filesystem cache, and other processes in the container need memory too. As a general rule, you should:
 
-* Pure master node: set the heap to `75%` of the container memory.
-* Node with Elasticsearch data: leave enough memory outside the heap for other processes and the OS filesystem cache.
+* Pure master node: start with `75%` of the container memory for the heap.
+* Node with Elasticsearch data: start with `30%` of the container memory for the heap. Adjust so that enough memory stays outside the heap for other processes and the OS filesystem cache.
 * Set minimum and maximum heap size to the same value.
 * Never set the heap above `26 GB`.
 
@@ -291,7 +291,7 @@ services:
     image: enonic/xp:{version}-ubuntu
     restart: always
     environment:
-      # Heap memory: 1230 MB heap, leaving the rest of the 4 GB host memory outside the heap.
+      # Heap memory: 30% of 4 GB host memory (1230 MB), leaving the rest outside the heap.
       # Out of memory: write a heap dump to the work volume and exit, so Docker restarts XP.
       XP_OPTS: >-
         -Xms1230M -Xmx1230M
