@@ -158,12 +158,12 @@ By default, the JVM neither creates a heap dump nor exits when it throws an `Out
 
 [source,bash]
 ----
--XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work/oom.hprof.gz
 ----
 
-The dump is written as gzip-compressed `java_pid1.hprof.gz` to the `work` directory. Make `work` a volume, as in the full example below, so the dump survives the container being recreated.
+The dump is written gzip-compressed to `oom.hprof.gz` in the `work` directory. Make `work` a volume, as in the full example below, so the dump survives the container being recreated.
 
-XP runs as process 1 in the container, so every dump gets the same file name, and the JVM does not overwrite an existing dump. Move or delete the dump after an incident, or the next one will not be written.
+The JVM does not overwrite an existing dump. Move or delete `oom.hprof.gz` after an incident, or the next one will not be written.
 
 Heap dumps take disk space, not memory. An uncompressed dump is about as large as the used heap, up to the `-Xmx` value. Compression makes it several times smaller. Make sure the `work` volume has enough free disk space for it.
 
@@ -295,7 +295,7 @@ services:
       # Out of memory: write a heap dump to the work volume and exit, so Docker restarts XP.
       XP_OPTS: >-
         -Xms3G -Xmx3G
-        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work
+        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work/oom.hprof.gz
     ports:
       - 8080:8080
     volumes:
