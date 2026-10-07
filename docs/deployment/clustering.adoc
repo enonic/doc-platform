@@ -118,6 +118,8 @@ system.hazelcast.initial.min.cluster.size=3
 
 === Heap
 
+Since XP is using __elasticsearch__ for storage, we cannot allocate all available memory to heap. __elasticsearch__ uses off-heap buffers and relies on the OS filesystem cache, and other processes on the node need memory too. In general you should:
+
 * Dedicated master nodes: set heap memory to `75%` of available memory.
 * Nodes with Elasticsearch data: leave enough memory outside the heap for other processes and the OS filesystem cache.
 * Never allocate more than `26G` of heap.
