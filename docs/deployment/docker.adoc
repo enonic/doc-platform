@@ -84,19 +84,19 @@ $XP_HOME/data:: Various extra data like thread/heap dumps.
 
 $XP_HOME/logs:: Rotating log files from Enonic XP.
 
-$XP_HOME/work:: Various cached files used by Enonic XP, e.g. resized images.
+$XP_HOME/work:: Various cached files used by Enonic XP, e.g. resized images. Also the recommended location for heap dumps on `OutOfMemoryError`.
 
 == Configuration
 
 [#java-heap-memory]
 === Heap memory
 
-Since this image uses a modern JVM, it will respect the container memory limits set by the docker daemon. There are some pitfalls though. Elasticsearch uses off-heap buffers, that can lead to the container running out of memory. For that reason, as a general rule, you should:
+Since this image uses a modern JVM, it will respect the container memory limits set by the docker daemon. Not all of that memory should go to the heap though. Elasticsearch uses off-heap buffers and relies on the OS filesystem cache, and other processes in the container need memory too. As a general rule, you should:
 
-* set the heap size to `30%` of the available memory to the container
-* if the Enonic XP node is a pure master node, set the heap size to `75%` of the available memory to the container
-* set minimum and maximum heap size to the same value
-* never set heap size over `26 GB`
+* Pure master node: start with `75%` of the container memory for the heap.
+* Node with Elasticsearch data: start with `30%` of the container memory for the heap. Adjust so that enough memory stays outside the heap for other processes and the OS filesystem cache.
+* Set minimum and maximum heap size to the same value.
+* Never set the heap above `26 GB`.
 
 Parameters to achive this are described under the <<xp-opts>> section.
 
@@ -145,7 +145,7 @@ In this subection we list some `XP_OPTS` parameters that are useful when running
 
 ===== Memory
 
-Like described in the <<java-heap-memory>> section, you should set the heap memory limits. If your machine has 4GB of memory, and you want to allocate 75% of that to heap memory, do that by adding to `XP_OPTS`.
+Set the heap as described in <<java-heap-memory>> by adding to `XP_OPTS`. For example, for a 3 GB heap:
 
 [source,bash]
 ----
@@ -154,12 +154,18 @@ Like described in the <<java-heap-memory>> section, you should set the heap memo
 
 ===== Heap dumps for OOME
 
-It is useful to make the JVM create a heap dump if the JVM throws an Out Of Memory Exception. Do that by adding to `XP_OPTS`:
+By default, the JVM neither creates a heap dump nor exits when it throws an `OutOfMemoryError`, and the process may keep running in a broken state. It is useful to make the JVM write a heap dump and then exit, so the container restart policy can bring XP back up. Do that by adding to `XP_OPTS`:
 
 [source,bash]
 ----
--XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data/oom.hprof
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work/oom.hprof.gz
 ----
+
+The dump is written gzip-compressed to `oom.hprof.gz` in the `work` directory. Make `work` a volume, as in the full example below, so the dump survives the container being recreated.
+
+The JVM does not overwrite an existing dump. Move or delete `oom.hprof.gz` after an incident, or the next one will not be written.
+
+Heap dumps take disk space, not memory. An uncompressed dump is about as large as the used heap, up to the `-Xmx` value. Compression makes it several times smaller. Make sure the `work` volume has enough free disk space for it.
 
 ===== Remote debugging
 
@@ -285,8 +291,11 @@ services:
     image: enonic/xp:{version}-ubuntu
     restart: always
     environment:
-      # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also enable JVM OOME heap dump
-      XP_OPTS: -Xms1230M -Xmx1230M -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data/oom.hprof
+      # Heap memory: 30% of 10 GB host memory (3 GB), leaving the rest outside the heap.
+      # Out of memory: write a heap dump to the work volume and exit, so Docker restarts XP.
+      XP_OPTS: >-
+        -Xms3G -Xmx3G
+        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work/oom.hprof.gz
     ports:
       - 8080:8080
     volumes:
@@ -295,6 +304,7 @@ services:
       - deploy:/enonic-xp/home/deploy
       - index:/enonic-xp/home/repo/index
       - snapshots:/enonic-xp/home/snapshots
+      - work:/enonic-xp/home/work
       - ./config:/enonic-xp/home/config
       - ./setenv.sh:/enonic-xp/home/setenv.sh
 volumes:
@@ -303,6 +313,7 @@ volumes:
   deploy:
   index:
   snapshots:
+  work:
 ----
 
 === Verifying
@@ -380,6 +391,7 @@ demo_data:      /var/lib/docker/volumes/demo_data/_data
 demo_deploy:    /var/lib/docker/volumes/demo_deploy/_data
 demo_index:     /var/lib/docker/volumes/demo_index/_data
 demo_snapshots: /var/lib/docker/volumes/demo_snapshots/_data
+demo_work:      /var/lib/docker/volumes/demo_work/_data
 ----
 
 To do backups you would simply back up the mountpoints for `demo_snapshots` and `demo_blobstore`. It is not as important to back up other directories.
