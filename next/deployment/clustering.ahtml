@@ -683,15 +683,15 @@ system.hazelcast.initial.min.cluster.size=3</code></pre>
 <div class="sect2">
 <h3 id="heap"><a class="link" href="#heap">Heap</a></h3>
 <div class="paragraph">
-<p>Since XP is using <em>elasticsearch</em> for storage, we have to consider that <em>elasticsearch</em> uses off heap memory buffers. For that reason we cannot allocate all available memory to heap. In general you should:</p>
+<p>Since XP is using <em>elasticsearch</em> for storage, we cannot allocate all available memory to heap. <em>elasticsearch</em> uses off-heap buffers and relies on the OS filesystem cache, and other processes on the node need memory too. In general you should:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Set heap memory to <code>75%</code> of available memory on dedicated master nodes.</p>
+<p>Dedicated master nodes: start with <code>75%</code> of available memory for heap.</p>
 </li>
 <li>
-<p>Set heap memory to <code>30%</code> of available memory on other nodes.</p>
+<p>Nodes with Elasticsearch data: start with <code>30%</code> of available memory for heap. Adjust so that enough memory stays outside the heap for other processes and the OS filesystem cache.</p>
 </li>
 <li>
 <p>Never allocate more than <code>26G</code> of heap.</p>
@@ -860,7 +860,7 @@ Setting replicas number to 1...Done
 <p>Avoid overwriting the <code>JAVA_OPTS</code> environmental variable, use <code>XP_OPTS</code>.</p>
 </li>
 <li>
-<p>Take care of how much memory you allocate to heap. Set it to <code>30%</code> of available RAM on all nodes, except if the node is a dedicated master node. Then you can set it to <code>75%</code>.</p>
+<p>Take care of how much memory you allocate to heap. Start with <code>30%</code> of available RAM on nodes with Elasticsearch data, and leave enough memory outside the heap for other processes and the OS filesystem cache. On a dedicated master node you can start with <code>75%</code>.</p>
 </li>
 <li>
 <p>Directories <code>$XP_HOME/repo/blob</code>, <code>$XP_HOME/snapshots</code> and <code>$XP_HOME/data</code> should be shared between all nodes.</p>
@@ -932,7 +932,7 @@ It is possible to free master nodes from running named tasks by setting <code>di
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-11 11:10:31 UTC
+Last updated 2026-10-07 12:14:15 UTC
 </div>
 </div>
 </body>

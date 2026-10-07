@@ -677,7 +677,7 @@ The above password sha256 is for "password" string is just for demonstration pur
 </dd>
 <dt class="hdlist1">$XP_HOME/work</dt>
 <dd>
-<p>Various cached files used by Enonic XP, e.g. resized images.</p>
+<p>Various cached files used by Enonic XP, e.g. resized images. Also the recommended location for heap dumps on <code>OutOfMemoryError</code>.</p>
 </dd>
 </dl>
 </div>
@@ -690,21 +690,21 @@ The above password sha256 is for "password" string is just for demonstration pur
 <div class="sect2">
 <h3 id="java-heap-memory"><a class="link" href="#java-heap-memory">Heap memory</a></h3>
 <div class="paragraph">
-<p>Since this image uses a modern JVM, it will respect the container memory limits set by the docker daemon. There are some pitfalls though. Elasticsearch uses off-heap buffers, that can lead to the container running out of memory. For that reason, as a general rule, you should:</p>
+<p>Since this image uses a modern JVM, it will respect the container memory limits set by the docker daemon. Not all of that memory should go to the heap though. Elasticsearch uses off-heap buffers and relies on the OS filesystem cache, and other processes in the container need memory too. As a general rule, you should:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>set the heap size to <code>30%</code> of the available memory to the container</p>
+<p>Pure master node: start with <code>75%</code> of the container memory for the heap.</p>
 </li>
 <li>
-<p>if the Enonic XP node is a pure master node, set the heap size to <code>75%</code> of the available memory to the container</p>
+<p>Node with Elasticsearch data: start with <code>30%</code> of the container memory for the heap. Adjust so that enough memory stays outside the heap for other processes and the OS filesystem cache.</p>
 </li>
 <li>
-<p>set minimum and maximum heap size to the same value</p>
+<p>Set minimum and maximum heap size to the same value.</p>
 </li>
 <li>
-<p>never set heap size over <code>26 GB</code></p>
+<p>Never set the heap above <code>26 GB</code>.</p>
 </li>
 </ul>
 </div>
@@ -776,7 +776,7 @@ docker rm tmp</code></pre>
 <div class="sect4">
 <h5 id="memory"><a class="link" href="#memory">Memory</a></h5>
 <div class="paragraph">
-<p>Like described in the <a href="#java-heap-memory">Heap memory</a> section, you should set the heap memory limits. If your machine has 4GB of memory, and you want to allocate 75% of that to heap memory, do that by adding to <code>XP_OPTS</code>.</p>
+<p>Set the heap as described in <a href="#java-heap-memory">Heap memory</a> by adding to <code>XP_OPTS</code>. For example, for a 3 GB heap:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -787,12 +787,21 @@ docker rm tmp</code></pre>
 <div class="sect4">
 <h5 id="heap_dumps_for_oome"><a class="link" href="#heap_dumps_for_oome">Heap dumps for OOME</a></h5>
 <div class="paragraph">
-<p>It is useful to make the JVM create a heap dump if the JVM throws an Out Of Memory Exception. Do that by adding to <code>XP_OPTS</code>:</p>
+<p>By default, the JVM neither creates a heap dump nor exits when it throws an <code>OutOfMemoryError</code>, and the process may keep running in a broken state. It is useful to make the JVM write a heap dump and then exit, so the container restart policy can bring XP back up. Do that by adding to <code>XP_OPTS</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">-XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data/oom.hprof</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work/oom.hprof.gz</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The dump is written gzip-compressed to <code>oom.hprof.gz</code> in the <code>work</code> directory. Make <code>work</code> a volume, as in the full example below, so the dump survives the container being recreated.</p>
+</div>
+<div class="paragraph">
+<p>The JVM does not overwrite an existing dump. Move or delete <code>oom.hprof.gz</code> after an incident, or the next one will not be written.</p>
+</div>
+<div class="paragraph">
+<p>Heap dumps take disk space, not memory. An uncompressed dump is about as large as the used heap, up to the <code>-Xmx</code> value. Compression makes it several times smaller. Make sure the <code>work</code> volume has enough free disk space for it.</p>
 </div>
 </div>
 <div class="sect4">
@@ -994,8 +1003,11 @@ services:
     image: enonic/xp:8.1.0-ubuntu
     restart: always
     environment:
-      # Assuming this computer has 4 GB of RAM, set JVM heap to 30% of available heap or 1230 MB. Also enable JVM OOME heap dump
-      XP_OPTS: -Xms1230M -Xmx1230M -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/data/oom.hprof
+      # Heap memory: 30% of 10 GB host memory (3 GB), leaving the rest outside the heap.
+      # Out of memory: write a heap dump to the work volume and exit, so Docker restarts XP.
+      XP_OPTS: >-
+        -Xms3G -Xmx3G
+        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpGzipLevel=1 -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=/enonic-xp/home/work/oom.hprof.gz
     ports:
       - 8080:8080
     volumes:
@@ -1004,6 +1016,7 @@ services:
       - deploy:/enonic-xp/home/deploy
       - index:/enonic-xp/home/repo/index
       - snapshots:/enonic-xp/home/snapshots
+      - work:/enonic-xp/home/work
       - ./config:/enonic-xp/home/config
       - ./setenv.sh:/enonic-xp/home/setenv.sh
 volumes:
@@ -1011,7 +1024,8 @@ volumes:
   data:
   deploy:
   index:
-  snapshots:</code></pre>
+  snapshots:
+  work:</code></pre>
 </div>
 </div>
 </div>
@@ -1099,7 +1113,8 @@ demo_blobstore: /var/lib/docker/volumes/demo_blobstore/_data
 demo_data:      /var/lib/docker/volumes/demo_data/_data
 demo_deploy:    /var/lib/docker/volumes/demo_deploy/_data
 demo_index:     /var/lib/docker/volumes/demo_index/_data
-demo_snapshots: /var/lib/docker/volumes/demo_snapshots/_data</code></pre>
+demo_snapshots: /var/lib/docker/volumes/demo_snapshots/_data
+demo_work:      /var/lib/docker/volumes/demo_work/_data</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1119,7 +1134,7 @@ demo_snapshots: /var/lib/docker/volumes/demo_snapshots/_data</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-09-11 11:10:31 UTC
+Last updated 2026-10-07 12:14:15 UTC
 </div>
 </div>
 </body>
