@@ -145,11 +145,11 @@ In this subection we list some `XP_OPTS` parameters that are useful when running
 
 ===== Memory
 
-Set the heap as described in <<java-heap-memory>> by adding to `XP_OPTS`. For example, for a 1230 MB heap:
+Set the heap as described in <<java-heap-memory>> by adding to `XP_OPTS`. For example, for a 3 GB heap:
 
 [source,bash]
 ----
--Xms1230M -Xmx1230M
+-Xms3G -Xmx3G
 ----
 
 ===== Heap dumps for OOME
