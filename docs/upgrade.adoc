@@ -65,6 +65,18 @@ NOTE: Start the nodes at the same time. Should the new version include upgrade s
 . Confirm that your applications started. The <<admin/applications#, Applications tool>> lists their state.
 . Check https://market.enonic.com[Enonic Market] for newer versions of the apps you use. Applications built for XP 8 keep working across 8.x releases, so this is recommended, not required. Developers find the deprecations introduced by each release in the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes].
 
+== v8.2 notes
+
+XP 8.2 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.1 behaviour. Two behavioral changes are worth knowing about:
+
+=== Basic authentication moves to the Standard ID Provider
+
+Basic authentication on the management endpoint is provided by the Standard ID Provider application (bundled with XP) instead of the platform itself. It is deprecated and left only for backwards compatibility: enabled by default, disabled with `idprovider.system.autologin.basic.enabled = false` in `com.enonic.xp.app.standardidprovider.cfg`. An installation running without the Standard ID Provider application has no basic authentication on the management endpoint - use <<security/service-accounts#jwt-authentication, service account JWT authentication>>.
+
+=== autoLogin runs for every enabled ID provider
+
+`autoLogin` runs for every ID provider enabled on a virtual host - the default one first - not only the default one. A request can now be authenticated by a non-default ID provider where it previously stayed anonymous.
+
 == v8.1 notes
 
 *Full restart required.* The scheduler was rebuilt in 8.1: scheduling moved from a Hazelcast scheduled task to a coordinator that elects one node to run the schedule. An 8.0 node and an 8.1 node in the same cluster would each schedule on their own terms, so do not upgrade a cluster to 8.1 node by node. Use the <<#full-restart, full restart procedure>>.
