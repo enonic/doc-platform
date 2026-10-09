@@ -238,7 +238,7 @@ docker exec $XP_CONTAINER bash -c 'jattach 1 threaddump > $XP_HOME/data/threaddu
 
 [source,bash]
 ----
-docker exec $XP_CONTAINER bash -c 'jattach 1 dumpheap $XP_HOME/data/heapdump.hprof'
+docker exec $XP_CONTAINER bash -c 'jattach 1 dumpheap $XP_HOME/work/heapdump.hprof'
 ----
 
 === Verify snapshot age
