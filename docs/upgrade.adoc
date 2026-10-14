@@ -105,7 +105,7 @@ Pages may render differently in three ways:
 * *Rich text images.* `srcset` and `sizes` come right after `src`, `sizes` is written only along with a `srcset`, and heights of images with an aspect ratio are rounded to the nearest pixel, so some image URLs change. Images served as stored get no `srcset`.
 * *Rich text macros.* Macros render on any page, also outside a site. A macro that no application provides is shown as written, and HTML comments are never run as macros.
 
-The https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes] describe these as well, and what 8.1 offers apps that worked around missing features.
+For more information, see the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes].
 
 === Management API
 
