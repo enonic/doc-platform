@@ -453,6 +453,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></li>
 <li><a href="#scheduler_placement">Scheduler placement</a></li>
 <li><a href="#new_settings">New settings</a></li>
+<li><a href="#for_developers">For developers</a></li>
 <li><a href="#management_api">Management API</a></li>
 </ul>
 </li>
@@ -694,6 +695,53 @@ Start the nodes at the same time. Should the new version include upgrade scripts
 </div>
 </div>
 <div class="sect2">
+<h3 id="for_developers"><a class="link" href="#for_developers">For developers</a></h3>
+<div class="paragraph">
+<p>Applications built for 8.0 run unchanged. 8.1 deprecates some APIs, all still working, and changes a few behaviours. The <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade notes</a> describe each with its replacement:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content">lib-content and lib-node</a>: <code>getChildren()</code> and <code>findChildren()</code>, in favour of a query with <code>parent</code>.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task">lib-task</a>: <code>executeFunction()</code>, unsupported on GraalJS.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-portal">lib-portal</a>: <code>params</code> and <code>baseUrl</code> on the media URL functions, and <code>project</code> and <code>branch</code> on <code>pageUrl()</code> and <code>baseUrl()</code>, in favour of URL parts and <code>portalScope()</code>.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export">lib-export</a>: <code>batchSize</code>, now ignored.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps">lib-app, lib-schema and lib-io</a>: <code>modifiedTime</code> and <code>Resource.getTimestamp()</code>.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java">Java APIs</a>: listeners, children lookups, portal URL parameters, script and trace APIs.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Pages may render differently in three ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Broken links.</strong> A page URL, image URL or attachment URL for content that does not resolve - deleted, unpublished, or not an image - is answered with <strong>404 Not Found</strong> rather than <strong>500</strong>, and XP logs a warning with a reference that the URL carries. A page with a broken link in its rich text renders in full. Expect fewer 500 responses, and warnings in the log, where there were broken references before.</p>
+</li>
+<li>
+<p><strong>Rich text images.</strong> <code>srcset</code> and <code>sizes</code> come right after <code>src</code>, <code>sizes</code> is written only along with a <code>srcset</code>, and heights of images with an aspect ratio are rounded to the nearest pixel, so some image URLs change. Images served as stored get no <code>srcset</code>.</p>
+</li>
+<li>
+<p><strong>Rich text macros.</strong> Macros render on any page, also outside a site. A macro that no application provides is shown as written, and HTML comments are never run as macros.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For more information, see the <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade notes</a>.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="management_api"><a class="link" href="#management_api">Management API</a></h3>
 <div class="paragraph">
 <p>The <code>scheduler/list</code> response leaves out fields that do not apply to a job&#8217;s schedule type, and fields the job has not set, instead of reporting them as <code>null</code>. Clients that relied on those <code>null</code> values should be adjusted. New fields: <code>deleteAfterRun</code> on <code>ONE_TIME</code>, and <code>duration</code> on the new <code>FIXED_RATE</code> type. See <a href="endpoints/management.ahtml#scheduler">Scheduler</a>.</p>
@@ -704,7 +752,7 @@ Start the nodes at the same time. Should the new version include upgrade scripts
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-07 12:14:15 UTC
+Last updated 2026-10-14 12:05:35 UTC
 </div>
 </div>
 </body>
