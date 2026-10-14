@@ -88,6 +88,25 @@ Jobs declared in the scheduler config file are now created by the node that runs
 * `media.defaultBaseUrl` and `legacy.mediaApiAutoMount.enabled` in the portal configuration let media be served from a separate host. See <<config/cms#media_base_url, serving media from another host>>.
 * `portal.apiBaseUrl` context attributes in a virtual host mapping declare where APIs are served. See <<config/vhosts#api-locations, API locations>>.
 
+=== For developers
+
+Applications built for 8.0 run unchanged. 8.1 deprecates some APIs, all still working, and changes a few behaviours. The https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes] describe each with its replacement:
+
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content[lib-content and lib-node]: `getChildren()` and `findChildren()`, in favour of a query with `parent`.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task[lib-task]: `executeFunction()`, unsupported on GraalJS.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-portal[lib-portal]: `params` and `baseUrl` on the media URL functions, and `project` and `branch` on `pageUrl()` and `baseUrl()`, in favour of URL parts and `portalScope()`.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export[lib-export]: `batchSize`, now ignored.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps[lib-app, lib-schema and lib-io]: `modifiedTime` and `Resource.getTimestamp()`.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[Java APIs]: listeners, children lookups, portal URL parameters, script and trace APIs.
+
+Pages may render differently in three ways:
+
+* *Broken links.* A page URL, image URL or attachment URL for content that does not resolve - deleted, unpublished, or not an image - is answered with *404 Not Found* rather than *500*, and XP logs a warning with a reference that the URL carries. A page with a broken link in its rich text renders in full. Expect fewer 500 responses, and warnings in the log, where there were broken references before.
+* *Rich text images.* `srcset` and `sizes` come right after `src`, `sizes` is written only along with a `srcset`, and heights of images with an aspect ratio are rounded to the nearest pixel, so some image URLs change. Images served as stored get no `srcset`.
+* *Rich text macros.* Macros render on any page, also outside a site. A macro that no application provides is shown as written, and HTML comments are never run as macros.
+
+For more information, see the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes].
+
 === Management API
 
 The `scheduler/list` response leaves out fields that do not apply to a job's schedule type, and fields the job has not set, instead of reporting them as `null`. Clients that relied on those `null` values should be adjusted. New fields: `deleteAfterRun` on `ONE_TIME`, and `duration` on the new `FIXED_RATE` type. See <<endpoints/management#scheduler, Scheduler>>.
