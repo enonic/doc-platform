@@ -15,7 +15,7 @@ A mapping may name the endpoint it applies to - `endpoint = management` or `endp
 
 === Authentication flows per vhost
 
-What an ID provider serves on a vhost is now configurable: `idProvider.myidp = default&enabled=login,autologin` limits it to the listed flows. XP manages `login`, `autologin` and `logout`; any other name in the list addresses an additional flow of the ID provider application itself - an OIDC provider's device authorization endpoints, say. Without a list, the ID provider serves whatever it supports, as before.
+What an ID provider serves on a vhost is now configurable: `idProvider.myidp.flows = login,autologin` limits it to the listed flows. XP manages `login`, `autologin` and `logout`; any other name in the list addresses an additional flow of the ID provider application itself - an OIDC provider's device authorization endpoints, say. Without a list, the ID provider serves whatever it supports, as before.
 
 `autoLogin` now runs for every enabled ID provider on the vhost - the default one first - so token authentication works even when the token belongs to a provider that is not the default. See <<config/vhosts#flows, ID provider flows>>.
 

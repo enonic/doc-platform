@@ -35,7 +35,7 @@ enabled:: turns on or of vhosts, enabled = false should only be used for develop
 host:: specifies the hostname (aka domain) the vhost will handle
 source:: refers to basepath used in request, sample above handles company.com/app
 target:: is the internal route in XP to the specific endpoint/service
-idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`. image:xp-820.svg[XP 8.2.0,opts=inline] `enabled` may carry a <<#flows, flow list>>: `default&enabled=login,autologin`.
+idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`. image:xp-820.svg[XP 8.2.0,opts=inline] Per-provider settings may also be given as sub-keys - `idProvider.<name>.default = true`, `idProvider.<name>.enabled = true` and `idProvider.<name>.flows` (a <<#flows, flow list>>). `default` or `enabled` turns the provider on; a provider with neither is off. ID provider names cannot contain dots.
 endpoint:: image:xp-820.svg[XP 8.2.0,opts=inline] optionally targets the mapping at the <<#endpoint, management or statistics endpoint>> instead of the web endpoint.
 allow:: image:xp-820.svg[XP 8.2.0,opts=inline] optionally restricts the vhost to a <<#allow, list of principals>>.
 
@@ -189,11 +189,12 @@ An API mounted on the site, webapp or admin tool that serves the request keeps i
 [#flows]
 == ID provider flows
 
-image:xp-820.svg[XP 8.2.0,opts=inline] The flows an ID provider serves on a vhost can be restricted with a flow list on the `enabled` value:
+image:xp-820.svg[XP 8.2.0,opts=inline] The flows an ID provider serves on a vhost can be restricted with the provider's `flows` setting:
 
 [source,properties]
 ----
-mapping.example.idProvider.myidprovider = default&enabled=login,autologin
+mapping.example.idProvider.myidprovider.default = true
+mapping.example.idProvider.myidprovider.flows = login,autologin
 ----
 
 XP manages three flows:
@@ -204,7 +205,7 @@ logout:: the logout endpoint.
 
 Any other name in the list addresses an additional flow of the ID provider application itself - for instance, the Standard ID Provider serves basic authentication under the name `basic`, and an ID provider may serve its device authorization endpoints under a name like `device`. See the ID provider's own documentation for the flows it supports.
 
-Without a flow list, no restriction applies: the ID provider serves whatever flows it supports. An explicit list serves only what it names - `enabled=autologin` on the system ID provider keeps service account JWTs working but turns basic authentication off.
+Without a flow list, no restriction applies: the ID provider serves whatever flows it supports. An explicit list serves only what it names - `flows = autologin` on the system ID provider keeps service account JWTs working but turns basic authentication off. Flow names are not validated: any name an ID provider app understands is fair game.
 
 [#endpoint]
 == Management and statistics endpoints
@@ -217,7 +218,8 @@ mapping.stats.host = stats.example.com
 mapping.stats.source = /
 mapping.stats.target = /
 mapping.stats.endpoint = statistics
-mapping.stats.idProvider.myidprovider = default&enabled=autologin
+mapping.stats.idProvider.myidprovider.default = true
+mapping.stats.idProvider.myidprovider.flows = autologin
 mapping.stats.allow = role:system.admin
 ----
 
