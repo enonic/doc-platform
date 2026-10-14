@@ -35,6 +35,7 @@ enabled:: turns on or of vhosts, enabled = false should only be used for develop
 host:: specifies the hostname (aka domain) the vhost will handle
 source:: refers to basepath used in request, sample above handles company.com/app
 target:: is the internal route in XP to the specific endpoint/service
+order:: optionally sets the mapping's priority when several mappings match a request - lower values are preferred. Unset means least preferable.
 idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`. image:xp-820.svg[XP 8.2.0,opts=inline] Per-provider settings may be given as sub-keys, such as `idProvider.<name>.flows` (a <<#flows, flow list>>); a settings key alone does not enable the provider. ID provider names cannot contain dots.
 endpoint:: image:xp-820.svg[XP 8.2.0,opts=inline] optionally targets the mapping at the <<#endpoint, management or statistics endpoint>> instead of the web endpoint.
 allow:: image:xp-820.svg[XP 8.2.0,opts=inline] optionally restricts the vhost to a <<#allow, list of principals>>.
