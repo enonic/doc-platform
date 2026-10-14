@@ -99,7 +99,13 @@ Applications built for 8.0 run unchanged. 8.1 deprecates some APIs, all still wo
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps[lib-app, lib-schema and lib-io]: `modifiedTime` and `Resource.getTimestamp()`.
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[Java APIs]: listeners, children lookups, portal URL parameters, script and trace APIs.
 
-The same page lists the behaviour changes - URLs that do not resolve, and images and macros in rich text - and what 8.1 offers apps that worked around missing features.
+Pages may render differently in three ways:
+
+* *Broken links.* A page URL, image URL or attachment URL for content that does not resolve - deleted, unpublished, or not an image - is answered with *404 Not Found* rather than *500*, and XP logs a warning with a reference that the URL carries. A page with a broken link in its rich text renders in full. Expect fewer 500 responses, and warnings in the log, where there were broken references before.
+* *Rich text images.* `srcset` and `sizes` come right after `src`, `sizes` is written only along with a `srcset`, and heights of images with an aspect ratio are rounded to the nearest pixel, so some image URLs change. Images served as stored get no `srcset`.
+* *Rich text macros.* Macros render on any page, also outside a site. A macro that no application provides is shown as written, and HTML comments are never run as macros.
+
+The https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes] describe these as well, and what 8.1 offers apps that worked around missing features.
 
 === Management API
 
