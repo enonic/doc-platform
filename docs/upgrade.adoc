@@ -69,9 +69,9 @@ NOTE: Start the nodes at the same time. Should the new version include upgrade s
 
 XP 8.2 has no breaking changes, with one narrow exception below. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.1 behaviour.
 
-=== ID provider names can no longer contain dots
+=== ID providers with a dot in their name cannot be configured in vhosts
 
-A dot is no longer a valid character in an ID provider name. The restriction makes the per-provider settings in <<config/vhosts#flows, virtual host mappings>> unambiguous - in `idProvider.<name>.<setting>` keys, the first segment is always the name. An installation with a dotted ID provider name must rename that ID provider before upgrading; such names are unusual, so most installations are unaffected.
+Virtual host mappings now accept per-provider settings as `idProvider.<name>.<setting>` keys (see <<config/vhosts#flows, ID provider flows>>), and read the first key segment as the ID provider name. An ID provider whose name contains a dot - never intended, but not previously rejected - can therefore no longer be referenced in a vhost mapping: `idProvider.my.provider = default` is read as a setting named `provider` and fails the configuration. Rename such an ID provider before upgrading. Such names are unusual, so most installations are unaffected; the ID provider itself keeps working, only its vhost mapping is affected.
 
 === Basic authentication moves to the Standard ID Provider
 
