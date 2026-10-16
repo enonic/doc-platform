@@ -40,7 +40,7 @@ Errors follow https://datatracker.ietf.org/doc/html/rfc6749#section-5.2[RFC 6749
 
 == Access tokens
 
-An access token is a signed JWT (https://datatracker.ietf.org/doc/html/rfc9068[RFC 9068], HS512) that lives one hour by default. It names the user (`sub`), the audiences (`aud`), the scopes, the grant it was issued under, the client, and, when the token restricts the user's rights, the roles it is restricted to. Nothing about an issued token is stored: it is verified by its signature, and revocation comes from the grant.
+An access token is a JWT (https://datatracker.ietf.org/doc/html/rfc7519[RFC 7519]) in JWS compact form, authenticated with HS512, under an XP-specific profile: the header type is `xp-access-token+jwt`, and the claims are the user (`sub`), the audiences (`aud`), the scopes, the grant it was issued under, the client, an actor when there is one, and, when the token restricts the user's rights, the roles it is restricted to. It is not the RFC 9068 access-token profile: a client or audience may be absent, and no other algorithm is accepted. A token lives one hour by default; lifetimes are whole seconds. Nothing about an issued token is stored: it is verified by its signature, and revocation comes from the grant.
 
 A token is sent as a bearer token:
 
@@ -91,7 +91,7 @@ mapping.admin.idProvider.system.scope.profile =
 mapping.admin.idProvider.system.requiredScope = content\:read
 ----
 
-Only roles may be listed. A token restricted by scopes holds the roles of the scopes the user kept, intersected with the roles the user actually has, plus the user's own key and the roles every authenticated user has. A scope with no roles is a label for applications to check. Note the escaped colons: the configuration file is read as a properties file, where an unescaped colon ends the key.
+A scope name is an OAuth scope token: printable ASCII without spaces, double quotes or backslashes. Only roles may be listed. A token restricted by scopes holds the roles of the scopes the user kept, intersected with the roles the user actually has, plus the user's own key and the roles every authenticated user has. A scope with no roles is a label for applications to check. Note the escaped colons: the configuration file is read as a properties file, where an unescaped colon ends the key.
 
 With a catalogue, a client must ask for scopes, and only known ones; the user keeps or drops them on the page, never adds. A *required* scope cannot be dropped: a client that asks for it gets it with the rest, or the request is denied as a whole.
 
@@ -122,7 +122,7 @@ ID providers set the actor the same way for logins they perform on a service's b
 
 token.issuer:: The name written into every token as its issuer, and required of every token XP accepts. Defaults to the installation's `xp.name` from <<../config/system#system-properties, system.properties>>, and to `xp` when that is unset. Must be the same on every node that verifies the tokens.
 token.ttl:: Lifetime of an access token, as an ISO-8601 duration. Default: `PT1H`.
-`+token.keys.<kid>+`:: A signing key, base64-encoded, at least 32 bytes, under the key id of your choice. Every listed key verifies tokens. Without any, XP generates a key once per cluster and keeps it in memory shared across the nodes: tokens then do not survive a full cluster restart, which clients recover from at their next refresh. Configure keys to make tokens durable or to share them between clusters.
+`+token.keys.<kid>+`:: A signing key, standard base64, at least 64 bytes (the HS512 output length), under the key id of your choice. Every listed key verifies tokens. Without any, XP generates a key once per cluster and keeps it in memory shared across the nodes: tokens then do not survive a full cluster restart, which clients recover from at their next refresh. Configure keys to make tokens durable or to share them between clusters.
 token.signingKey:: The key id that signs new tokens. Optional with a single key. Rotate by adding a key, pointing `token.signingKey` at it, and removing the old key once its tokens have expired.
 token.grant.ttl:: Lifetime of a grant, as an ISO-8601 duration. Default: `P90D`.
 token.grant.rotateAfter:: How long after a rotation a refresh token is returned unchanged when redeemed again. Default: `PT5M`.
