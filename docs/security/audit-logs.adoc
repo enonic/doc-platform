@@ -4,6 +4,8 @@
 
 XP registers successfully completed actions that affect repositories, content, applications, principals and ID providers in the `system.auditlog` repository.
 
+Every entry names the `user` the action was performed as. When a service performed it on the user's behalf, with an <<access-tokens#, access token>> that names an actor or an ID provider login that does, the entry also names that service as `actor`; otherwise the field is absent.
+
 == Principals and ID providers
 
 In order to enable or disable audit logs for actions affecting ID providers and principal entities (such as `users`, `roles` and `groups`) you have to modify configuration file `com.enonic.xp.security.cfg` and set `auditlog.enabled` option to `true` to enable or `false` to disable logging. Default value is `true`.
@@ -32,13 +34,14 @@ Below you can see some examples of how data is stored for various actions:
 
 .`system.security.principal.addRelationship`
 
-User `user:system:username` has been added to group `group:system:usergroup`.
+User `user:system:username` has been added to group `group:system:usergroup`, by a deployment service acting for `user:system:admin`.
 [source,JSON]
 ----
 {
   "type": "system.security.principal.addRelationship",
   "source": "com.enonic.xp.security",
   "user": "user:system:admin",
+  "actor": "user:system:deploy-service",
   "objects": ["user:system:username","group:system:usergroup"],
   "data": {
     "params": {

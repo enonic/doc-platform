@@ -100,4 +100,4 @@ The Web endpoint is fully integrated with XP's identity and access management (I
 
 Authentication is configured per vhost by mapping ID providers, so different parts of your platform can use different authentication mechanisms. See <<../config/vhosts#,Virtual Hosts>> for the mapping syntax and <<../security/idproviders#,ID providers>> for the available providers.
 
-For service-to-service access, the platform supports JWT authentication via the system ID provider — see <<../security/service-accounts#jwt-authentication,JWT authentication>>. Individual endpoints may document additional authentication options; see for example <<management#authorization,Management API>>.
+For service-to-service access, the platform supports JWT authentication via the system ID provider — see <<../security/service-accounts#jwt-authentication,JWT authentication>>. A client acting for a person uses an <<../security/access-tokens#, access token>> obtained through device login instead, accepted on vhosts that declare its audience. Individual endpoints may document additional authentication options; see for example <<management#authorization,Management API>>.
