@@ -40,7 +40,7 @@ Errors follow https://datatracker.ietf.org/doc/html/rfc6749#section-5.2[RFC 6749
 
 == Access tokens
 
-An access token is a JWT (https://datatracker.ietf.org/doc/html/rfc7519[RFC 7519]) in JWS compact form, authenticated with HS512, under an XP-specific profile: the header type is `xp-access-token+jwt`, and the claims are the user (`sub`), the audiences (`aud`), the scopes, the grant it was issued under, the client, an actor when there is one, and, when the token restricts the user's rights, the roles it is restricted to. It is not the RFC 9068 access-token profile: a client or audience may be absent, and no other algorithm is accepted. A token lives one hour by default; lifetimes are whole seconds. Nothing about an issued token is stored: it is verified by its signature, and revocation comes from the grant.
+An access token is a JWT (https://datatracker.ietf.org/doc/html/rfc7519[RFC 7519]) in JWS compact form, authenticated with HS512, under an XP-specific profile: the claims are the user (`sub`), the audiences (`aud`), the scopes, the grant it was issued under, the client, an actor when there is one, and, when the token restricts the user's rights, the roles it is restricted to. It is not the RFC 9068 access-token profile: a client or audience may be absent, and no other algorithm is accepted. The signing keys sign access tokens and nothing else, which is what keeps another kind of token from passing as one. A token lives one hour by default; a lifetime is a whole number of seconds, at least one. Nothing about an issued token is stored: it is verified by its signature, and revocation comes from the grant.
 
 A token is sent as a bearer token:
 
@@ -121,7 +121,7 @@ ID providers set the actor the same way for logins they perform on a service's b
 `com.enonic.xp.security.cfg`
 
 token.issuer:: The name written into every token as its issuer, and required of every token XP accepts. Defaults to the installation's `xp.name` from <<../config/system#system-properties, system.properties>>, and to `xp` when that is unset. Must be the same on every node that verifies the tokens.
-token.ttl:: Lifetime of an access token, as an ISO-8601 duration. Default: `PT1H`.
+token.ttl:: Lifetime of an access token, as an ISO-8601 duration of whole seconds, at least one. Default: `PT1H`.
 `+token.keys.<kid>+`:: A signing key, standard base64, at least 64 bytes (the HS512 output length), under the key id of your choice. Every listed key verifies tokens. Without any, XP generates a key once per cluster and keeps it in memory shared across the nodes: tokens then do not survive a full cluster restart, which clients recover from at their next refresh. Configure keys to make tokens durable or to share them between clusters.
 token.signingKey:: The key id that signs new tokens. Optional with a single key. Rotate by adding a key, pointing `token.signingKey` at it, and removing the old key once its tokens have expired.
 token.grant.ttl:: Lifetime of a grant, as an ISO-8601 duration. Default: `P90D`.
