@@ -35,7 +35,7 @@ enabled:: turns on or of vhosts, enabled = false should only be used for develop
 host:: specifies the hostname (aka domain) the vhost will handle
 source:: refers to basepath used in request, sample above handles company.com/app
 target:: is the internal route in XP to the specific endpoint/service
-idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`.
+idProvider:: optionally adds one or more idProviders to the vhost. `idProvider` must be followed by the name of an existing idProvider. The example above refers to the idProvider called `myldap`. Supported values are `default` or `enabled`. Only one entry may use `default`. Settings of the ID provider on this vhost follow as sub-keys, see <<#id-provider-settings, ID provider settings>>.
 
 NOTE: Each mapping must define a unique name to separate the mappings when multiple mappings exist in the same file. In the example above `myapp` is used.
 
@@ -118,6 +118,37 @@ In this example if host is `example.no`, then target becomes `/site/default/mast
 
 WARNING: Avoid mixing regular expressions, multiple hosts and capture groups.
 If host is not matched by regular expression, then group references in `target` will remain as-is.
+
+[#id-provider-settings]
+== ID provider settings
+
+What an ID provider may do on a vhost is configured under its entry, so the same ID provider can offer interactive login on one host and only accept tokens on another.
+
+[source,properties]
+----
+mapping.admin.host = admin.example.com
+mapping.admin.source = /
+mapping.admin.target = /admin
+mapping.admin.idProvider.system = default
+mapping.admin.idProvider.system.flows = login,logout,device
+mapping.admin.idProvider.system.scope.content\:read = role:cms.cm.app, role:cms.project.site.viewer
+mapping.admin.idProvider.system.scope.content\:write = role:cms.cm.app, role:cms.project.site.editor
+mapping.admin.idProvider.system.requiredScope = content\:read
+
+mapping.api.host = api.example.com
+mapping.api.source = /
+mapping.api.target = /api
+mapping.api.idProvider.system = default
+mapping.api.idProvider.system.flows = autologin
+mapping.api.audience = api
+----
+
+`+idProvider.<name>.flows+`:: The authentication flows the ID provider may use here, comma-separated. Without the key no restriction applies and the ID provider serves every flow it supports. XP knows `login` (the interactive login: the ID provider's `handle401` and `login` functions), `logout`, `autologin` (non-interactive login from credentials in the request: XP's own <<../security/access-tokens#, access tokens>> on the declared audience, then the ID provider's `autoLogin` function) and `device` (<<../security/access-tokens#device-login, device login>>, where a user approves a client). Any other name is a flow of the ID provider application's own, which may read the list to enable it.
+`+idProvider.<name>.scope.<id>+`:: A scope a client may ask for in device login on this vhost, and the roles it implies, comma-separated. An empty value declares a scope with no roles, a label for applications. The id is everything after `scope.`; escape colons in it as shown. Only roles may be listed. See <<../security/access-tokens#scopes, scopes>>.
+`+idProvider.<name>.requiredScope+`:: Scopes, comma-separated, that a user cannot drop when approving: a client that asks for one gets it with the rest, or the request is denied. Each must be declared as a scope.
+audience:: The audiences this vhost serves, comma-separated: an access token is accepted here only when it names one of them. A vhost without an audience accepts only tokens that name none. The audiences a client may ask for are the union of every vhost's list.
+endpoint:: The endpoint the mapping routes to: `web` (the default), `management` or `statistics`. Once a mapping exists for the management or statistics endpoint, requests to it whose host matches no mapping are rejected; without any, the endpoint stays reachable as before.
+allow:: Principals, comma-separated, that may pass through this vhost at all, for instance `role:system.admin` in front of the management endpoint. Empty means no restriction.
 
 [[virtual-host-context]]
 == Virtual Host Context

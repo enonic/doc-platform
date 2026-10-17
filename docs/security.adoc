@@ -18,6 +18,10 @@ Principals are the actors of XP's security model. XP provides three basic princi
 
 <<security/service-accounts#, Service accounts>> enable secure, token-based authentication for machine-to-machine communication - for example when accessing the <<endpoints/management#, Management API>> from remote clients or CI/CD pipelines.
 
+== Access tokens
+
+A command-line tool or another browserless client can act for a user with an <<security/access-tokens#, access token>> XP issues itself: the user approves the client once through device login, with their ordinary ID provider, and may narrow what it gets to a set of scopes. The approval is a grant the user can revoke.
+
 == Permissions
 
 In addition to role-based access control, the CMS (and underlying <<storage#, NoSQL storage>>) supports fine-grained <<storage/permissions#, access control>> - down to a single item.

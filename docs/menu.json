@@ -39,6 +39,10 @@
           "document": "security/service-accounts"
         },
         {
+          "title": "Access tokens",
+          "document": "security/access-tokens"
+        },
+        {
           "title": "Principals",
           "document": "security/principals"
         },
@@ -150,7 +154,7 @@
           "title": "Logging",
           "document": "config/logging"
         }
-      ] 
+      ]
     },
     {
       "title": "Release Notes",
