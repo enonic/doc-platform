@@ -43,6 +43,16 @@ Admin extensions get the same control over the tool page that hosts them. A new 
 * *Media and page base URLs.* Media and page URLs are anchored to the site's base URL, or to the project when the request has no content, so absolute URLs are correct in previews, APIs and headless clients alike. Implicit mounting of the media APIs on every site can be turned off, and media can be served from a separate host such as a CDN. See <<config/cms#media_base_url, serving media from another host>>.
 * *API locations from vhost context.* A vhost can declare where an API is served, and URL generation follows it. See <<config/vhosts#api-locations, API locations>>.
 
+=== URLs for headless frontends
+
+The portal URL functions follow the request: they generate the URL the current request leads to, through its virtual host. A frontend that serves content from a host of its own, such as a headless one, needs URLs resolved from configuration alone instead. Each of these functions now has a counterpart that returns the URL as parts - a base, a path and a query string - for the frontend to assemble:
+
+* https://developer.enonic.com/docs/code/stable/libraries/lib-portal#pageurlparts[`pageUrlParts()`], https://developer.enonic.com/docs/code/stable/libraries/lib-portal#imageurlparts[`imageUrlParts()`] and https://developer.enonic.com/docs/code/stable/libraries/lib-portal#attachmenturlparts[`attachmentUrlParts()`] for page, image and attachment URLs.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-portal#processhtmlparts[`processHtmlParts()`] processes rich text and returns the parts of every internal link, image and macro in it.
+* https://developer.enonic.com/docs/code/stable/libraries/lib-portal#portalscope[`portalScope()`] resolves a site or project once - its project, branch, site and site configuration - as a stand-in for a site request, and is passed as `scope` to the page and rich text functions.
+
+See https://developer.enonic.com/docs/code/stable/libraries/lib-portal#url_parts[URL parts] in the portal library.
+
 === Admin events over one socket
 
 A new admin events hub lets an application define its own topics and publish to them. Admin tools and extensions receive live updates over one shared connection instead of each opening its own. See https://developer.enonic.com/docs/code/stable/libraries/lib-admin#settopic[`setTopic()`] in the admin library.
@@ -87,7 +97,9 @@ Still working, slated for removal. The https://developer.enonic.com/docs/code/st
 
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task[`executeFunction()`] in lib-task - not supported on GraalJS. Submit a named task instead.
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content[`getChildren()` in lib-content and `findChildren()` in lib-node] - use `query()` with `parent`.
-* The `baseUrl` parameter of `imageUrl()`, `attachmentUrl()` and `apiUrl()` - configure the location once instead, see <<config/cms#media_base_url, media base URL>> and <<config/vhosts#api-locations, API locations>>.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-portal[The `baseUrl` parameter of `imageUrl()`, `attachmentUrl()` and `apiUrl()`] - configure the location once instead, see <<config/cms#media_base_url, media base URL>> and <<config/vhosts#api-locations, API locations>>.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-portal[The `params` parameter of `imageUrl()` and `attachmentUrl()`] - use `quality`, `background`, `filter` and `download`.
+* https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-portal[`project` and `branch` on `pageUrl()`, and `id`, `path`, `project` and `branch` on `baseUrl()`] - use the URL parts functions with `portalScope()`.
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export[`batchSize` on `exportNodes()`] - ignored.
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps[`Resource.getTimestamp()`, and `modifiedTime` on icons and descriptors] - not a dependable measure of when a resource changed; build tools normalize jar entry timestamps for reproducible builds.
 * https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java[`ApplicationListener`] in the Java API - track `Application` services instead.
