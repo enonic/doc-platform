@@ -154,11 +154,15 @@
     },
     {
       "title": "Release Notes",
-      "document": "release",
+      "document": "release"
+    },
+    {
+      "title": "Upgrading",
+      "document": "upgrade",
       "menuItems": [
         {
-          "title": "Upgrade Notes",
-          "document": "release/upgrade"
+          "title": "From XP 7",
+          "document": "upgrade/xp7"
         }
       ]
     }

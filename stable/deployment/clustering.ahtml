@@ -530,7 +530,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dl>
 </div>
 <div class="paragraph">
-<p>Throughout this guide, we will describe how to setup a <a href="./strategies.ahtml#<em>basic_cluster">basic cluster</a>, but with little more effort you could create any type of cluster. A <em>basic cluster</em> consists of 3 dedicated XP _master</em> nodes and 2 XP <em>combined</em> nodes.</p>
+<p>Throughout this guide, we will describe how to set up a <a href="./strategies.ahtml#basic_cluster">basic cluster</a>, but with little more effort you could create any type of cluster. A <em>basic cluster</em> consists of 3 dedicated XP <em>master</em> nodes and 2 XP <em>combined</em> nodes.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -590,7 +590,7 @@ Using <em>NFS</em> introduces a single point of failure to the cluster, but has 
 <p>Master nodes can be configured with less memory and capacity as they are generally not processing requests or queries.</p>
 </div>
 <div class="paragraph">
-<p>Since Elasticsearch is embedded in XP, be sure also to setup virtual memory, file descriptors and swap setting correctly for <em>elasticsearch</em>. Read more about that in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-configuration.html">elasticsearch documentation</a>.</p>
+<p>Since Elasticsearch is embedded in XP, be sure also to set up virtual memory, file descriptors and swap setting correctly for <em>elasticsearch</em>. Read more about that in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-configuration.html">elasticsearch documentation</a>.</p>
 </div>
 </div>
 </div>
@@ -683,15 +683,15 @@ system.hazelcast.initial.min.cluster.size=3</code></pre>
 <div class="sect2">
 <h3 id="heap"><a class="link" href="#heap">Heap</a></h3>
 <div class="paragraph">
-<p>Since XP is using <em>elasticsearch</em> for storage, we have to consider that <em>elasticsearch</em> uses off heap memory buffers. For that reason we cannot allocate all available memory to heap. In general you should:</p>
+<p>Since XP is using <em>elasticsearch</em> for storage, we cannot allocate all available memory to heap. <em>elasticsearch</em> uses off-heap buffers and relies on the OS filesystem cache, and other processes on the node need memory too. In general you should:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Set heap memory to <code>75%</code> of available memory on dedicated master nodes.</p>
+<p>Dedicated master nodes: start with <code>75%</code> of available memory for heap.</p>
 </li>
 <li>
-<p>Set heap memory to <code>30%</code> of available memory on other nodes.</p>
+<p>Nodes with Elasticsearch data: start with <code>30%</code> of available memory for heap. Adjust so that enough memory stays outside the heap for other processes and the OS filesystem cache.</p>
 </li>
 <li>
 <p>Never allocate more than <code>26G</code> of heap.</p>
@@ -805,7 +805,7 @@ Setting replicas number to 1...Done
 <h2 id="load_balancing"><a class="link" href="#load_balancing">Load balancing</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>A clustered deployment needs a load balancer in front of the nodes to distribute requests. Load balancing — including session affinity (session replication versus sticky sessions) and health checks — is covered in <a href="edge.ahtml#_load_balancing">Web server, load balancing and CDN</a>.</p>
+<p>A clustered deployment needs a load balancer in front of the nodes to distribute requests. Load balancing — including session affinity (session replication versus sticky sessions) and health checks — is covered in <a href="edge.ahtml#load_balancing">Web server, load balancing and CDN</a>.</p>
 </div>
 </div>
 </div>
@@ -860,7 +860,7 @@ Setting replicas number to 1...Done
 <p>Avoid overwriting the <code>JAVA_OPTS</code> environmental variable, use <code>XP_OPTS</code>.</p>
 </li>
 <li>
-<p>Take care of how much memory you allocate to heap. Set it to <code>30%</code> of available RAM on all nodes, except if the node is a dedicated master node. Then you can set it to <code>75%</code>.</p>
+<p>Take care of how much memory you allocate to heap. Start with <code>30%</code> of available RAM on nodes with Elasticsearch data, and leave enough memory outside the heap for other processes and the OS filesystem cache. On a dedicated master node you can start with <code>75%</code>.</p>
 </li>
 <li>
 <p>Directories <code>$XP_HOME/repo/blob</code>, <code>$XP_HOME/snapshots</code> and <code>$XP_HOME/data</code> should be shared between all nodes.</p>
@@ -909,7 +909,19 @@ If heavy tasks must execute on master nodes (i.e. they have <code>isMaster</code
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-It is possible to free master nodes from running named tasks by setting <code>distributable.acceptInbound = false</code> in <a href="../config/system.ahtml#_task">Task</a> config.
+It is possible to free master nodes from running named tasks by setting <code>distributable.acceptInbound = false</code> in <a href="../config/system.ahtml#task">Task</a> config.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> Master nodes can also be excluded from running the scheduler, by setting <code>acceptScheduling = false</code> in <a href="../config/system.ahtml#scheduler">Scheduler</a> config. This is a separate choice from <code>distributable.acceptInbound</code> above: that one governs where the tasks run, this one where the schedule that submits them runs. Both are worth setting on a dedicated master node, so that neither the jobs nor the tasks they start can put a master node&#8217;s quorum duty at risk.
 </td>
 </tr>
 </table>
@@ -920,7 +932,7 @@ It is possible to free master nodes from running named tasks by setting <code>di
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-14 12:05:08 UTC
+Last updated 2026-10-19 13:50:39 UTC
 </div>
 </div>
 </body>

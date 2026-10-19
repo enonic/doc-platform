@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>Upgrading to XP8</title>
+<title>Upgrading</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,26 +437,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Upgrading to XP8</h1>
+<h1>Upgrading</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#preparations">Preparations</a></li>
-<li><a href="#non_cluster_upgrade">Non-cluster upgrade</a></li>
-<li><a href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></li>
-<li><a href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></li>
-<li><a href="#applications">Applications</a></li>
-<li><a href="#upgrading_to_v8_0">Upgrading to v8.0</a>
+<li><a href="#before_you_start">Before you start</a></li>
+<li><a href="#choose_a_strategy">Choose a strategy</a></li>
+<li><a href="#replacing_the_runtime">Replacing the runtime</a></li>
+<li><a href="#single-node">Single node upgrade</a></li>
+<li><a href="#rolling">Rolling cluster upgrade</a></li>
+<li><a href="#full-restart">Full restart cluster upgrade</a></li>
+<li><a href="#after_the_upgrade">After the upgrade</a></li>
+<li><a href="#v8_1_notes">v8.1 notes</a>
 <ul class="sectlevel2">
-<li><a href="#requirements">Requirements</a></li>
-<li><a href="#breaking-changes">Breaking changes</a></li>
-<li><a href="#1_install_xp_8">1. Install XP 8</a></li>
-<li><a href="#2_create_service_accounts">2. Create service accounts</a></li>
-<li><a href="#3_dump_data">3. Dump data</a></li>
-<li><a href="#4_upgrade_and_load">4. Upgrade and load</a></li>
-<li><a href="#5_update_apps">5. Update apps</a></li>
-<li><a href="#6_validate">6. Validate</a></li>
-<li><a href="#7_go_live">7. Go live</a></li>
+<li><a href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></li>
+<li><a href="#scheduler_placement">Scheduler placement</a></li>
+<li><a href="#new_settings">New settings</a></li>
+<li><a href="#for_developers">For developers</a></li>
+<li><a href="#management_api">Management API</a></li>
 </ul>
 </li>
 </ul>
@@ -466,15 +464,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This procedure applies to feature (8.x.0) and fix upgrades (8.x.y, etc).</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="preparations"><a class="link" href="#preparations">Preparations</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Before you start the upgrade process, make sure to read through the entire documentation and understand the steps involved. You should always perform a test upgrade in a staging environment before applying the changes to production.</p>
+<p>This page covers upgrading an Enonic XP 8 instance to a newer feature (8.x.0) or fix (8.x.y) release, and lists what to expect from each feature release.</p>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -483,7 +473,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Before migrating any data, every application running on your installation - both custom-built and 3rd party - must already be available in an XP 8 compatible version. Migration cannot be completed until all applications are ready for XP 8.
+Coming from XP 7? Follow <a href="upgrade/xp7.ahtml">Upgrading from XP 7 to XP 8</a> instead. A major upgrade is a data migration, not a runtime replacement.
 </td>
 </tr>
 </table>
@@ -491,18 +481,81 @@ Before migrating any data, every application running on your installation - both
 </div>
 </div>
 <div class="sect1">
-<h2 id="non_cluster_upgrade"><a class="link" href="#non_cluster_upgrade">Non-cluster upgrade</a></h2>
+<h2 id="before_you_start"><a class="link" href="#before_you_start">Before you start</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Single node deployments cannot be performed without downtime. To upgrade a single instance deployment, follow the instructions below:</p>
-</div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Stop your instance</p>
+<p>Read the notes below for every feature release between your current version and the target. Each states whether a rolling upgrade is supported or a full restart is required, and lists changed defaults and new settings.</p>
 </li>
 <li>
-<p>Replace your XP7 runtime image with the new XP7 image</p>
+<p>Back up. Take a <a href="deployment/backup-restore.ahtml#snapshot-restore">snapshot</a> of the repositories, or a <a href="deployment/backup-restore.ahtml#backup">full backup</a>, and verify that you can restore it.</p>
+</li>
+<li>
+<p>Test the upgrade in a staging environment before touching production.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="choose_a_strategy"><a class="link" href="#choose_a_strategy">Choose a strategy</a></h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Single node</dt>
+<dd>
+<p>Follow <a href="#single-node">Single node upgrade</a>. A single node cannot be upgraded without downtime.</p>
+</dd>
+<dt class="hdlist1">Cluster, every release in your path supports rolling upgrade</dt>
+<dd>
+<p>Follow <a href="#rolling">Rolling cluster upgrade</a> for zero downtime.</p>
+</dd>
+<dt class="hdlist1">Cluster, any release in your path requires a full restart</dt>
+<dd>
+<p>Follow <a href="#full-restart">Full restart cluster upgrade</a>. This procedure is always safe, whatever the release.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Fix releases (8.0.3 to 8.0.4) always support rolling upgrade. Feature releases (8.0.x to 8.1.0) say so in their notes. Major upgrades (7.x to 8.x) are a data migration and follow <a href="upgrade/xp7.ahtml">their own guide</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="replacing_the_runtime"><a class="link" href="#replacing_the_runtime">Replacing the runtime</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Every procedure below has a step that replaces the XP runtime with the new version. What that means depends on how XP is installed. In every case XP_HOME, with its configuration, repositories and blobs, is kept and reused; only the runtime changes.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Distribution</dt>
+<dd>
+<p>Unpack the new distribution and start it against the existing <a href="deployment/distro.ahtml#xp_home">XP_HOME</a>, or replace the contents of the installation folder except <code>home/</code>.</p>
+</dd>
+<dt class="hdlist1">Docker</dt>
+<dd>
+<p>Start a container from the new image tag with the same volumes mounted. See <a href="deployment/docker.ahtml">Docker</a>.</p>
+</dd>
+<dt class="hdlist1">Kubernetes</dt>
+<dd>
+<p>Change the image version in your deployment. See <a href="deployment/k8s.ahtml">Kubernetes</a>.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="single-node"><a class="link" href="#single-node">Single node upgrade</a></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Stop the instance.</p>
+</li>
+<li>
+<p>Replace the runtime with the new version.</p>
 </li>
 <li>
 <p>Start the instance.</p>
@@ -512,15 +565,8 @@ Before migrating any data, every application running on your installation - both
 </div>
 </div>
 <div class="sect1">
-<h2 id="rolling_cluster_upgrade"><a class="link" href="#rolling_cluster_upgrade">Rolling Cluster upgrade</a></h2>
+<h2 id="rolling"><a class="link" href="#rolling">Rolling cluster upgrade</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>All fix upgrades (i.e. from 8.4.1 to 8.4.8), and most feature upgrades (i.e. from 8.5.x to 8.6.x) support rolling upgrades - with zero downtime.
-None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and require a full restart of the cluster.</p>
-</div>
-<div class="paragraph">
-<p>To safely perform a rolling upgrade, perform the following steps.</p>
-</div>
 <div class="admonitionblock warning">
 <table>
 <tr>
@@ -528,61 +574,48 @@ None of Major upgrades (i.e. from 7.x to 8.x) support rolling upgrades, and requ
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Before you perform a rolling upgrade, verify that all feature version in your upgrade path (from version &#8594; to version) support rolling upgrade
+Before you begin, confirm that every release in your upgrade path supports rolling upgrade. If any does not, use the <a href="#full-restart">full restart procedure</a> instead.
 </td>
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>Upgrade one node at a time, and wait for each node to start and join the cluster before moving on to the next:</p>
+</div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Upgrade only one node at a time. Wait for the node to start and join the cluster before you move on</p>
+<p>Master nodes first. We recommend dedicated master nodes.</p>
 </li>
 <li>
-<p>Stop, upgrade image and start your master nodes first (We always recommend using dedicated master nodes)</p>
+<p>Then data nodes.</p>
 </li>
 <li>
-<p>Stop, upgrade image and start data nodes</p>
-</li>
-<li>
-<p>Stop, upgrade image and start remaining nodes</p>
+<p>Then the remaining nodes.</p>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>For each node: stop it, replace the runtime, start it.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="full_restart_cluster_upgrade"><a class="link" href="#full_restart_cluster_upgrade">Full restart Cluster upgrade</a></h2>
+<h2 id="full-restart"><a class="link" href="#full-restart">Full restart cluster upgrade</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Selected feature versions (i.e. when upgrading from 7.6.x to 7.7.x or 7.8.x) may require a full restart in order to guarantee no loss of
-data and/or state. Releases that require full restart are marked with a special warning section below.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-This strategy may safely be applied to upgrading any XP cluster and/or version
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Follow the steps below to complete a restart upgrade:</p>
+<p>Required by releases whose notes say so, such as 8.0.x to 8.1.0, and safe for any upgrade.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Stop all cluster nodes</p>
+<p>Stop all cluster nodes.</p>
 </li>
 <li>
-<p>Replace the xp runtime image with the new for all nodes</p>
+<p>Replace the runtime on every node.</p>
 </li>
 <li>
-<p>Start all nodes in parallel</p>
+<p>Start all nodes in parallel.</p>
 </li>
 </ol>
 </div>
@@ -593,7 +626,7 @@ This strategy may safely be applied to upgrading any XP cluster and/or version
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-It is important to start the nodes at the same time to avoid timeouts, should any upgrade scripts be supplied with the new version.
+Start the nodes at the same time. Should the new version include upgrade scripts, nodes that wait for the others may otherwise time out.
 </td>
 </tr>
 </table>
@@ -601,396 +634,117 @@ It is important to start the nodes at the same time to avoid timeouts, should an
 </div>
 </div>
 <div class="sect1">
-<h2 id="applications"><a class="link" href="#applications">Applications</a></h2>
+<h2 id="after_the_upgrade"><a class="link" href="#after_the_upgrade">After the upgrade</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>After upgrading to a new feature version of Enonic XP, it&#8217;s a good idea to check the Enonic Market - newer versions of the apps you are using may be available there. We generally always recommend updating your apps to the latest version!</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Verify that the instance reports the new version. The <a href="admin/dashboard.ahtml">Dashboard</a> shows it in its statistics widget, and the server log prints it at startup.</p>
+</li>
+<li>
+<p>Confirm that your applications started. The <a href="admin/applications.ahtml">Applications tool</a> lists their state.</p>
+</li>
+<li>
+<p>Check <a href="https://market.enonic.com">Enonic Market</a> for newer versions of the apps you use. Applications built for XP 8 keep working across 8.x releases, so this is recommended, not required. Developers find the deprecations introduced by each release in the <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade notes</a>.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="upgrading_to_v8_0"><a class="link" href="#upgrading_to_v8_0">Upgrading to v8.0</a></h2>
+<h2 id="v8_1_notes"><a class="link" href="#v8_1_notes">v8.1 notes</a></h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><strong>Full restart required.</strong> The scheduler was rebuilt in 8.1: scheduling moved from a Hazelcast scheduled task to a coordinator that elects one node to run the schedule. An 8.0 node and an 8.1 node in the same cluster would each schedule on their own terms, so do not upgrade a cluster to 8.1 node by node. Use the <a href="#full-restart">full restart procedure</a>.</p>
+</div>
+<div class="paragraph">
+<p>Apart from that, XP 8.1 has no breaking changes. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.0 behaviour, with one exception noted below.</p>
+</div>
 <div class="sect2">
-<h3 id="requirements"><a class="link" href="#requirements">Requirements</a></h3>
+<h3 id="read_through_blobstore_cache_is_bounded"><a class="link" href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></h3>
 <div class="paragraph">
-<p>This guide focuses on completing an upgrade with zero downtime, and requires you to set up production environment on XP 8 in parallel with existing 7.16 environment.
-Carefully follow the below steps to upgrade your instance:</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-For scenarios where downtime cannot be avoided, additional steps, such as setting up a temporary "we are upgrading page", will be required:
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Before starting the upgrade process, ensure the following requirements are in place</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">XP Version</dt>
-<dd>
-<p>You need to be running at least Enonic XP 7.16.x (if you are running an older version, upgrade to 7.16.x first)</p>
-</dd>
-<dt class="hdlist1">QA environment</dt>
-<dd>
-<p>Ensure you have a QA environment where you can perform a test upgrade first (highly recommended)</p>
-</dd>
-<dt class="hdlist1">Enonic CLI</dt>
-<dd>
-<p>Make sure you have the latest version of <a href="https://developer.enonic.com/docs/enonic-cli">Enonic CLI</a> installed</p>
-</dd>
-<dt class="hdlist1">Disk space</dt>
-<dd>
-<p>Verify you have enough disk space to facilitate a complete dump of all existing data</p>
-</dd>
-<dt class="hdlist1">Applications ready for XP 8</dt>
-<dd>
-<p>All applications - 3rd party and custom-built - must be available in XP 8 compatible versions <strong>before</strong> you begin the migration. The migration cannot complete without them.</p>
-</dd>
-</dl>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-Updating custom applications is a developer task that must be done ahead of time. Follow the <a href="https://developer.enonic.com/docs/code/stable/upgrade">application upgrade instructions</a> in the Enonic Dev kit documentation, and confirm with the maintainers of any 3rd party apps that XP 8 versions are available.
-</td>
-</tr>
-</table>
+<p>A file blobstore configured with <code>readThrough</code> used to grow without limit. It is now kept within <code>readThrough.cacheCapacity</code>, default <code>1gb</code>, and blobs are evicted to stay under it. Raise the value if your local cache was deliberately larger. See <a href="config/system.ahtml#file-blobstore">file blobstore configuration</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="breaking-changes"><a class="link" href="#breaking-changes">Breaking changes</a></h3>
-<div class="sect3">
-<h4 id="file_application_deployments"><a class="link" href="#file_application_deployments">File Application deployments</a></h4>
+<h3 id="scheduler_placement"><a class="link" href="#scheduler_placement">Scheduler placement</a></h3>
 <div class="paragraph">
-<p>If you have one or more applications deployed as files, replace them with their respective XP 8 versions</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="jansi_logback_plugin_no_longer_supported"><a class="link" href="#jansi_logback_plugin_no_longer_supported">Jansi Logback plugin no longer supported</a></h4>
-<div class="paragraph">
-<p>Console appender in distributive used to use Jansi plugin for colorized output. This plugin is no longer supported as logback now natively supports colorized output.
-Remove the <code>withJansi</code> element from your logback.xml file to avoid errors when starting the server.</p>
+<p><code>acceptScheduling</code> in <code>com.enonic.xp.scheduler.cfg</code> decides whether a node may run the scheduler. Default <code>true</code>, so nothing changes unless you set it. Set it to <code>false</code> on master nodes to keep scheduling, and the maintenance tasks it submits, off them. <code>distributable.acceptSystem</code> in <code>com.enonic.xp.task.cfg</code> does the same for the built-in maintenance tasks alone. See <a href="config/system.ahtml#scheduler">scheduler</a> and <a href="config/system.ahtml#task">task</a> configuration.</p>
 </div>
 <div class="paragraph">
-<p>Old logback.xml</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">  &lt;appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender"&gt;
-    &lt;withJansi&gt;true&lt;/withJansi&gt;
-    &lt;encoder&gt;
-      &lt;pattern&gt;%date{ISO8601} %highlight(%-5level) %cyan(%logger{36}) - %msg%n&lt;/pattern&gt;
-    &lt;/encoder&gt;
-  &lt;/appender&gt;</code></pre>
+<p>Jobs declared in the scheduler config file are now created by the node that runs the scheduler, and an entry added while the server runs is picked up without a restart. Keep the file consistent across the nodes that allow scheduling.</p>
 </div>
 </div>
-<div class="paragraph">
-<p>Old logback.xml</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">  &lt;appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender"&gt;
-    &lt;encoder&gt;
-      &lt;pattern&gt;%date{ISO8601} %highlight(%-5level) %cyan(%logger{36}) - %msg%n&lt;/pattern&gt;
-    &lt;/encoder&gt;
-  &lt;/appender&gt;</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="default_cms_repository"><a class="link" href="#default_cms_repository">Default CMS repository</a></h4>
-<div class="paragraph">
-<p>With XP 8, the default CMS repository <code>com.enonic.cms.default</code> is no longer created automatically. In fact, there is no default CMS repository at all. Existing <code>com.enonic.cms.default</code> repository is converted to a normal one without any special permissions or behavior. During XP 8 startup the repository will be converted to a normal repository. To avoid permission conflicts, it is recommended to migrate the default repository prior migration.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="metrics_endpoint"><a class="link" href="#metrics_endpoint">Metrics Endpoint</a></h4>
-<div class="paragraph">
-<p>Statistics endpoint <a href="http://&lt;host&gt;:2609/metrics" class="bare">http://&lt;host&gt;:2609/metrics</a> is no longer reporting Dropwizard Metrics JSON. Instead, it reports metrics in <a href="https://github.com/prometheus/OpenMetrics/blob/main/specification/OpenMetrics.md">OpenMetrics</a> format.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="management_api"><a class="link" href="#management_api">Management API</a></h4>
-<div class="sect4">
-<h5 id="post_repoexport"><a class="link" href="#post_repoexport">POST /repo/export</a></h5>
-<div class="paragraph">
-<p>The following request parameters have been removed:</p>
-</div>
+<div class="sect2">
+<h3 id="new_settings"><a class="link" href="#new_settings">New settings</a></h3>
 <div class="ulist">
 <ul>
 <li>
-<p><code>exportWithIds</code> - previously controlled whether node IDs were included in the export</p>
+<p><code>xp.script-engine</code> in system properties selects the default JavaScript engine. Default <code>Nashorn</code>. GraalJS is a preview, not for production. See <a href="config/system.ahtml#script-engine">JavaScript engine</a>.</p>
 </li>
 <li>
-<p><code>includeVersions</code> - previously controlled whether all node versions were exported</p>
+<p><code>threadPool.virtualThreads</code> in the Jetty configuration handles requests on virtual threads. Default <code>false</code>. Unstable, not for production. See <a href="config/system.ahtml#jetty">Jetty configuration</a>.</p>
 </li>
 <li>
-<p><code>dryRun</code> - dry-run mode is no longer supported</p>
+<p><code>media.defaultBaseUrl</code> and <code>legacy.mediaApiAutoMount.enabled</code> in the portal configuration let media be served from a separate host. See <a href="config/cms.ahtml#media_base_url">serving media from another host</a>.</p>
 </li>
-</ul>
-</div>
-<div class="paragraph">
-<p>A new optional <code>batchSize</code> parameter has been added to control the number of nodes processed per batch (default: <code>1000</code>).</p>
-</div>
-<div class="paragraph">
-<p>Exports are now stored as ZIP archives named <code>{exportName}.zip</code> in the exports directory,
-replacing the previous folder-based export structure.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="post_repoimport"><a class="link" href="#post_repoimport">POST /repo/import</a></h5>
-<div class="paragraph">
-<p>The <code>dryRun</code> request parameter has been removed.</p>
-</div>
-<div class="paragraph">
-<p>The <code>exportName</code> must refer to a ZIP archive present in the exports directory (<code>.zip</code> file).</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-Folder-based exports from XP 7 should be converted to ZIP format before they can be imported.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect4">
-<h5 id="post_systemdump"><a class="link" href="#post_systemdump">POST /system/dump</a></h5>
-<div class="paragraph">
-<p>The <code>archive</code> request parameter field has been removed.</p>
-</div>
-<div class="paragraph">
-<p>Dumps are now always stored as ZIP archives named <code>{name}.zip</code> in the dumps directory, replacing the previous folder-based structure.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="post_systemload"><a class="link" href="#post_systemload">POST /system/load</a></h5>
-<div class="paragraph">
-<p>The <code>archive</code> request parameter field has been removed.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="post_reposnapshot"><a class="link" href="#post_reposnapshot">POST /repo/snapshot</a></h5>
-<div class="paragraph">
-<p>No longer waits for the snapshot to complete and returns immediately after the snapshot process is started. The response contains a <code>taskId</code> field that can be used to track the progress of the snapshot.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="post_reposnapshotrestore"><a class="link" href="#post_reposnapshotrestore">POST /repo/snapshot/restore</a></h5>
-<div class="paragraph">
-<p>No longer waits for the snapshot restore to complete and returns immediately after the restore process is started. The response contains a <code>taskId</code> field that can be used to track the progress of the snapshot restore.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="admin_dashboard"><a class="link" href="#admin_dashboard">Admin Dashboard</a></h4>
-<div class="paragraph">
-<p>Default Admin Home path is now <code>/admin</code> instead of <code>/admin/home</code>.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="general_admin_tools"><a class="link" href="#general_admin_tools">General Admin Tools</a></h4>
-<div class="paragraph">
-<p>All admin tools are now present on the Launcher Menu as it was stated in documentation. In case when admin tool should not be present on the launcher panel convert it to an API.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="security_changes"><a class="link" href="#security_changes">Security changes</a></h4>
-<div class="sect4">
-<h5 id="xp_supassword"><a class="link" href="#xp_supassword">xp.suPassword</a></h5>
-<div class="paragraph">
-<p><code>md5</code> and <code>sha1</code> hashing algorithms are no longer supported <code>xp.suPassword</code> system property as they are no longer considered secure.
-Plain text password isn&#8217;t supported anymore either. Please use stronger hashing algorithms <code>sha256</code> or <code>sha512</code>.
-More details about configuring <code>su</code> password can be found in <a href="../config/system.ahtml#system-properties">system properties documentation</a>.</p>
-</div>
-<div class="paragraph">
-<p>System <code>su</code> user password is no longer read from the database either. If you had a <code>su</code> password stored in the database, it will be ignored after the upgrade.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="user_passwords"><a class="link" href="#user_passwords">User passwords</a></h5>
-<div class="paragraph">
-<p>User passwords are still supported in XP8, although the hashing algorithm is changed for new passwords.</p>
-</div>
-<div class="paragraph">
-<p>So far only <code>pbkdf2-sha512</code> is supported for new passwords, but new algorithms may be added in future releases.
-Hash function can be configured in the <a href="../config/system.ahtml#security">security service configuration</a>.</p>
-</div>
-<div class="paragraph">
-<p>The old passwords are <em>not</em> automatically converted to the new format.
-When a user with an old password logs in, the password is verified using the old algorithm.
-It is strongly recommended to change all passwords after the upgrade to ensure all passwords are stored using the new algorithm.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="websocket_same_origin_check"><a class="link" href="#websocket_same_origin_check">WebSocket same-origin check</a></h5>
-<div class="paragraph">
-<p>WebSocket handshakes are now subject to a built-in same-origin check.
-If a WebSocket controller does not supply its own <code>checkOrigin</code> function, handshake requests with an <code>Origin</code> that does not match the request host are rejected.
-In XP 7 such requests were accepted from any origin.</p>
-</div>
-<div class="paragraph">
-<p>If your applications rely on cross-origin WebSocket connections, implement a <code>checkOrigin</code> function in the WebSocket controller to explicitly allow trusted origins.</p>
-</div>
-<div class="paragraph">
-<p>If legitimate same-origin connections are rejected after the upgrade, the usual cause is a reverse proxy that does not propagate the public scheme/host/port to XP — fix the proxy configuration.
-As a last resort, the check can be disabled with the <code>websocket.defaultOriginCheck</code> setting in the <a href="../config/system.ahtml#jetty">Jetty configuration</a>.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="other_configuration"><a class="link" href="#other_configuration">Other configuration</a></h4>
-<div class="ulist">
-<ul>
 <li>
-<p>Migrate other configuration files from 7.16, including custom configurations (app config etc.).</p>
-</li>
-</ul>
-</div>
-<div class="sect4">
-<h5 id="draftbranchallowedfor"><a class="link" href="#draftbranchallowedfor">draftBranchAllowedFor</a></h5>
-<div class="ulist">
-<ul>
-<li>
-<p>Portal <code>draftBranchAllowedFor</code> configuration is removed.
-Instead - to access content from the draft branch - user must have any content project role assigned (like <code>cms.project.&lt;projectKey&gt;.viewer</code>).</p>
+<p><code>portal.apiBaseUrl</code> context attributes in a virtual host mapping declare where APIs are served. See <a href="config/vhosts.ahtml#api-locations">API locations</a>.</p>
 </li>
 </ul>
 </div>
 </div>
-<div class="sect4">
-<h5 id="deployment_configuration"><a class="link" href="#deployment_configuration">deployment configuration</a></h5>
+<div class="sect2">
+<h3 id="for_developers"><a class="link" href="#for_developers">For developers</a></h3>
+<div class="paragraph">
+<p>Applications built for 8.0 run unchanged. 8.1 deprecates some APIs, all still working, and changes a few behaviours. The <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade notes</a> describe each with its replacement:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>It is no longer possible to via <code>com.enonic.xp.server.deploy.cfg</code> file. This method was not documented, unreliable in cluster installations and insecure.</p>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-content">lib-content and lib-node</a>: <code>getChildren()</code> and <code>findChildren()</code>, in favour of a query with <code>parent</code>.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-task">lib-task</a>: <code>executeFunction()</code>, unsupported on GraalJS.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-portal">lib-portal</a>: <code>params</code> and <code>baseUrl</code> on the media URL functions, and <code>project</code> and <code>branch</code> on <code>pageUrl()</code> and <code>baseUrl()</code>, in favour of URL parts and <code>portalScope()</code>.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-lib-export">lib-export</a>: <code>batchSize</code>, now ignored.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-timestamps">lib-app, lib-schema and lib-io</a>: <code>modifiedTime</code> and <code>Resource.getTimestamp()</code>.</p>
+</li>
+<li>
+<p><a href="https://developer.enonic.com/docs/code/stable/upgrade#xp-8-1-java">Java APIs</a>: listeners, children lookups, portal URL parameters, script and trace APIs.</p>
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>Pages may render differently in three ways:</p>
 </div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Broken links.</strong> A page URL, image URL or attachment URL for content that does not resolve - deleted, unpublished, or not an image - is answered with <strong>404 Not Found</strong> rather than <strong>500</strong>, and XP logs a warning with a reference that the URL carries. A page with a broken link in its rich text renders in full. Expect fewer 500 responses, and warnings in the log, where there were broken references before.</p>
+</li>
+<li>
+<p><strong>Rich text images.</strong> <code>srcset</code> and <code>sizes</code> come right after <code>src</code>, <code>sizes</code> is written only along with a <code>srcset</code>, and heights of images with an aspect ratio are rounded to the nearest pixel, so some image URLs change. Images served as stored get no <code>srcset</code>.</p>
+</li>
+<li>
+<p><strong>Rich text macros.</strong> Macros render on any page, also outside a site. A macro that no application provides is shown as written, and HTML comments are never run as macros.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For more information, see the <a href="https://developer.enonic.com/docs/code/stable/upgrade">dev kit upgrade notes</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="1_install_xp_8"><a class="link" href="#1_install_xp_8">1. Install XP 8</a></h3>
+<h3 id="management_api"><a class="link" href="#management_api">Management API</a></h3>
 <div class="paragraph">
-<p>We recommend setting up a new production environment for XP 8, running in parallel with your XP 7 environment.
-This will virtually eliminate downtime and also be a safety net should the upgrade fail somehow.</p>
-</div>
-<div class="paragraph">
-<p>Follow the <a href="../deployment/distro.ahtml#xp_install">XP installation instructions</a> to set up an instance matching your requirements</p>
-</div>
-<div class="paragraph">
-<p>Start your new server and verify everything is working properly.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="2_create_service_accounts"><a class="link" href="#2_create_service_accounts">2. Create service accounts</a></h3>
-<div class="paragraph">
-<p>Generate (or download, if already exists) a private key for a service account with Administrator role, one on the existing XP7 instance (to be used for <code>dump create</code>), another on the new XP8 instance (to be used for <code>dump load</code>). The key will be automatically downloaded to your disk after it&#8217;s generated. Read <a href="../security/service-accounts.ahtml">here</a> to learn how to generate keys for service accounts.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="3_dump_data"><a class="link" href="#3_dump_data">3. Dump data</a></h3>
-<div class="paragraph">
-<p>We are now ready to dump data from our existing XP7 instance:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>enonic dump create -d xp7to8 --archive --cred-file xp7-private-key.json</pre>
-</div>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-The <code>--archive</code> parameter must be provided, otherwise XP8 will not be able to read the dump. The migration dump must also include version history and all binaries (attachments) — both are included by default; do not pass <code>--skip-versions</code>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="4_upgrade_and_load"><a class="link" href="#4_upgrade_and_load">4. Upgrade and load</a></h3>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Move dump</dt>
-<dd>
-<p>Transfer the dump archive from the previous step to the new instance. For clustered environments, any server will do.</p>
-</dd>
-<dt class="hdlist1">Load dump</dt>
-<dd>
-<p>Now, load the dump into your XP 8 environment:</p>
-<div class="literalblock">
-<div class="content">
-<pre>enonic dump load -d xp7to8 --upgrade --cred-file xp8-private-key.json</pre>
-</div>
-</div>
-</dd>
-</dl>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-Don&#8217;t worry about the CLI losing connection, this is only related to the system repo (and user) being removed during the operation. Watch the log for progress and don&#8217;t start changing data until all the activity in the XP log is finished.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="5_update_apps"><a class="link" href="#5_update_apps">5. Update apps</a></h3>
-<div class="paragraph">
-<p>All installed applications must be updated to latest versions compatible with XP 8.</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Market apps</dt>
-<dd>
-<p>For market apps, go to the Applications tool, click "Install" in the menu and click "Upgrade" button for all applications where upgrade is available.</p>
-</dd>
-<dt class="hdlist1">Custom apps</dt>
-<dd>
-<p>Install XP8-compatible versions of your custom applications either through the "Install App" UI or by using CLI.</p>
-</dd>
-</dl>
-</div>
-</div>
-<div class="sect2">
-<h3 id="6_validate"><a class="link" href="#6_validate">6. Validate</a></h3>
-<div class="paragraph">
-<p>Validate that your new installation is working as expected. We recommend checking logs, and performing live tests on services.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="7_go_live"><a class="link" href="#7_go_live">7. Go live</a></h3>
-<div class="paragraph">
-<p>With all lights green, redirect all traffic from your old XP 7 servers to the upgraded XP 8 environment.</p>
-</div>
-<div class="paragraph">
-<p>Welcome to the XP 8 club!</p>
+<p>The <code>scheduler/list</code> response leaves out fields that do not apply to a job&#8217;s schedule type, and fields the job has not set, instead of reporting them as <code>null</code>. Clients that relied on those <code>null</code> values should be adjusted. New fields: <code>deleteAfterRun</code> on <code>ONE_TIME</code>, and <code>duration</code> on the new <code>FIXED_RATE</code> type. See <a href="endpoints/management.ahtml#scheduler">Scheduler</a>.</p>
 </div>
 </div>
 </div>
@@ -998,7 +752,7 @@ Don&#8217;t worry about the CLI losing connection, this is only related to the s
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-14 12:05:08 UTC
+Last updated 2026-10-19 13:50:39 UTC
 </div>
 </div>
 </body>

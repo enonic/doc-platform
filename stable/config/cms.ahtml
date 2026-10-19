@@ -442,7 +442,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#introduction">Introduction</a></li>
-<li><a href="#media_and_legacy_apis">Media and legacy apis</a></li>
+<li><a href="#media_and_legacy_apis">Media and legacy apis</a>
+<ul class="sectlevel2">
+<li><a href="#media_base_url">Serving media from another host</a></li>
+</ul>
+</li>
 <li><a href="#image">Image</a></li>
 <li><a href="#binary_text_extractor">Binary Text Extractor</a></li>
 <li><a href="#content_config">Content</a></li>
@@ -525,11 +529,44 @@ media.contentSecurityPolicy.svg =</code></pre>
 <dd>
 <p>Enables/Disables legacy asset service. Default <code>true</code> - means endpoint <code>(</code>/_/asset/`) is enabled.</p>
 </dd>
+<dt class="hdlist1">legacy.mediaApiAutoMount.enabled</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> Enables/Disables implicit mounting of the media APIs on every site. Default <code>true</code> - means every site serves <code>/_/media:image/</code> and <code>/_/media:attachment/</code> without declaring them in its site descriptor. Set to <code>false</code> to require each site to mount them explicitly. See <a href="#media_base_url">Serving media from another host</a>.</p>
+</dd>
+<dt class="hdlist1">media.defaultBaseUrl</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.1.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.1.0</text></g></svg></span> Base URL for generated media (image, attachment) URLs, so media can be served from a separate host such as a CDN. Only consulted where the mount handling the request does not serve the media APIs itself. Default: empty - media URLs stay anchored to the incoming request. See <a href="#media_base_url">Serving media from another host</a>.</p>
+</dd>
 <dt class="hdlist1">asset.cacheControl</dt>
 <dd>
 <p>Asset service is deprecated, use lib-asset instead! Sets default cache-control header when asset is cachable. Default: <code>public, max-age=31536000, immutable</code></p>
 </dd>
 </dl>
+</div>
+<div class="sect2">
+<h3 id="media_base_url"><a class="link" href="#media_base_url">Serving media from another host</a></h3>
+<div class="paragraph">
+<p>Generated media URLs follow where a request would actually be dispatched, so a mount that serves the media APIs itself always wins: <strong>setting <code>media.defaultBaseUrl</code> alone changes nothing for sites</strong>. Moving site media to another host takes both keys, leaving <code>media:image</code> and <code>media:attachment</code> out of the site descriptor:</p>
+</div>
+<div class="listingblock">
+<div class="title">Serve all media from a CDN</div>
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">media.defaultBaseUrl = https://cdn.example.com
+legacy.mediaApiAutoMount.enabled = false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>URLs then take the form <code>https://cdn.example.com/media:image/…</code> - note there is no <code>_</code> endpoint segment - and <code>&lt;site&gt;/_/media:image/…</code> is no longer served, so the CDN fetches from XP&#8217;s matching <code>/api/media:image/…</code> path. Disabling the auto-mount without a default base URL makes generated URLs use that <code>/api/</code> form directly.</p>
+</div>
+<div class="paragraph">
+<p>Mounts are honored per API, so the two media APIs can be split: a site that lists only <code>media:image</code> in its descriptor keeps image URLs on the site and gets attachment URLs from the default media base URL.</p>
+</div>
+<div class="paragraph">
+<p>A virtual host may also declare where APIs are served, as part of its <a href="./vhosts.ahtml#virtual-host-context">context</a> - see <a href="./vhosts.ahtml#api-locations">API locations</a>. A declaration that names a media API explicitly, such as <code>portal.apiBaseUrl.media\:image</code>, wins over <code>media.defaultBaseUrl</code>, which in turn wins over a declaration covering all APIs.</p>
+</div>
+<div class="paragraph">
+<p>Sites rendered inside an admin tool are the exception: Content Studio&#8217;s preview and edit modes keep media anchored to the admin tool&#8217;s own endpoint, so URLs stay inside the authenticated session.</p>
+</div>
 </div>
 </div>
 </div>
@@ -626,7 +663,7 @@ The value is set in percentage of total Heap, or in memory units (<code>mb</code
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Audit log can be disabled by common <code><a href="#audit_enabled">enabled</a></code> property. Content flag won&#8217;t affect anything in this case.
+Audit log can be disabled by common <code><a href="logging.ahtml#audit_enabled">enabled</a></code> property. Content flag won&#8217;t affect anything in this case.
 </td>
 </tr>
 </table>
@@ -701,7 +738,7 @@ As such, it may lead to slower system response and reduced efficiency. Important
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-14 12:05:08 UTC
+Last updated 2026-10-19 13:50:39 UTC
 </div>
 </div>
 </body>
