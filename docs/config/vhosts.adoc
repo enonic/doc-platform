@@ -160,6 +160,36 @@ mapping.adm.com.enonic.xp.repository.RepositoryId = com.enonic.cms.repository.my
 mapping.adm.com.enonic.xp.branch.Branch = master
 ----
 
+[#management-api-policy]
+=== Management API policy
+
+image:xp-820.svg[XP 8.2.0,opts=inline] On a `management` mapping, the `api.` context namespace selects what the <<../endpoints/management/resources#,management resources>> expose through it. Each resource reads its own settings from the request context and enforces them; a setting's meaning is defined by the resource. Every resource understands `verbs`: the comma separated operations the mapping exposes.
+
+[source,properties]
+----
+mapping.backup.host = backup.example.com
+mapping.backup.source = /
+mapping.backup.target = /
+mapping.backup.endpoint = management
+mapping.backup.allow = user:system:backup-agent
+mapping.backup.context.api.rest.enabled = false                    <1>
+mapping.backup.context.api.server\:snapshot.verbs = list, create   <2>
+mapping.backup.context.api.server\:dump.verbs = list, create
+mapping.backup.context.api.server\:task.verbs = *                  <3>
+----
+
+<1> Switches the <<../endpoints/management#,legacy REST endpoints>> (`repo/snapshot/list`, `system/dump`, ...) off for this mapping, leaving only the `+/<application>:<api>+` resources. Default: enabled.
+<2> `server:snapshot` answers `list` and `create` on this mapping and refuses `restore` and `prune` with `403`. Note the escaped colon: the file is read as a Java properties file, where an unescaped colon ends the key.
+<3> `*` exposes every verb. A resource without a `verbs` setting is unrestricted: `server:app`, `server:index`, `server:system`, ... remain fully available on this mapping. `+mapping.backup.context.api.server\:app.verbs = -+` exposes no verb of a resource.
+
+A path alias (`+/server:system/vacuum+` for `+/server:system/prune+`, `+/server:app/installUrl+` for `+/server:app/pull+`) belongs to the verb it aliases and is exposed exactly when that verb is.
+
+`verbs` decides only whether a verb is reachable through the mapping. What a verb is allowed to do is configured by the resource itself and is not a virtual host setting: `server:app` `pull`, for example, enforces the allow-list and checksum policy in <<system#management-app,`com.enonic.xp.server.management.app.cfg`>> on every mapping that exposes it.
+
+Keys under `api.` are validated when the file is loaded. A key that is neither `api.rest.enabled` nor `+api.<application>:<api>.<setting>+` (typically a colon that was not escaped) is a configuration error and the file is rejected.
+
+Resources may define further settings in the same namespace. A Universal API of an installed application mounted on the management endpoint reads its own `+api.<application>:<api>.<setting>+` attributes from the context with `contextLib` - see <<https://developer.enonic.com/docs/xp/stable/code/web/apis#management-endpoint,Universal APIs on the management endpoint>>.
+
 [#api-locations]
 === API locations
 
@@ -230,19 +260,7 @@ Mappings never apply across endpoints: a web mapping stays on the web endpoint. 
 
 NOTE: Only non-interactive authentication (the `autologin` flow) works on the management and statistics endpoints - there is no login page to redirect to.
 
-[#api-verbs]
-=== Per-API restrictions
-
-A management mapping can also narrow what each <<../endpoints/management#, management API>> exposes, through <<#virtual-host-context, context attributes>> the APIs read. The one setting every management API understands is `verbs`: the comma separated list of operations the vhost exposes, `*` for all. An absent setting means no restriction.
-
-The setting applies to the `+/<application>:<api>+` management APIs only. The legacy REST routes (`/repo/...`, `/system/...` and so on) reach the same operations and do not read it, so a mapping that restricts verbs should switch them off with `api.rest.enabled = false`.
-
-[source,properties]
-----
-mapping.mgmt.context.api.rest.enabled = false
-mapping.mgmt.context.api.server\:snapshot.verbs = list, create
-mapping.mgmt.context.api.server\:task.verbs = *
-----
+A management mapping selects what it exposes with the <<#management-api-policy, management API policy>> in its context.
 
 [#allow]
 == Allow list
