@@ -1,0 +1,149 @@
+= Access tokens and device login
+:toc: right
+:imagesdir: images
+
+image:../../images/xp-820.svg[XP 8.2.0,opts=inline] XP issues its own access tokens, so a command-line tool or another browserless client can act for a user without a password and without an external authorization server.
+
+== Introduction
+
+A client obtains a token through the OAuth device flow (https://datatracker.ietf.org/doc/html/rfc8628[RFC 8628]): it asks XP for a code, the user opens a page, signs in with their ordinary ID provider and approves, and the client receives an access token and a refresh token. The approval is stored on the user as a *grant*, which can be revoked. The client then sends the access token as a bearer token to a vhost that accepts tokens for that audience.
+
+Tokens work for the users of every ID provider: XP serves the protocol and signs the tokens, and the ID provider supplies the verification page, as it supplies the login page. ID providers from Enonic Market include one; a custom ID provider adds a `deviceVerification` function, see the https://developer.enonic.com/docs/code/stable/web/id-providers#deviceverification[dev kit documentation].
+
+This is different from <<service-accounts#, service accounts>>, which authenticate a machine with its own key. A device-login token always represents a person, with at most the rights that person has.
+
+[#device-login]
+== Device login
+
+Device login runs on the vhost that enables the `device` flow for an ID provider, under the ID provider's endpoint on the web port. The endpoints are XP's own; the ID provider only renders the page.
+
+`+/_/idprovider/<name>/device/code+`:: `POST` with `+client_id+` (see <<#clients, clients>>) and optionally `scope` (space-separated, see <<#scopes, scopes>>) and `resource` (repeatable, the <<#audience, audiences>> the token is for; without it the token is for XP's own issuer name and every audience XP serves). Answers with `+device_code+`, `+user_code+` (eight letters, shown to the user), `+verification_uri+`, `+verification_uri_complete+` (the page with the code filled in), `+expires_in+` (600 seconds) and `interval` (5 seconds between polls).
+`+/_/idprovider/<name>/device+`:: The verification page. The user signs in if needed, enters or confirms the code, sees what the client asks for and approves or denies. Only a user of that ID provider can approve, and only from a browser: a request authenticated with an access token is refused, so a client cannot turn a token into a grant. A user signed in with some of their roles can grant no more than those roles. Serve `device` on a host where users sign in interactively, not on one that accepts API credentials through `autologin`.
+`+/_/idprovider/<name>/token+`:: `POST` with `+grant_type=urn:ietf:params:oauth:grant-type:device_code+`, the `+device_code+` and the same `+client_id+`, polled at the given interval. Answers `+authorization_pending+` until the user decides, `+slow_down+` when polled too fast, `+access_denied+`, `+expired_token+`, or the tokens. With `+grant_type=refresh_token+`, a `+refresh_token+` and the `+client_id+` the grant was made for, it issues a fresh access token, see <<#grants, grants>>.
+
+.Obtaining a token from the command line
+[source,terminal]
+----
+curl -X POST https://admin.example.com/_/idprovider/system/device/code \
+  -d client_id=my-cli -d scope="content:read" -d resource=api
+# {"device_code":"...","user_code":"BCDF-GHJK","verification_uri":"https://admin.example.com/_/idprovider/system/device", ...}
+
+# The user opens the verification page and approves; meanwhile, every five seconds:
+curl -X POST https://admin.example.com/_/idprovider/system/token \
+  -d grant_type=urn:ietf:params:oauth:grant-type:device_code -d device_code=... -d client_id=my-cli
+# {"access_token":"...","token_type":"Bearer","expires_in":3600,"refresh_token":"...","scope":"content:read"}
+----
+
+Errors follow https://datatracker.ietf.org/doc/html/rfc6749#section-5.2[RFC 6749]: a JSON body with `error` and, where it helps, `+error_description+`. A request without `+client_id+` fails with `+invalid_request+`. A request for a scope the vhost does not offer, or for no scope where scopes are configured, fails with `+invalid_scope+`, listing what may be asked for; an unknown `resource` fails with `+invalid_target+`. A device code or refresh token presented by another client than the one it was issued to fails with `+invalid_grant+`.
+
+[#clients]
+=== Clients
+
+XP has no client registry in this version: `+client_id+` is the name the client gives itself, and any value is accepted. It is still required on every request, and a device code or refresh token works only for the client id it was issued to. The verification page shows the id as the client's own name for itself, not as a verified name.
+
+== Access tokens
+
+An access token is a signed JWT in the https://datatracker.ietf.org/doc/html/rfc9068[RFC 9068] layout, signed with HS512. It carries the issuer, the user, the audiences, the client id, the lifetime, the scopes and the grant it belongs to. A token lives one hour by default. XP keeps no record of issued tokens: a token is verified by its signature, and what it may do is read from its grant.
+
+A token is sent as a bearer token:
+
+  Authorization: Bearer <access token>
+
+[#audience]
+=== Where a token is accepted
+
+A token is accepted on a vhost that:
+
+* enables the user's ID provider with the `autologin` flow, or with no flow restriction;
+* declares an `audience` that the token's `aud` claim contains (`+mapping.<name>.audience = api+`). A vhost that declares no audience accepts only tokens whose audience is XP's own issuer name (`token.issuer`, `xp` by default); that is what a token obtained without a `resource` carries.
+
+The token's grant must still exist. The request then runs as the user, with the roles the grant holds now. Bearer tokens of other issuers are left to the ID provider's own `autoLogin` function. A token that fails a check is answered with `401` and `WWW-Authenticate: Bearer error="invalid_token"` rather than a login page.
+
+The typical split is one vhost where users approve and one where tokens are used:
+
+[source,properties]
+----
+mapping.admin.host = admin.example.com
+mapping.admin.source = /
+mapping.admin.target = /admin
+mapping.admin.idProvider.system = default
+mapping.admin.idProvider.system.flows = login,logout,device
+
+mapping.api.host = api.example.com
+mapping.api.source = /
+mapping.api.target = /api
+mapping.api.idProvider.system = default
+mapping.api.idProvider.system.flows = autologin
+mapping.api.audience = api
+----
+
+A client asks for `+resource=api+` and sends the token to `api.example.com`. The vhost reference is in <<../config/vhosts#id-provider-settings, Virtual hosts>>.
+
+Applications see what a token was granted in `request.accessToken`, see the https://developer.enonic.com/docs/code/stable/web/request-response#access-token[dev kit documentation].
+
+[#other-issuers]
+=== Tokens of other issuers
+
+XP verifies only the tokens it issued. A bearer token of another issuer, an OIDC provider or an API gateway, is verified by the ID provider's `autoLogin` function, as before. The ID provider can then hand the verified token to XP with the login, and XP applies the same rules as to its own tokens: the vhost must declare the token's audience, and the token's scopes map to roles through the vhost's <<scopes, scope catalogue>> for the ID provider. A vhost that accepts such tokens therefore declares the audience they carry: the client id for an ID token, the API's identifier for an access token. Applications see the token as `request.accessToken`, in the same shape as a token XP issued. See https://developer.enonic.com/docs/code/stable/libraries/lib-auth#login[`login()`] in the dev kit documentation.
+
+[#scopes]
+== Scopes
+
+A scope is a name for a part of what the user can do, which the user may grant or withhold on the verification page. Scopes are declared per vhost and ID provider, next to the flows, and each maps to the roles it implies:
+
+[source,properties]
+----
+mapping.admin.idProvider.system.scope.content\:read.roles = role:cms.project.site.viewer
+mapping.admin.idProvider.system.scope.content\:write.roles = role:cms.project.site.editor
+mapping.admin.idProvider.system.scope.profile.required = true
+----
+
+A scope name is printable ASCII without spaces, double quotes or backslashes. Only roles may be listed. A token restricted by scopes holds the roles of the scopes the user kept, among the roles the user actually has, directly or through groups, plus the user's own key and the roles every authenticated user has. A member of `+role:system.admin+` counts as holding every role, but keeps `+role:system.admin+` itself only if a scope lists it. A scope with no roles is a label for applications to check. Note the escaped colons: in a properties file an unescaped colon ends the key.
+
+With scopes declared, a client must ask for scopes, and only known ones; the user keeps or drops them on the page, never adds. A *required* scope cannot be dropped: a client that asks for it gets it with the rest, or the request is denied as a whole. A scope declared by `required` alone, like `profile` above, implies no roles: it is a label an application checks, here one that lets the client read the user's identity.
+
+Without declared scopes, a client asks for none, and an approved token carries the user's full memberships. The page says so.
+
+NOTE: Groups count for which roles a user holds, but a scoped token never carries the group itself. Anything granted by naming a group does not apply through the token: a node permission entry naming the group, an API, service, admin tool or admin extension allow list naming it, or an ID provider access list naming it. Grant through roles where tokens are in use.
+
+[#grants]
+== Grants and refresh tokens
+
+The approval is stored on the user as a *grant*: which client, which audiences and scopes, which roles, and until when. Editing the user leaves it alone; deleting the user removes it. A token is accepted only while its grant exists, and runs with the roles and scopes the grant holds at that moment. Revoking a grant stops its access tokens and refresh tokens at once; narrowing a grant narrows every token it has issued, at once. Revoking all of a user's grants cuts off every client at once. Browser sessions are not grants, and stay as they are.
+
+The client obtains a new access token by presenting the refresh token at the token endpoint. The answer carries a refresh token too: the same one for a few minutes after it was issued, a new one after that, and the client must keep the latest. A refresh token presented again after it has been replaced is treated as copied, and the whole grant is revoked, except within a short window after the replacement, when it is answered with the same new token so that a client that lost the response can retry. The windows are configurable, see <<#configuration, configuration>>.
+
+Grants expire after 90 days by default. A user holds at most 100 grants, at most 20 per client; beyond a cap the oldest goes.
+
+[#actor]
+== Acting on behalf of a user
+
+An access token may name an *actor*: a service that obtained the token for the user rather than the user themselves. The actor is recorded next to the user in every <<audit-logs#, audit log entry>> the request writes, so the log says who the call was for and who made it. The actor grants no permissions: the request has the user's rights, restricted by the grant.
+
+ID providers set the actor the same way for logins they perform on a service's behalf, through `login({actor})` in the https://developer.enonic.com/docs/code/stable/libraries/lib-auth#login[auth library].
+
+[#configuration]
+== Configuration
+
+`com.enonic.xp.security.cfg`
+
+token.issuer:: The name written into every token as its issuer, and required of every token XP accepts. Defaults to the installation's `xp.name` from <<../config/system#system-properties, system.properties>>, and to `xp` when that is unset. Must be the same on every node.
+token.ttl:: Lifetime of an access token, as an ISO-8601 duration of whole seconds. Default: `PT1H`.
+`+token.keys.<kid>+`:: A signing key, standard base64, at least 64 bytes, under a key id of your choice. Every listed key verifies tokens. Without any, XP generates a key once per cluster and keeps it in memory: tokens then do not survive a full cluster restart, which clients recover from at their next refresh. Configure keys to make tokens survive restarts or to share them between clusters.
+token.signingKey:: The key id that signs new tokens. Optional with a single key. Rotate by adding a key, pointing `token.signingKey` at it, and removing the old key once its tokens have expired.
+token.grant.ttl:: Lifetime of a grant, as an ISO-8601 duration. Default: `P90D`.
+token.grant.rotateAfter:: How long a refresh token is returned unchanged by further refreshes before a new one replaces it. Default: `PT5M`.
+token.grant.reuseGrace:: How long after a replacement the replaced refresh token is still answered with the new one instead of revoking the grant. Default: `PT30S`.
+token.grant.maxPerUser:: Grants a user may hold; the oldest is dropped beyond it. Default: `100`.
+token.grant.maxPerClient:: Grants a user may hold for one client id. Default: `20`.
+
+.Sample token configuration with configured keys
+[source,properties]
+----
+token.ttl = PT30M
+token.keys.2026a = <base64 secret>
+token.keys.2026b = <base64 secret>
+token.signingKey = 2026b
+----
+
+The flows, audience and scopes of a vhost are configured in `com.enonic.xp.web.vhost.cfg`, see <<../config/vhosts#id-provider-settings, Virtual hosts>>.
