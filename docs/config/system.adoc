@@ -74,7 +74,7 @@ xp.script-engine.graal.max-isolated-contexts:: Cap on contexts created for isola
 == Security
 [#security]
 
-`com.enonic.xp.web.security.cfg`
+`com.enonic.xp.security.cfg`
 
 Security service configuration.
 
@@ -84,11 +84,14 @@ IMPORTANT: Audit log can be globally disabled in `<<logging#audit_enabled, Audit
 
 password.policy:: Define the password hashing algorithm and parameters to be used when storing user passwords. Default: `$pbkdf2-sha512$i=210000,l=64,slen=16` - which is PBKDF2 with SHA-512, 210,000 iterations, hash length of 64 bytes and salt length of 16 bytes.
 
+token.*:: image:xp-820.svg[XP 8.2.0,opts=inline] Settings of the access tokens XP issues through device login: issuer, lifetime, signing keys and the grant lifetimes and caps. See <<../security/access-tokens#configuration, Access tokens>>.
+
 .Sample security configuration
 [source,properties]
 ----
 auditlog.enabled = true
 password.policy = $pbkdf2-sha512$i=210000,l=64,slen=16
+token.ttl = PT30M
 ----
 
 [#mail]
