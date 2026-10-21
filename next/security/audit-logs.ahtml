@@ -470,6 +470,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>XP registers successfully completed actions that affect repositories, content, applications, principals and ID providers in the <code>system.auditlog</code> repository.</p>
 </div>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Every entry names the <code>user</code> the action was performed as. When a service performed it on the user&#8217;s behalf, with an <a href="access-tokens.ahtml">access token</a> that names an actor or an ID provider login that does, the entry also names that service as <code>actor</code>; otherwise the field is absent.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -525,7 +528,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="paragraph">
 <div class="title"><code>system.security.principal.addRelationship</code></div>
-<p>User <code>user:system:username</code> has been added to group <code>group:system:usergroup</code>.</p>
+<p>User <code>user:system:username</code> has been added to group <code>group:system:usergroup</code>, by a deployment service acting for <code>user:system:admin</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -533,6 +536,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   "type": "system.security.principal.addRelationship",
   "source": "com.enonic.xp.security",
   "user": "user:system:admin",
+  "actor": "user:system:deploy-service",
   "objects": ["user:system:username","group:system:usergroup"],
   "data": {
     "params": {
@@ -736,7 +740,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>

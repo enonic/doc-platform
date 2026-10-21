@@ -503,7 +503,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#repository">Repository</a>
 <ul class="sectlevel2">
 <li><a href="#reindex">Reindex</a></li>
-<li><a href="#reindex_task">Reindex Task</a></li>
+<li><a href="#reindex-task">Reindex Task</a></li>
 <li><a href="#settings">Settings</a></li>
 <li><a href="#repository_list">Repository List</a></li>
 </ul>
@@ -525,6 +525,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>The Management API provides programmatic access to administrative and operational functions, commonly used by developers and DevOps teams in combination with Enonic CLI.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> The operations below are also available as <a href="management/resources.ahtml">management resources</a> (<code>/server:snapshot</code>, <code>/server:dump</code>, <code>/server:index</code>, &#8230;&#8203;), which a <a href="../config/vhosts.ahtml#management-api-policy">virtual host exposes selectively</a>. The endpoints on this page are unchanged.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -532,6 +546,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="paragraph">
 <p>The management API requires an authenticated user with the Administrator role.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> A <a href="../config/vhosts.ahtml#endpoint">vhost mapping</a> may target the management endpoint, bringing other ID providers (with non-interactive authentication) and a principal allow list to it.</p>
 </div>
 <div class="sect2">
 <h3 id="jwt_authentication"><a class="link" href="#jwt_authentication">JWT Authentication</a></h3>
@@ -548,14 +565,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Use of basic authentication is discouraged due to its security weaknesses. Use JWT authentication instead.
+Basic authentication is deprecated and left only for backwards compatibility. Use JWT authentication instead.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>All management endpoints allow basic authentication.
-Most clients provide an option for authentication, but in case you need to do it manually: basic auth is simply a string of the username and password separated by a colon that is base64 encoded.</p>
+<p>All management endpoints allow basic authentication.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Basic authentication is provided by the Standard ID Provider application, for the system ID provider on the management endpoint only. It remains enabled by default for backwards compatibility, and can be disabled with <code>idprovider.system.autologin.basic.enabled = false</code> in <code>com.enonic.xp.app.standardidprovider.cfg</code> - or per vhost, by giving the ID provider a <a href="../config/vhosts.ahtml#flows">flow list</a> that does not include <code>basic</code>.
+Most clients provide an option for authentication, but in case you need to do it manually: basic auth is simply a string of the username and password separated by a colon that is base64 encoded.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Make a source string:</p>
@@ -877,6 +906,18 @@ The endpoint returns immediately after the restore process is started. Task info
 </div>
 <div class="sect2">
 <h3 id="create_2"><a class="link" href="#create_2">Create</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Runs as the <code>com.enonic.xp.app.system:dump</code> cluster task, on any node of the cluster; in a cluster <code>$XP_HOME/data</code> must be on a shared file system.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Export data from every repository. The result will be stored in the <code>$XP_HOME/data/dump</code> directory.</p>
 </div>
@@ -992,6 +1033,18 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 <div class="sect2">
 <h3 id="upgrade"><a class="link" href="#upgrade">Upgrade</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Runs as the <code>com.enonic.xp.app.system:upgrade</code> cluster task.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Upgrade a data dump from a previous version to the current version. The output of the upgrade will be placed alongside the dump that is being upgraded and will have the name <code>&lt;dump-name&gt;_upgraded_&lt;new-version&gt;</code>.</p>
 </div>
@@ -1077,6 +1130,18 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 <div class="sect2">
 <h3 id="load"><a class="link" href="#load">Load</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Runs as the <code>com.enonic.xp.app.system:load</code> cluster task.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Load data from a named system dump into Enonic XP. The dump read has to be stored in the <code>$XP_HOME/data/dump</code> directory.</p>
 </div>
@@ -1208,6 +1273,18 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 <div class="sect2">
 <h3 id="create_3"><a class="link" href="#create_3">Create</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Runs as the <code>com.enonic.xp.app.system:export</code> cluster task, on any node of the cluster; in a cluster <code>$XP_HOME/data</code> must be on a shared file system.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Extract data from a given repository, branch and content path. The result will be stored in the <code>$XP_HOME/data/export</code> directory as a ZIP archive named <code>{exportName}.zip</code>.
 This is useful to move a part of a site from one installation to another.</p>
@@ -1297,6 +1374,18 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 <div class="sect2">
 <h3 id="import"><a class="link" href="#import">Import</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Runs as the <code>com.enonic.xp.app.system:import</code> cluster task.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Import data from a named export into Enonic XP at the desired content path.
 The export read has to be stored in the <code>$XP_HOME/data/export</code> directory.</p>
@@ -2032,6 +2121,18 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 <div class="sect2">
 <h3 id="reindex"><a class="link" href="#reindex">Reindex</a></h3>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Deprecated. Synchronous; use <a href="#reindex-task">Reindex Task</a> or <code>server:index</code> <a href="management/resources.ahtml#server-index"><code>reindex</code></a>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Reindex the content in the search indices for the given repository and branches. This is usually required after upgrades and may be useful in many other cases.</p>
 </div>
@@ -2089,7 +2190,19 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 </div>
 <div class="sect2">
-<h3 id="reindex_task"><a class="link" href="#reindex_task">Reindex Task</a></h3>
+<h3 id="reindex-task"><a class="link" href="#reindex-task">Reindex Task</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Runs as the <code>com.enonic.xp.app.system:reindex</code> cluster task, on any node of the cluster.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Calls <a href="#reindex">reindex</a> endpoint as a task.</p>
 </div>
@@ -2152,6 +2265,18 @@ Task info can be fetched with <a href="#task">task</a> request.
 </div>
 <div class="sect2">
 <h3 id="settings"><a class="link" href="#settings">Settings</a></h3>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Deprecated. Replica settings are exposed by <code>server:index</code> <a href="management/resources.ahtml#server-index"><code>update</code></a>; other index settings are not exposed.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Update settings for a specified repository.</p>
 </div>
@@ -2548,7 +2673,7 @@ Make sure you have a backup of the installation available before running a clean
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>

@@ -490,7 +490,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The Statistics API is intended for internal monitoring and is exposed without authentication on port 2609. Do not expose it publicly.
+The Statistics API is intended for internal monitoring and is by default exposed without authentication on port 2609 - do not expose it publicly as it is. <span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> A <a href="../config/vhosts.ahtml#endpoint">vhost mapping</a> may target the statistics endpoint, protecting it with non-interactive ID provider authentication and a principal allow list.
 </td>
 </tr>
 </table>
@@ -1285,7 +1285,7 @@ jetty_connections_bytes_in_bytes_sum{connector_name="api"} 0.0
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>

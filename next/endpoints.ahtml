@@ -471,7 +471,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="management_api_port_4848"><a class="link" href="#management_api_port_4848">Management API (Port 4848)</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Programmatic access to administrative and operational functions, commonly used together with Enonic CLI. See <a href="endpoints/management.ahtml">Management API</a>.</p>
+<p>Programmatic access to administrative and operational functions, commonly used together with Enonic CLI. See <a href="endpoints/management.ahtml">Management API</a> and, from 8.2.0, the resource-oriented <a href="endpoints/management/resources.ahtml">Management resources</a>.</p>
 </div>
 </div>
 </div>
@@ -498,7 +498,7 @@ The default ports can be overridden via <code>com.enonic.xp.web.jetty.cfg</code>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>

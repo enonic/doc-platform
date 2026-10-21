@@ -661,7 +661,7 @@ These are preview settings. They may change, or disappear, while GraalJS is in p
 <h2 id="security"><a class="link" href="#security">Security</a></h2>
 <div class="sectionbody">
 <div id="security" class="paragraph">
-<p><code>com.enonic.xp.web.security.cfg</code></p>
+<p><code>com.enonic.xp.security.cfg</code></p>
 </div>
 <div class="paragraph">
 <p>Security service configuration.</p>
@@ -692,13 +692,18 @@ Audit log can be globally disabled in <code><a href="logging.ahtml#audit_enabled
 <dd>
 <p>Define the password hashing algorithm and parameters to be used when storing user passwords. Default: <code>$pbkdf2-sha512$i=210000,l=64,slen=16</code> - which is PBKDF2 with SHA-512, 210,000 iterations, hash length of 64 bytes and salt length of 16 bytes.</p>
 </dd>
+<dt class="hdlist1">token.*</dt>
+<dd>
+<p><span class="image"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="20"><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="64" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="25" height="20" fill="#555"/><rect x="25" width="39" height="20" fill="#007ec6"/><rect width="64" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text x="135" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="150">XP</text><text x="135" y="140" transform="scale(.1)" textLength="150">XP</text><text x="435" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="290">8.2.0</text><text x="435" y="140" transform="scale(.1)" textLength="290">8.2.0</text></g></svg></span> Settings of the access tokens XP issues through device login: issuer, lifetime, signing keys and the grant lifetimes and caps. See <a href="../security/access-tokens.ahtml#configuration">Access tokens</a>.</p>
+</dd>
 </dl>
 </div>
 <div class="listingblock">
 <div class="title">Sample security configuration</div>
 <div class="content">
 <pre class="highlight"><code class="language-properties" data-lang="properties">auditlog.enabled = true
-password.policy = $pbkdf2-sha512$i=210000,l=64,slen=16</code></pre>
+password.policy = $pbkdf2-sha512$i=210000,l=64,slen=16
+token.ttl = PT30M</code></pre>
 </div>
 </div>
 </div>
@@ -2077,43 +2082,49 @@ Filter rules apply separately on different nodes in cluster. If one cluster node
 <p><code>com.enonic.xp.server.management.app.cfg</code></p>
 </div>
 <div class="paragraph">
-<p>Configure the security policy for the management Applications API on Port 4848 (<code>/server:app/*</code>). Currently controls the <code>/installUrl</code> endpoint, which installs an application from a remote URL.</p>
+<p>Configure the security policy for the management Applications API on Port 4848 (<code>/server:app/*</code>, see <a href="../endpoints/management/resources.ahtml#server-app">server:app</a>). Controls the <code>pull</code> verb (<code>/server:app/pull</code>, alias <code>/server:app/installUrl</code>), which installs an application from a remote URL.</p>
+</div>
+<div class="paragraph">
+<p>This file is the installation-wide policy for <code>pull</code>. It applies to every request, whether it arrives on the bare management port or through a virtual host. A virtual host can only withhold <code>pull</code> with its <a href="vhosts.ahtml#management-api-policy"><code>verbs</code></a> setting for <code>server:app</code>, never widen it: when <code>pull</code> is exposed, the allow-list and checksum requirement below still apply. Per-virtual-host allow-lists are not supported.</p>
 </div>
 <div class="listingblock">
 <div class="title">Default configuration</div>
 <div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">installUrl.allowedUrls = https://*
-installUrl.checksumRequired = true</code></pre>
+<pre class="highlight"><code class="language-properties" data-lang="properties">pull.allowedUrls = https://*
+pull.checksumRequired = true</code></pre>
 </div>
 </div>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">installUrl.allowedUrls</dt>
+<dt class="hdlist1">pull.allowedUrls</dt>
 <dd>
-<p>Comma-separated wildcard patterns of URLs allowed by <code>/installUrl</code>. A trailing <code><strong></code> matches any suffix; otherwise the pattern is matched exactly as a string prefix. Set to an empty string to disable <code>/installUrl</code> entirely. Default: <code>https://</strong></code> (any https URL).</p>
+<p>Comma-separated URL patterns <code>pull</code> may install from. A trailing <code><strong></code> matches any suffix; without it, the URL must match the pattern exactly. Set to an empty string to disable <code>pull</code> entirely. Default: <code>https://</strong></code> (any https URL).</p>
 </dd>
-<dt class="hdlist1">installUrl.checksumRequired</dt>
+<dt class="hdlist1">pull.checksumRequired</dt>
 <dd>
-<p>When <code>true</code>, every <code>/installUrl</code> request must include a non-empty <code>sha512</code> field; the download is rejected if the computed digest does not match. Set to <code>false</code> to allow installs without a checksum (not recommended). Default: <code>true</code>.</p>
+<p>When <code>true</code>, every <code>pull</code> request must include a non-empty <code>sha512</code> field; the download is rejected if the computed digest does not match. Set to <code>false</code> to allow installs without a checksum (not recommended). Default: <code>true</code>.</p>
 </dd>
 </dl>
+</div>
+<div class="paragraph">
+<p>The legacy keys <code>installUrl.allowedUrls</code> and <code>installUrl.checksumRequired</code> are still read and have the same meaning. A <code>pull.<strong></code> key takes precedence over its <code>installUrl.</strong></code> counterpart when both are present.</p>
 </div>
 <div class="listingblock">
 <div class="title">Restrict installs to the official Enonic public repository</div>
 <div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">installUrl.allowedUrls = https://repo.enonic.com/public/*</code></pre>
+<pre class="highlight"><code class="language-properties" data-lang="properties">pull.allowedUrls = https://repo.enonic.com/public/*</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">Allow several explicit hosts</div>
 <div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">installUrl.allowedUrls = https://repo.enonic.com/public/*, https://my.cdn.com/apps/*</code></pre>
+<pre class="highlight"><code class="language-properties" data-lang="properties">pull.allowedUrls = https://repo.enonic.com/public/*, https://my.cdn.com/apps/*</code></pre>
 </div>
 </div>
 <div class="listingblock">
-<div class="title">Disable /installUrl entirely (uploads via /install are unaffected)</div>
+<div class="title">Disable pull entirely (uploads via /server:app/install are unaffected)</div>
 <div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">installUrl.allowedUrls =</code></pre>
+<pre class="highlight"><code class="language-properties" data-lang="properties">pull.allowedUrls =</code></pre>
 </div>
 </div>
 </div>
@@ -2433,7 +2444,7 @@ Exports dir should be a shared storage for cluster environments.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>

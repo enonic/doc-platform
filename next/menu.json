@@ -39,6 +39,10 @@
           "document": "security/service-accounts"
         },
         {
+          "title": "Access tokens",
+          "document": "security/access-tokens"
+        },
+        {
           "title": "Principals",
           "document": "security/principals"
         },
@@ -77,6 +81,10 @@
         {
           "title": "Management API",
           "document": "endpoints/management"
+        },
+        {
+          "title": "Management resources",
+          "document": "endpoints/management/resources"
         },
         {
           "title": "Statistics API",
@@ -150,7 +158,7 @@
           "title": "Logging",
           "document": "config/logging"
         }
-      ] 
+      ]
     },
     {
       "title": "Release Notes",

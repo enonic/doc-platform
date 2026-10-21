@@ -444,6 +444,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#id_providers">ID providers</a></li>
 <li><a href="#principals">Principals</a></li>
 <li><a href="#service_accounts">Service accounts</a></li>
+<li><a href="#access_tokens">Access tokens</a></li>
 <li><a href="#permissions">Permissions</a></li>
 <li><a href="#audit_logs">Audit logs</a></li>
 <li><a href="#management">Management</a></li>
@@ -486,6 +487,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
+<h2 id="access_tokens"><a class="link" href="#access_tokens">Access tokens</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="image"><span class="alt">XP 8.2.0</span></span> A command-line tool or another browserless client can act for a user with an <a href="security/access-tokens.ahtml">access token</a> XP issues itself: the user approves the client once through device login, with their ordinary ID provider, and may narrow what it gets to a set of scopes. The approval is a grant that can be revoked.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="permissions"><a class="link" href="#permissions">Permissions</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -512,7 +521,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>

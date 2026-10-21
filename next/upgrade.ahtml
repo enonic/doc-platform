@@ -448,6 +448,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#rolling">Rolling cluster upgrade</a></li>
 <li><a href="#full-restart">Full restart cluster upgrade</a></li>
 <li><a href="#after_the_upgrade">After the upgrade</a></li>
+<li><a href="#v8_2_notes">v8.2 notes</a>
+<ul class="sectlevel2">
+<li><a href="#id_providers_with_a_dot_in_their_name_cannot_be_configured_in_vhosts">ID providers with a dot in their name cannot be configured in vhosts</a></li>
+<li><a href="#basic_authentication_moves_to_the_standard_id_provider">Basic authentication moves to the Standard ID Provider</a></li>
+<li><a href="#autologin_runs_for_every_enabled_id_provider">autoLogin runs for every enabled ID provider</a></li>
+</ul>
+</li>
 <li><a href="#v8_1_notes">v8.1 notes</a>
 <ul class="sectlevel2">
 <li><a href="#read_through_blobstore_cache_is_bounded">Read-through blobstore cache is bounded</a></li>
@@ -652,6 +659,32 @@ Start the nodes at the same time. Should the new version include upgrade scripts
 </div>
 </div>
 <div class="sect1">
+<h2 id="v8_2_notes"><a class="link" href="#v8_2_notes">v8.2 notes</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>XP 8.2 has no breaking changes, with one narrow exception below. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.1 behaviour.</p>
+</div>
+<div class="sect2">
+<h3 id="id_providers_with_a_dot_in_their_name_cannot_be_configured_in_vhosts"><a class="link" href="#id_providers_with_a_dot_in_their_name_cannot_be_configured_in_vhosts">ID providers with a dot in their name cannot be configured in vhosts</a></h3>
+<div class="paragraph">
+<p>Virtual host mappings now accept per-provider settings as <code>idProvider.&lt;name&gt;.&lt;setting&gt;</code> keys (see <a href="config/vhosts.ahtml#flows">ID provider flows</a>), and read the first key segment as the ID provider name. An ID provider whose name contains a dot - never intended, but not previously rejected - can therefore no longer be referenced in a vhost mapping: <code>idProvider.my.provider = default</code> is read as a setting named <code>provider</code> and fails the configuration. An ID provider&#8217;s name cannot be changed, so create one with a valid name, recreate its users there, and point the mapping at it. Such names are unusual, so most installations are unaffected; the ID provider itself keeps working, only its vhost mapping is affected.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="basic_authentication_moves_to_the_standard_id_provider"><a class="link" href="#basic_authentication_moves_to_the_standard_id_provider">Basic authentication moves to the Standard ID Provider</a></h3>
+<div class="paragraph">
+<p>Basic authentication on the management endpoint is provided by the Standard ID Provider application (bundled with XP) instead of the platform itself. It is deprecated and left only for backwards compatibility: enabled by default, disabled with <code>idprovider.system.autologin.basic.enabled = false</code> in <code>com.enonic.xp.app.standardidprovider.cfg</code>. <a href="security/service-accounts.ahtml#jwt-authentication">Service account JWT authentication</a> on the management endpoint comes from the same application. An installation running without the Standard ID Provider application has neither, and maps another ID provider on a <a href="config/vhosts.ahtml#endpoint">management vhost</a> instead.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="autologin_runs_for_every_enabled_id_provider"><a class="link" href="#autologin_runs_for_every_enabled_id_provider">autoLogin runs for every enabled ID provider</a></h3>
+<div class="paragraph">
+<p><code>autoLogin</code> runs for every ID provider enabled on a virtual host - the default one first - not only the default one. A request can now be authenticated by a non-default ID provider where it previously stayed anonymous.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="v8_1_notes"><a class="link" href="#v8_1_notes">v8.1 notes</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -752,7 +785,7 @@ Start the nodes at the same time. Should the new version include upgrade scripts
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-10-21 08:13:32 UTC
+Last updated 2026-10-21 08:25:52 UTC
 </div>
 </div>
 </body>
