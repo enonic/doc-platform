@@ -65,6 +65,22 @@ NOTE: Start the nodes at the same time. Should the new version include upgrade s
 . Confirm that your applications started. The <<admin/applications#, Applications tool>> lists their state.
 . Check https://market.enonic.com[Enonic Market] for newer versions of the apps you use. Applications built for XP 8 keep working across 8.x releases, so this is recommended, not required. Developers find the deprecations introduced by each release in the https://developer.enonic.com/docs/code/stable/upgrade[dev kit upgrade notes].
 
+== v8.2 notes
+
+XP 8.2 has no breaking changes, with one narrow exception below. Existing configuration is valid as it was, and every new setting has a default that keeps the 8.1 behaviour.
+
+=== ID providers with a dot in their name cannot be configured in vhosts
+
+Virtual host mappings now accept per-provider settings as `idProvider.<name>.<setting>` keys (see <<config/vhosts#flows, ID provider flows>>), and read the first key segment as the ID provider name. An ID provider whose name contains a dot - never intended, but not previously rejected - can therefore no longer be referenced in a vhost mapping: `idProvider.my.provider = default` is read as a setting named `provider` and fails the configuration. An ID provider's name cannot be changed, so create one with a valid name, recreate its users there, and point the mapping at it. Such names are unusual, so most installations are unaffected; the ID provider itself keeps working, only its vhost mapping is affected.
+
+=== Basic authentication moves to the Standard ID Provider
+
+Basic authentication on the management endpoint is provided by the Standard ID Provider application (bundled with XP) instead of the platform itself. It is deprecated and left only for backwards compatibility: enabled by default, disabled with `idprovider.system.autologin.basic.enabled = false` in `com.enonic.xp.app.standardidprovider.cfg`. <<security/service-accounts#jwt-authentication, Service account JWT authentication>> on the management endpoint comes from the same application. An installation running without the Standard ID Provider application has neither, and maps another ID provider on a <<config/vhosts#endpoint, management vhost>> instead.
+
+=== autoLogin runs for every enabled ID provider
+
+`autoLogin` runs for every ID provider enabled on a virtual host - the default one first - not only the default one. A request can now be authenticated by a non-default ID provider where it previously stayed anonymous.
+
 == v8.1 notes
 
 *Full restart required.* The scheduler was rebuilt in 8.1: scheduling moved from a Hazelcast scheduled task to a coordinator that elects one node to run the schedule. An 8.0 node and an 8.1 node in the same cluster would each schedule on their own terms, so do not upgrade a cluster to 8.1 node by node. Use the <<#full-restart, full restart procedure>>.
