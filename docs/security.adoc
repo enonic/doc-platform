@@ -20,7 +20,7 @@ Principals are the actors of XP's security model. XP provides three basic princi
 
 == Access tokens
 
-image:../images/xp-820.svg[XP 8.2.0,opts=inline] A command-line tool or another browserless client can act for a user with an <<security/access-tokens#, access token>> XP issues itself: the user approves the client once through device login, with their ordinary ID provider, and may narrow what it gets to a set of scopes. The approval is a grant that can be revoked.
+image:../images/xp-820.svg[XP 8.2.0,opts=inline] A command-line tool, an MCP client or another application can act for a user with an <<security/access-tokens#, access token>> XP issues itself: the user approves the client once, through device login or the authorization code flow, with their ordinary ID provider, and may narrow what it gets to a set of the ID provider's scopes. The approval is a grant that can be revoked. Clients are registered with the ID provider, or register themselves.
 
 == Permissions
 
