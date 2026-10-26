@@ -76,7 +76,7 @@ scope, resource:: The most the client may ask for, and what it gets when it name
 grantTtl:: How long a grant to the client lives; the configured default when unset.
 enabled:: A disabled client gets no new grant and cannot refresh; its users' grants stay until they expire or are revoked.
 
-Clients are managed with the auth library, see https://developer.enonic.com/docs/code/stable/libraries/lib-auth#createclient[`createClient()`] in the dev kit documentation; an ID provider application may register them from its configuration. XP registers `enonic-cli`, the https://developer.enonic.com/docs/enonic-cli[Enonic CLI], with the system ID provider, built in: it can be changed and disabled, not removed.
+Clients are managed with the auth library, see https://developer.enonic.com/docs/code/stable/libraries/lib-auth#createclient[`createClient()`] in the dev kit documentation; an ID provider application may register them from its configuration. XP registers `enonic-cli`, the https://developer.enonic.com/docs/enonic-cli[Enonic CLI], with the system ID provider; it can be changed and disabled, not removed.
 
 A client XP does not know can still use device login: `+client_id+` is then the name the client gives itself, shown on the consent page as its own word for itself, and it is held to nothing but the ID provider's scopes. In the authorization code flow it may only be sent to a loopback address, since XP knows nowhere else it may be sent. A device code or refresh token works only for the client id it was issued to.
 
