@@ -150,9 +150,9 @@ A scope is a name for a part of what the user can do, which the user may grant o
 ----
 import {createScope} from '/lib/xp/auth';
 
-createScope({idProvider: 'system', id: 'content:read', displayName: 'Read content', roles: ['role:cms.project.site.viewer']});
-createScope({idProvider: 'system', id: 'content:write', displayName: 'Edit content', roles: ['role:cms.project.site.editor']});
-createScope({idProvider: 'system', id: 'profile', displayName: 'Know who you are', required: true});
+createScope({idProvider: 'system', id: 'content:read', title: 'Read content', roles: ['role:cms.project.site.viewer']});
+createScope({idProvider: 'system', id: 'content:write', title: 'Edit content', roles: ['role:cms.project.site.editor']});
+createScope({idProvider: 'system', id: 'profile', title: 'Know who you are', required: true});
 ----
 
 A scope id is printable ASCII without spaces, double quotes or backslashes. Only roles may be listed. A token restricted by scopes holds the roles of the scopes the user kept, among the roles the user actually has, directly or through groups, plus the user's own key and the roles every authenticated user has. A member of `+role:system.admin+` counts as holding every role, but keeps `+role:system.admin+` itself only if a scope lists it. A scope with no roles is a label for applications to check.
