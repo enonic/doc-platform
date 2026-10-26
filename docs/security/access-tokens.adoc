@@ -159,7 +159,7 @@ A scope id is printable ASCII without spaces, double quotes or backslashes. Only
 
 With scopes, a client must ask for scopes, and only known ones; the user keeps or drops them on the page, never adds. A *required* scope cannot be dropped: a client that asks for it gets it with the rest, or the request is denied as a whole. A scope with no roles, like `profile` above, is a label an application checks, here one that lets the client read the user's identity. A registered client may be capped to some of the scopes, and gets those when it asks for none.
 
-Without scopes, a client asks for none, and an approved token carries the user's full memberships. The page says so.
+Without scopes, a client asks for none, and an approved token carries the user's full memberships. The consent page states this.
 
 NOTE: Groups count for which roles a user holds, but a scoped token never carries the group itself. Anything granted by naming a group does not apply through the token: a node permission entry naming the group, an API, service, admin tool or admin extension allow list naming it, or an ID provider access list naming it. Grant through roles where tokens are in use.
 
@@ -170,7 +170,7 @@ The approval is stored on the user as a *grant*: which client, which audiences a
 
 The client obtains a new access token by presenting the refresh token at the token endpoint. The answer carries a refresh token too: the same one for a few minutes after it was issued, a new one after that, and the client must keep the latest. A refresh token presented again after it has been replaced is treated as copied, and the whole grant is revoked, except within a short window after the replacement, when it is answered with the same new token so that a client that lost the response can retry. The windows are configurable, see <<#configuration, configuration>>.
 
-Grants expire after 90 days by default, or after what the client's record says. A user holds at most 100 grants, at most 20 per client; beyond a cap the oldest goes.
+Grants expire after 90 days by default, or after what the client's record says. A user holds at most 100 grants, at most 20 per client; beyond a cap the oldest is removed.
 
 [#actor]
 == Acting on behalf of a user
