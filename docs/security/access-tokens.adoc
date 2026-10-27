@@ -122,7 +122,7 @@ mapping.api.idProvider.system = default
 mapping.api.idProvider.system.flows = autologin
 ----
 
-A client asks for `+resource=https://api.example.com+` and sends the token to `api.example.com`. A URL under the mapping serves as well: an MCP client that was told its server is `+https://api.example.com/mcp+` asks for that, and the token is accepted on `+/mcp+` and below. Set `audience` on a mapping to serve a name of your own instead, `+mapping.api.audience = api+`, when the host may be renamed or several hosts serve the same API; the client then asks for `+resource=api+`. The vhost reference is in <<../config/vhosts#id-provider-settings, Virtual hosts>>.
+A client asks for `+resource=https://api.example.com+` and sends the token to `api.example.com`. A URL under the mapping serves as well: an MCP client that was told its server is `+https://api.example.com/mcp+` asks for that, and the token is accepted on `+/mcp+` and below. Set `audience` on a mapping to serve a name of your own as well, `+mapping.api.audience = api+`, when the host may be renamed or several hosts serve the same API; the client then asks for `+resource=api+`, or still for the URL. A mapping with a declared list no longer accepts tokens for XP's own name. A trailing slash on a resource is dropped: `+https://api.example.com/mcp/+` and `+https://api.example.com/mcp+` are the same resource. The vhost reference is in <<../config/vhosts#id-provider-settings, Virtual hosts>>.
 
 Applications see what a token was granted in `request.accessToken`, see the https://developer.enonic.com/docs/code/stable/web/request-response#access-token[dev kit documentation].
 
@@ -133,6 +133,8 @@ A client that knows only the URL of an API finds its way to a token through the 
 
 `+https://<host>/.well-known/oauth-protected-resource/<path>+`:: The protected resource metadata of `+https://<host>/<path>+`: the resource's URL, the authorization server to get a token from (the mapping's default ID provider's endpoints) and the ID provider's scopes. Served for every path under a mapping with a default ID provider.
 `+https://<host>/.well-known/oauth-authorization-server/<source>/_/idprovider/<name>+`:: The authorization server metadata of an ID provider on the mapping: the issuer, the endpoints of the flows the mapping enables, the grant types, the registration endpoint, `S256` and the scopes. The same document is served under the ID provider itself, at `+/_/idprovider/<name>/.well-known/oauth-authorization-server+` and `+/_/idprovider/<name>/.well-known/openid-configuration+`.
+
+A reverse proxy in front of XP must pass `+/.well-known/+` through to XP for the host-level documents to be found; the documents under the ID provider are reached through the mapping's own path.
 
 An unauthenticated request a vhost answers with `401` and a `WWW-Authenticate: Bearer` challenge, be it XP refusing a token or an application answering a machine client, gets the resource metadata URL added to the challenge, `+resource_metadata="https://api.example.com/.well-known/oauth-protected-resource/mcp"+`, and no login page: the challenge is the application's word that a machine is calling, so the ID provider's `handle401` is not invoked for it.
 
