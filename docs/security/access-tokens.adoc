@@ -83,7 +83,7 @@ A client XP does not know can still use device login: `+client_id+` is then the 
 [#registration]
 === Self-registration
 
-A client that needs a redirect URI of its own, an MCP client for one, registers itself (https://datatracker.ietf.org/doc/html/rfc7591[RFC 7591]): `POST` to `+/_/idprovider/<name>/register+` with its metadata as JSON: `+client_name+`, `+client_uri+`, `+logo_uri+`, `+policy_uri+`, `+tos_uri+`, `+redirect_uris+`, `+grant_types+` (`+authorization_code+` when left out), `scope` and `resource`. Only a public client may register, so `+token_endpoint_auth_method+` must be `none` or left out. The answer is `201` with the record and a `+client_id+` that carries it, signed with XP's token keys: XP stores nothing, so registration cannot fill the store or be rate limited away, and the id is valid for 90 days, after which the client registers again. A self-registered client is held to its own record as a registered one is, and the consent page shows what it registered as the client's own words about itself. A client cannot register under an id of its choice, nor as a confidential client.
+A client that needs a redirect URI of its own, an MCP client for one, registers itself (https://datatracker.ietf.org/doc/html/rfc7591[RFC 7591]): `POST` to `+/_/idprovider/<name>/register+` with its metadata as JSON: `+client_name+`, `+client_uri+`, `+logo_uri+`, `+policy_uri+`, `+tos_uri+`, `+redirect_uris+`, `+grant_types+` (`+authorization_code+` when left out), `scope` and `resource`. Only a public client may register, so `+token_endpoint_auth_method+` must be `none` or left out. The answer is `201` with the record and a `+client_id+` that carries it, signed with XP's token keys: XP stores nothing, so registration cannot fill the store or be rate limited away, and the id is valid for 90 days, after which the client registers again. A self-registered client is held to its own record as a registered one is, and the consent page shows what it registered as the client's own words about itself. A client cannot register under an id of its choice, nor as a confidential client. The endpoint is served where the mapping's flow list names `register`, and on the default virtual host; a host that should serve registered clients only leaves `register` out of its list.
 
 == Access tokens
 
@@ -113,7 +113,7 @@ mapping.admin.host = admin.example.com
 mapping.admin.source = /
 mapping.admin.target = /admin
 mapping.admin.idProvider.system = default
-mapping.admin.idProvider.system.flows = login,logout,device,code
+mapping.admin.idProvider.system.flows = login,logout,device,code,register
 
 mapping.api.host = api.example.com
 mapping.api.source = /
@@ -203,4 +203,4 @@ token.keys.2026b = <base64 secret>
 token.signingKey = 2026b
 ----
 
-The flows and the audience of a vhost are configured in `com.enonic.xp.web.vhost.cfg`, see <<../config/vhosts#id-provider-settings, Virtual hosts>>.
+The flows and the audience of a vhost are configured in `com.enonic.xp.web.vhost.cfg`, see <<../config/vhosts#id-provider-settings, Virtual hosts>>. A mapping serves the token flows `device`, `code` and `register` only where its flow list names them; the default virtual host, used where nothing is configured, serves them all.
