@@ -133,23 +133,17 @@ mapping.admin.host = admin.example.com
 mapping.admin.source = /
 mapping.admin.target = /admin
 mapping.admin.idProvider.system = default
-mapping.admin.idProvider.system.flows = login,logout,device
-mapping.admin.idProvider.system.scope.content\:read.roles = role:cms.project.site.viewer
-mapping.admin.idProvider.system.scope.content\:write.roles = role:cms.project.site.editor
-mapping.admin.idProvider.system.scope.profile.required = true
+mapping.admin.idProvider.system.flows = login,logout,device,code
 
 mapping.api.host = api.example.com
 mapping.api.source = /
 mapping.api.target = /api
 mapping.api.idProvider.system = default
 mapping.api.idProvider.system.flows = autologin
-mapping.api.audience = api
 ----
 
-`+idProvider.<name>.flows+`:: image:xp-820.svg[XP 8.2.0,opts=inline] The authentication flows the ID provider may use here, see <<#flows, ID provider flows>>. `device` is <<../security/access-tokens#device-login, device login>>, where a user approves a client; `autologin` also covers XP's own <<../security/access-tokens#, access tokens>> on the declared audience.
-`+idProvider.<name>.scope.<id>.roles+`:: image:xp-820.svg[XP 8.2.0,opts=inline] A scope a client may ask for in device login on this vhost, and the roles it implies, comma-separated. An empty value declares a scope with no roles, a label for applications. Only roles may be listed. The id is everything between `scope.` and the last dot, so it may contain dots; escape colons in it as shown. See <<../security/access-tokens#scopes, scopes>>.
-`+idProvider.<name>.scope.<id>.required+`:: image:xp-820.svg[XP 8.2.0,opts=inline] `true` when the user must keep the scope: a client that asks for it gets it with the rest, or the request is denied as a whole. Defaults to `false`. A scope declared by this line alone is a label-only scope.
-audience:: image:xp-820.svg[XP 8.2.0,opts=inline] The audiences this vhost serves, comma-separated: an access token is accepted here only when its `aud` claim contains one of them. A vhost that declares no audience accepts only tokens whose audience is XP's own issuer name (`token.issuer` in `com.enonic.xp.security.cfg`); that is what a token obtained without a `resource` carries. The audiences a client may ask for are the union of every vhost's list.
+`+idProvider.<name>.flows+`:: image:xp-820.svg[XP 8.2.0,opts=inline] The authentication flows the ID provider may use here, see <<#flows, ID provider flows>>. `device` is <<../security/access-tokens#device-login, device login>>, `code` the <<../security/access-tokens#authorization-code, authorization code flow>>, where a user approves a client, and `register` <<../security/access-tokens#registration, client self-registration>>; the three are served only where listed; `autologin` also covers XP's own <<../security/access-tokens#, access tokens>> on the audiences the mapping serves.
+audience:: image:xp-820.svg[XP 8.2.0,opts=inline] *Optional.* Names this vhost serves besides its own URL, comma-separated: an access token is accepted here when its `aud` claim contains one of them, or names the mapping's URL or a URL under it as described next. With a list, XP's own issuer name is not accepted. Without a list the mapping serves itself: a token is accepted when its audience is the URL the mapping's source is served at (`+https://api.example.com+` above, `+https://example.com/api+` for a source of `/api`; no trailing slash), a URL under it that the request is at or below, or XP's own issuer name (`token.issuer` in `com.enonic.xp.security.cfg`). A client asks for the token's audiences with `resource`; without one the token is for XP as a whole and for the mapping the request came through. Set `audience` to keep tokens working across a host rename or several hosts, or to accept tokens of another issuer that name their own audience. See <<../security/access-tokens#audience, where a token is accepted>>.
 
 [[virtual-host-context]]
 == Virtual Host Context
@@ -257,15 +251,20 @@ mapping.example.idProvider.myidprovider = default
 mapping.example.idProvider.myidprovider.flows = login,autologin
 ----
 
-XP manages three flows:
+XP manages six flows:
 
 login:: interactive login: the login page and 401 handling. Web endpoint only.
-autologin:: non-interactive login, e.g. token or basic authentication.
+autologin:: non-interactive login: XP's own <<../security/access-tokens#, access tokens>>, then the ID provider's token or basic authentication.
 logout:: the logout endpoint.
+device:: <<../security/access-tokens#device-login, device login>>: XP's device authorization endpoint and the consent page. Web endpoint only.
+code:: the <<../security/access-tokens#authorization-code, authorization code flow>>: XP's authorization endpoint and the same consent page. Web endpoint only.
+register:: <<../security/access-tokens#registration, client self-registration>>: XP's registration endpoint, where a client the ID provider has no record of registers itself. Web endpoint only.
 
-Any other name in the list addresses an additional flow of the ID provider application itself - for instance, the Standard ID Provider serves basic authentication under the name `basic`, and an ID provider may serve its device authorization endpoints under a name like `device`. See the ID provider's own documentation for the flows it supports.
+Any other name in the list addresses an additional flow of the ID provider application itself - for instance, the Standard ID Provider serves basic authentication under the name `basic`. See the ID provider's own documentation for the flows it supports.
 
-Without a flow list, no restriction applies: the ID provider serves whatever flows it supports. An explicit list serves only what it names - `flows = autologin` on the system ID provider keeps service account JWTs working but turns basic authentication off. Flow names are not validated: any name an ID provider app understands is fair game.
+Without a flow list, the ID provider serves whatever flows it supports, except the token flows `device`, `code` and `register`, which a configured mapping serves only when its list names them: a configuration from before XP 8.2 keeps serving exactly what it did. An explicit list serves only what it names - `flows = autologin` on the system ID provider keeps service account JWTs working but turns basic authentication off. Flow names are not validated: any name an ID provider app understands is fair game.
+
+Where no vhost is configured, the default virtual host serves every flow, token flows included, so a developer installation issues tokens with nothing set.
 
 [#endpoint]
 == Management and statistics endpoints
